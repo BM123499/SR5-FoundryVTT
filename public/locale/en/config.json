@@ -223,6 +223,10 @@
         "ReduceInitByTen": "Initiative -10"
     },
     "SR5.CommonProgram": "Common Program",
+    "SR5.Compendiums": {
+        "Actor": "SR5e Actors",
+        "Item": "SR5e Items"
+    },
     "SR5.Compilation": {
         "DropSprite": "Drop Sprite",
         "FixedSprite": "Prep. Sprite",
