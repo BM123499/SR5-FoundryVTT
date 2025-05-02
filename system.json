@@ -18,7 +18,7 @@
     "minimumCoreVersion": "11",
     "scripts": [],
     "esmodules": ["dist/bundle.js"],
-    "styles": ["dist/bundle.css"],
+    "styles": ["dist/bundle.css", "dist/importTab.css"],
     "languages": [
         {
             "lang": "en",
