@@ -84,6 +84,18 @@
             "system": "shadowrun5e"
         }
     ],
+    "packFolders": [
+        {
+            "name": "Shadowrun 5e",
+            "color": "#cc0000",
+            "sorting": "m",
+            "packs": [
+                "system-macros",
+                "general-actions",
+                "matrix-actions"
+            ]
+        }
+    ],
     "relationships": [
         {
             "id": "autocomplete-inline-properties",
