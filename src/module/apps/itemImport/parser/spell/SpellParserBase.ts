@@ -1,60 +1,66 @@
-import { ImportHelper } from '../../helper/ImportHelper';
+import { Spell } from '../../schema/SpellsSchema';
+import { Parser } from '../Parser';
+import { ImportHelper as IH } from '../../helper/ImportHelper';
+import { TranslationHelper as TH } from '../../helper/TranslationHelper';
 import SpellCateogry = Shadowrun.SpellCateogry;
-import { ItemParserBase } from '../item/ItemParserBase';
 import SpellItemData = Shadowrun.SpellItemData;
 
-export class SpellParserBase extends ItemParserBase<SpellItemData> {
-    public override async Parse(jsonData: object, item: SpellItemData, jsonTranslation?: object): Promise<SpellItemData> {
-        item.name = ImportHelper.StringValue(jsonData, 'name');
+export class SpellParserBase extends Parser<SpellItemData> {
+    protected override parseType: string = 'spell';
 
-        item.system.description.source = `${ImportHelper.StringValue(jsonData, 'source')} ${ImportHelper.StringValue(jsonData, 'page')}`;
-        item.system.category = ImportHelper.StringValue(jsonData, 'category').toLowerCase() as SpellCateogry;
+    protected override getSystem(jsonData: Spell): SpellItemData['system'] {
+        const system = this.getBaseSystem(
+            'Item',
+            {action: {type: 'varies', attribute: 'magic', skill: 'spellcasting'}} as Shadowrun.SpellData
+        );
 
-        let damage = ImportHelper.StringValue(jsonData, 'damage');
+        system.category = IH.StringValue(jsonData, 'category').toLowerCase() as SpellCateogry;
+
+        let damage = IH.StringValue(jsonData, 'damage');
         if (damage === 'P') {
-            item.system.action.damage.type.base = 'physical';
-            item.system.action.damage.type.value = 'physical';
+            system.action.damage.type.base = 'physical';
+            system.action.damage.type.value = 'physical';
         } else if (damage === 'S') {
-            item.system.action.damage.type.base = 'stun';
-            item.system.action.damage.type.value = 'stun';
+            system.action.damage.type.base = 'stun';
+            system.action.damage.type.value = 'stun';
         }
 
-        let duration = ImportHelper.StringValue(jsonData, 'duration');
+        let duration = IH.StringValue(jsonData, 'duration');
         if (duration === 'I') {
-            item.system.duration = 'instant';
+            system.duration = 'instant';
         } else if (duration === 'S') {
-            item.system.duration = 'sustained';
+            system.duration = 'sustained';
         } else if (duration === 'P') {
-            item.system.duration = 'permanent';
+            system.duration = 'permanent';
         }
 
-        let drain = ImportHelper.StringValue(jsonData, 'dv');
+        let drain = IH.StringValue(jsonData, 'dv');
         if (drain.includes('+') || drain.includes('-')) {
-            item.system.drain = parseInt(drain.substring(1, drain.length));
+            system.drain = parseInt(drain.substring(1, drain.length));
         }
 
-        let range = ImportHelper.StringValue(jsonData, 'range');
+        let range = IH.StringValue(jsonData, 'range');
         if (range === 'T') {
-            item.system.range = 'touch';
+            system.range = 'touch';
         } else if (range === 'LOS') {
-            item.system.range = 'los';
+            system.range = 'los';
         } else if (range === 'LOS (A)') {
-            item.system.range = 'los_a';
+            system.range = 'los_a';
         }
 
-        let type = ImportHelper.StringValue(jsonData, 'type');
+        let type = IH.StringValue(jsonData, 'type');
         if (type === 'P') {
-            item.system.type = 'physical';
+            system.type = 'physical';
         } else if (type === 'M') {
-            item.system.type = 'mana';
+            system.type = 'mana';
         }
 
-        if (jsonTranslation) {
-            const origName = ImportHelper.StringValue(jsonData, 'name');
-            item.name = ImportHelper.MapNameToTranslation(jsonTranslation, origName);
-            item.system.description.source = `${ImportHelper.StringValue(jsonData, 'source')} ${ImportHelper.MapNameToPageSource(jsonTranslation, origName)}`;
-        }
+        return system;
+    }
 
-        return item;
+    protected override async getFolder(jsonData: Spell): Promise<Folder> {
+        const path = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
+
+        return this.folders[path] ??= IH.GetFolderAtPath("Magic", path, true);;
     }
 }

@@ -11,32 +11,32 @@ export class RangedParser extends WeaponParserBase {
         return match !== undefined ? parseInt(match) : 0;
     }
 
-    override async Parse(jsonData: Weapon, item: WeaponItemData, jsonTranslation?: object): Promise<WeaponItemData> {
-        item = await super.Parse(jsonData, item, jsonTranslation);
+    protected override getSystem(jsonData: Weapon): WeaponItemData['system'] {
+        const system = super.getSystem(jsonData);
 
         // Some new weapons don't have any rc defined in XML.
         if (jsonData.hasOwnProperty('rc')) {
-            item.system.range.rc.base = ImportHelper.IntValue(jsonData, 'rc');
-            item.system.range.rc.value = ImportHelper.IntValue(jsonData, 'rc');
+            system.range.rc.base = ImportHelper.IntValue(jsonData, 'rc');
+            system.range.rc.value = ImportHelper.IntValue(jsonData, 'rc');
         } else {
-            item.system.range.rc.base = 0;
-            item.system.range.rc.value = 0;
+            system.range.rc.base = 0;
+            system.range.rc.value = 0;
         }
 
         const rangeCategory = ImportHelper.StringValue(jsonData, jsonData.hasOwnProperty('range') ? 'range' : 'category');
-        item.system.range.ranges = DataDefaults.weaponRangeData(this.GetRangeDataFromImportedCategory(rangeCategory));
+        system.range.ranges = DataDefaults.weaponRangeData(this.GetRangeDataFromImportedCategory(rangeCategory));
 
-        item.system.ammo.current.value = this.GetAmmo(jsonData);
-        item.system.ammo.current.max = this.GetAmmo(jsonData);
+        system.ammo.current.value = this.GetAmmo(jsonData);
+        system.ammo.current.max = this.GetAmmo(jsonData);
 
         const modeData = ImportHelper.StringValue(jsonData, 'mode');
-        item.system.range.modes = {
+        system.range.modes = {
             single_shot: modeData.includes('SS'),
             semi_auto: modeData.includes('SA'),
             burst_fire: modeData.includes('BF'),
             full_auto: modeData.includes('FA'),
         };
 
-        return item;
+        return system;
     }
 }

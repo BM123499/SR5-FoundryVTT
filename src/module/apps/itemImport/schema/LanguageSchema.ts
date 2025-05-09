@@ -2,7 +2,7 @@
 
 import { Empty, Many, OneOrMany } from './Types';
 
-export interface Languagefile {
+export interface Chummer {
     $: { file: string; };
     accessories?: {
         accessory: Many<{
@@ -472,6 +472,6 @@ export interface Languagefile {
 };
 
 export interface LanguageSchema {
-    languageFile: Many<Languagefile>;
+    chummer: Many<Chummer>;
     version: { _TEXT: string; };
 };

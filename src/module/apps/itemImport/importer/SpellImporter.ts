@@ -1,41 +1,22 @@
 import { DataImporter } from './DataImporter';
-import { ImportHelper } from '../helper/ImportHelper';
 import { SpellParserBase } from '../parser/spell/SpellParserBase';
 import { CombatSpellParser } from '../parser/spell/CombatSpellParser';
 import { ManipulationSpellParser } from '../parser/spell/ManipulationSpellParser';
 import { IllusionSpellParser } from '../parser/spell/IllusionSpellParser';
 import { DetectionSpellImporter } from '../parser/spell/DetectionSpellImporter';
 import { ParserMap } from '../parser/ParserMap';
-import { DataDefaults } from '../../../data/DataDefaults';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
 import { Constants } from "./Constants";
 import { SpellsSchema } from '../schema/SpellsSchema';
 
-export class SpellImporter extends DataImporter<Shadowrun.SpellItemData, Shadowrun.SpellData> {
-    public override categoryTranslations: any;
-    public override itemTranslations: any;
+export class SpellImporter extends DataImporter{
     public files = ['spells.xml'];
 
     CanParse(jsonObject: object): boolean {
         return jsonObject.hasOwnProperty('spells') && jsonObject['spells'].hasOwnProperty('spell');
     }
 
-    public override GetDefaultData({ type }: { type: any; }): Shadowrun.SpellItemData {
-        const systemData = {action: {type: 'varies', attribute: 'magic', skill: 'spellcasting'}} as Shadowrun.SpellData;
-        return DataDefaults.baseEntityData<Shadowrun.SpellItemData, Shadowrun.SpellData>("Item", {type}, systemData);
-    }
-
-    ExtractTranslation() {
-        if (!DataImporter.jsoni18n) {
-            return;
-        }
-
-        let jsonSpelli18n = ImportHelper.ExtractDataFileTranslation(DataImporter.jsoni18n, this.files[0]);
-        this.categoryTranslations = ImportHelper.ExtractCategoriesTranslation(jsonSpelli18n);
-        this.itemTranslations = ImportHelper.ExtractItemTranslation(jsonSpelli18n, 'spells', 'spell');
-    }
-
-    async Parse(jsonObject: SpellsSchema, setIcons: boolean): Promise<Item> {
+    async Parse(jsonObject: SpellsSchema): Promise<Item> {
         const parser = new ParserMap<Shadowrun.SpellItemData>('category', [
             { key: 'Combat', value: new CombatSpellParser() },
             { key: 'Manipulation', value: new ManipulationSpellParser() },
@@ -46,11 +27,7 @@ export class SpellImporter extends DataImporter<Shadowrun.SpellItemData, Shadowr
             { key: 'Rituals', value: new SpellParserBase() },
         ]);
 
-        const folders = await ImportHelper.MakeCategoryFolders("Magic", jsonObject, 'Spells', this.categoryTranslations);
-
-        let items: Shadowrun.SpellItemData[] = [];
-        this.iconList = await this.getIconFiles();
-        const parserType = 'spell';
+        const items: Shadowrun.SpellItemData[] = [];
 
         for (const jsonData of jsonObject.spells.spell) {
 
@@ -59,20 +36,8 @@ export class SpellImporter extends DataImporter<Shadowrun.SpellItemData, Shadowr
                 continue;
             }
 
-                try {
-                // Create the item
-                let item = await parser.Parse(jsonData, this.GetDefaultData({type: parserType}), this.itemTranslations);
-                //@ts-expect-error TODO: Foundry Where is my foundry base data?
-                item.folder = folders[item.system.category].id;
-
-                // Import Flags
-                item.system.importFlags = this.genImportFlags(item.name, item.type, item.system.category);
-
-                // Default icon
-                if (setIcons) {item.img = await this.iconAssign(item.system.importFlags, item.system, this.iconList)};
-
-                // Translate name if needed
-                item.name = ImportHelper.MapNameToTranslation(this.itemTranslations, item.name);
+            try {
+                const item = await parser.Parse(jsonData);
 
                 // Add relevant action tests
                 UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);

@@ -1,10 +1,11 @@
 import { SpellParserBase } from './SpellParserBase';
 import { ImportHelper } from '../../helper/ImportHelper';
 import SpellItemData = Shadowrun.SpellItemData;
+import { Spell } from '../../schema/SpellsSchema';
 
 export class CombatSpellParser extends SpellParserBase {
-    override async Parse(jsonData: object, item: SpellItemData, jsonTranslation?: object): Promise<SpellItemData> {
-        item = await super.Parse(jsonData, item, jsonTranslation);
+    protected override getSystem(jsonData: Spell): SpellItemData['system'] {
+        const system = super.getSystem(jsonData);
 
         let descriptor = ImportHelper.StringValue(jsonData, 'descriptor');
         // A few spells have a missing descriptor instead of an empty string.
@@ -16,8 +17,8 @@ export class CombatSpellParser extends SpellParserBase {
         }
 
         // Lower case is needed for the system.
-        item.system.combat.type = descriptor.includes('Indirect') ? 'indirect' : 'direct';
+        system.combat.type = descriptor.includes('Indirect') ? 'indirect' : 'direct';
 
-        return item;
+        return system;
     }
 }

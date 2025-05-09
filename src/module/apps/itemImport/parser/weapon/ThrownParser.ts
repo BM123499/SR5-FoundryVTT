@@ -6,7 +6,7 @@ import { DataDefaults } from '../../../../data/DataDefaults';
 import { Weapon } from '../../schema/WeaponsSchema';
 
 export class ThrownParser extends WeaponParserBase {
-    public GetBlast(jsonData: Weapon, item: WeaponItemData): BlastData {
+    public GetBlast(system: WeaponItemData['system'], jsonData: Weapon): BlastData {
         let blastData: BlastData = {
             radius: 0,
             dropoff: 0,
@@ -31,20 +31,20 @@ export class ThrownParser extends WeaponParserBase {
         }
 
         if (blastData.dropoff && !blastData.radius) {
-            blastData.radius = -(item.system.action.damage.base / blastData.dropoff);
+            blastData.radius = -(system.action.damage.base / blastData.dropoff);
         }
 
         return blastData;
     }
 
-    override async Parse(jsonData: Weapon, item: WeaponItemData, jsonTranslation?: object): Promise<WeaponItemData> {
-        item = await super.Parse(jsonData, item, jsonTranslation);
+    protected override getSystem(jsonData: Weapon): WeaponItemData['system'] {
+        const system = super.getSystem(jsonData);
 
         const rangeCategory = ImportHelper.StringValue(jsonData, jsonData.hasOwnProperty('range') ? 'range' : 'category');
-        item.system.thrown.ranges = DataDefaults.weaponRangeData(this.GetRangeDataFromImportedCategory(rangeCategory));
+        system.thrown.ranges = DataDefaults.weaponRangeData(this.GetRangeDataFromImportedCategory(rangeCategory));
 
-        item.system.thrown.blast = this.GetBlast(jsonData, item);
+        system.thrown.blast = this.GetBlast(system, jsonData);
 
-        return item;
+        return system;
     }
 }

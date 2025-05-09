@@ -1,10 +1,11 @@
 import { SpellParserBase } from './SpellParserBase';
 import { ImportHelper } from '../../helper/ImportHelper';
 import SpellItemData = Shadowrun.SpellItemData;
+import { Spell } from '../../schema/SpellsSchema';
 
 export class ManipulationSpellParser extends SpellParserBase {
-    override async Parse(jsonData: object, item: SpellItemData, jsonTranslation?: object): Promise<SpellItemData> {
-        item = await super.Parse(jsonData, item, jsonTranslation);
+    protected override getSystem(jsonData: Spell): SpellItemData['system'] {
+        const system = super.getSystem(jsonData);
 
         // A few spells have a missing descriptor instead of an empty string.
         // The field is <descriptor /> rather than <descriptor></descriptor>
@@ -16,27 +17,27 @@ export class ManipulationSpellParser extends SpellParserBase {
             descriptor = '';
         }
 
-        item.system.manipulation.environmental = descriptor.includes('Environmental');
+        system.manipulation.environmental = descriptor.includes('Environmental');
         // Generally no resistance roll.
 
-        item.system.manipulation.mental = descriptor.includes('Mental');
-        if (item.system.manipulation.mental) {
-            item.system.action.opposed.type = 'custom';
-            item.system.action.opposed.attribute = 'logic';
-            item.system.action.opposed.attribute2 = 'willpower';
+        system.manipulation.mental = descriptor.includes('Mental');
+        if (system.manipulation.mental) {
+            system.action.opposed.type = 'custom';
+            system.action.opposed.attribute = 'logic';
+            system.action.opposed.attribute2 = 'willpower';
         }
 
-        item.system.manipulation.physical = descriptor.includes('Physical');
-        if (item.system.manipulation.physical) {
-            item.system.action.opposed.type = 'custom';
-            item.system.action.opposed.attribute = 'body';
-            item.system.action.opposed.attribute2 = 'strength';
+        system.manipulation.physical = descriptor.includes('Physical');
+        if (system.manipulation.physical) {
+            system.action.opposed.type = 'custom';
+            system.action.opposed.attribute = 'body';
+            system.action.opposed.attribute2 = 'strength';
         }
-        item.system.manipulation.damaging = descriptor.includes('Damaging');
-        if (item.system.manipulation.damaging) {
-            item.system.action.opposed.type = 'soak';
+        system.manipulation.damaging = descriptor.includes('Damaging');
+        if (system.manipulation.damaging) {
+            system.action.opposed.type = 'soak';
         }
 
-        return item;
+        return system;
     }
 }

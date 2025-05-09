@@ -282,10 +282,6 @@ def build_type(
         if child in EXTRACT_TAGS.keys() and struct[child_path].children and depth < 5:
             base = EXTRACT_TAGS[child]
         elif second_defs is not None and depth == 1 and struct[child_path].children:
-            # Rename for translation file
-            if child == "chummer":
-                child = "languagefile"
-
             base = child.capitalize()
 
             if struct[child_path].empty_count:

@@ -1,25 +1,20 @@
+import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { ImportHelper as IH } from '../helper/ImportHelper';
-import { CritterParser } from '../parser/metatype/CritterParser';
 import { SR5Actor } from '../../../actor/SR5Actor';
 import { MetatypeSchema } from "../schema/MetatypeSchema";
-import { Constants } from './Constants';
+import { ImportHelper as IH } from '../helper/ImportHelper';
+import { SpiritParser } from '../parser/metatype/SpiritParser';
+import { SpriteParser } from '../parser/metatype/SpriteParser';
+import { CritterParser } from '../parser/metatype/CritterParser';
 
-export class CritterImporter extends DataImporter<Shadowrun.CharacterActorData, Shadowrun.CharacterData> {
+type CrittersTypes = Shadowrun.CharacterData | Shadowrun.SpiritData | Shadowrun.SpriteData;
+type CrittersDataTypes = Shadowrun.CharacterActorData | Shadowrun.SpiritActorData | Shadowrun.SpriteActorData;
+
+export class CritterImporter extends DataImporter {
     public files = ['critters.xml'];
 
     CanParse(jsonObject: object): boolean {
         return jsonObject.hasOwnProperty('metatypes') && jsonObject['metatypes'].hasOwnProperty('metatype');
-    }
-
-    ExtractTranslation() {
-        if (!DataImporter.jsoni18n) {
-            return;
-        }
-
-        const jsonCritteri18n = IH.ExtractDataFileTranslation(DataImporter.jsoni18n, this.files[0]);
-        this.categoryTranslations = IH.ExtractCategoriesTranslation(jsonCritteri18n);
-        this.itemTranslations = IH.ExtractItemTranslation(jsonCritteri18n, 'metatypes', 'metatype');
     }
 
     private isSpirit(jsonData: object): Boolean {
@@ -29,70 +24,51 @@ export class CritterImporter extends DataImporter<Shadowrun.CharacterActorData, 
             "logmin", "wilmin", "edgmin",
         ];
     
-        for (const key of attributeKeys) {
-            if (IH.StringValue(jsonData, key, "F").includes("F")) {
+        for (const key of attributeKeys)
+            if (IH.StringValue(jsonData, key, "F").includes("F"))
                 return true;
-            }
-        }
 
         return false;
     }
 
-    async Parse(chummerData: MetatypeSchema, setIcons: boolean): Promise<StoredDocument<SR5Actor>[]> {
-        const actors: Shadowrun.CharacterActorData[] = [];
-        const jsonDatas = chummerData.metatypes.metatype;
-        this.iconList = await this.getIconFiles();
-        const parserType = 'character';
-        const parser = new CritterParser();
+    async Parse(chummerData: MetatypeSchema): Promise<StoredDocument<SR5Actor>[]> {
+        const actors: CrittersDataTypes[] = [];
+        const critterParser = new CritterParser();
+        const spiritParser = new SpiritParser();
+        const spriteParser = new SpriteParser();
 
-        const CategoriesList = [
-            'Dracoforms',
-            'Extraplanar Travelers',
-            'Infected',
-            'Mundane Critters',
-            'Mutant Critters',
-            'Paranormal Critters',
-            'Protosapients',
-            'Technocritters',
-            'Toxic Critters',
-            'Warforms'
-        ];
+        const baseMetatypes = chummerData.metatypes.metatype;
+        const metavariants = baseMetatypes.flatMap(metatype => {
+            const parentName = metatype.name._TEXT;
 
-        const Categories = {
-            categories: {
-                category: chummerData['categories']['category'].filter(({ _TEXT }) => CategoriesList.includes(_TEXT))
-            },
-        };
+            return IH.getArray(metatype.metavariants?.metavariant).map(variant => ({
+                ...variant,
+                name: { _TEXT: `${parentName} (${variant.name._TEXT})` },
+                category: { _TEXT: metatype.category?._TEXT ?? "" },
+            }));
+        });
 
-        const folders = await IH.MakeCategoryFolders('Critter', Categories, 'Critters', this.categoryTranslations);
+        const jsonDatas = [...baseMetatypes, ...metavariants];
 
         for (const jsonData of jsonDatas) {
             // Check to ensure the data entry is supported and the correct category
-            if (   this.isSpirit(jsonData)
-                || DataImporter.unsupportedEntry(jsonData)
-                || IH.StringValue(jsonData, 'category') === 'Sprites') {
+            if (DataImporter.unsupportedEntry(jsonData)) {
                 continue;
             }
 
             try {
-                const actor = await parser.Parse(
-                    jsonData,
-                    this.GetDefaultData({ type: parserType, entityType: 'Actor' }),
-                    this.itemTranslations,
-                );
-                const category = IH.StringValue(jsonData, 'category').toLowerCase();
+                const parseType = jsonData.category?._TEXT === 'Sprites' ? 'Sprite'
+                    : this.isSpirit(jsonData) ? 'Spirit' : 'Critter';
 
-                //@ts-expect-error TODO: Foundry Where is my foundry base data?
-                actor.folder = folders[category]?.id;
+                const selectedParser = parseType === 'Sprite' ? spriteParser
+                    : parseType === 'Spirit' ? spiritParser : critterParser;
 
-                actor.system.importFlags = this.genImportFlags(actor.name, actor.type, this.formatAsSlug(category));
-                if (setIcons) {actor.img = await this.iconAssign(actor.system.importFlags, actor.system, this.iconList)};
-
-                actor.name = IH.MapNameToTranslation(this.itemTranslations, actor.name);
+                const actor = await selectedParser.Parse(jsonData);
 
                 actors.push(actor);
             } catch (error) {
                 ui.notifications?.error("Failed Parsing Critter:" + (jsonData.name._TEXT ?? "Unknown"));
+                console.log(error);
             }
         }
 

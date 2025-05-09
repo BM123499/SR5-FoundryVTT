@@ -1,8 +1,10 @@
-import { ImportHelper as IH, NotEmpty } from '../../helper/ImportHelper';
+import { ItemDataSource } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs/itemData';
+import { ImportHelper as IH } from '../../helper/ImportHelper';
+import { TranslationHelper as TH } from '../../helper/TranslationHelper';
 import { Constants } from '../../importer/Constants';
 import WeaponCategory = Shadowrun.WeaponCategory;
 import SkillName = Shadowrun.SkillName;
-import { TechnologyItemParserBase } from '../item/TechnologyItemParserBase';
+import { Parser } from '../Parser';
 import WeaponItemData = Shadowrun.WeaponItemData;
 import DamageElement = Shadowrun.DamageElement;
 import DamageType = Shadowrun.DamageType;
@@ -12,34 +14,30 @@ import DamageData = Shadowrun.DamageData;
 import { SR5 } from '../../../../config';
 import RangeData = Shadowrun.RangeData;
 import { Weapon } from '../../schema/WeaponsSchema';
-import { ItemDataSource } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs/itemData';
 
-export class WeaponParserBase extends TechnologyItemParserBase<WeaponItemData> {
-    private async GetAcessories(
-        accessories: undefined | NotEmpty<Weapon['accessories']>['accessory'],
-        weaponName: string,
-        jsonTranslation?: object
-    ) : Promise<ItemDataSource[]> {
+export class WeaponParserBase extends Parser<WeaponItemData> {
+    protected override parseType: string = 'weapon';
+
+    protected override async getItems(jsonData: Weapon) : Promise<ItemDataSource[]> {
         const result: ItemDataSource[] = []
+        const accessories = jsonData.accessories?.accessory;
 
         for (const accessory of IH.getArray(accessories)) {
-            let name = accessory.name._TEXT;
+            const name = accessory.name._TEXT;
+            const foundItem = await IH.findItem('Item', name, 'modification');
 
-            const translatedName = IH.MapNameToTranslation(jsonTranslation, name);
-            const foundItem = await IH.findItem('Item', translatedName, 'modification');
-
-            if (!foundItem) {
+            if (!foundItem.length) {
                 console.log(
-                    `[Modification Missing]\nWeapon: ${weaponName}\nAccessory: ${name}`
+                    `[Modification Missing]\nWeapon: ${jsonData.name._TEXT}\nAccessory: ${name}`
                 );
                 continue;
             }
 
-            let accessoryBase = foundItem[0].toObject() as Shadowrun.ModificationItemData;
+            const accessoryBase = foundItem[0].toObject() as Shadowrun.ModificationItemData;
 
             accessoryBase.system.technology.equipped = true;
             if (accessory.rating)
-                accessoryBase.system.technology.rating = +accessory.rating._TEXT;
+                accessoryBase.system.technology.rating = Number(accessory.rating._TEXT) || 0;
 
             result.push(accessoryBase as ItemDataSource);
         }
@@ -85,8 +83,11 @@ export class WeaponParserBase extends TechnologyItemParserBase<WeaponItemData> {
         }
     }
 
-    public override async Parse(jsonData: Weapon, item: WeaponItemData, jsonTranslation?: object): Promise<WeaponItemData> {
-        item = await super.Parse(jsonData, item, jsonTranslation);
+    protected override getSystem(jsonData: Weapon): WeaponItemData['system'] {
+        const system = this.getBaseSystem(
+            'Item',
+            {action: {type: 'varies', attribute: 'agility'}} as Shadowrun.WeaponData
+        );
 
         let category = IH.StringValue(jsonData, 'category');
         // A single item does not meet normal rules, thanks Chummer!
@@ -95,29 +96,20 @@ export class WeaponParserBase extends TechnologyItemParserBase<WeaponItemData> {
             category = 'Holdouts';
         }
 
-        item.system.category = WeaponParserBase.GetWeaponType(jsonData);
-        item.system.subcategory = category.toLowerCase();
+        system.category = WeaponParserBase.GetWeaponType(jsonData);
+        system.subcategory = category.toLowerCase();
+        
+        system.action.skill = this.GetSkill(jsonData);
+        system.action.damage = this.GetDamage(jsonData as any);
+        
+        system.action.limit.value = IH.IntValue(jsonData, 'accuracy');
+        system.action.limit.base = IH.IntValue(jsonData, 'accuracy');
+        
+        system.technology.conceal.base = IH.IntValue(jsonData, 'conceal');
 
-        item.system.action.skill = this.GetSkill(jsonData);
-        item.system.action.damage = this.GetDamage(jsonData as any);
-
-        item.system.action.limit.value = IH.IntValue(jsonData, 'accuracy');
-        item.system.action.limit.base = IH.IntValue(jsonData, 'accuracy');
-
-        item.system.technology.conceal.base = IH.IntValue(jsonData, 'conceal');
-
-        //@ts-expect-error
-        item.flags ??= {
-            shadowrun5e: {
-                embeddedItems: [
-                    ...await this.GetAcessories(jsonData.accessories?.accessory, jsonData.name._TEXT, jsonTranslation),
-                ]
-            }
-        };
-
-        return item;
+        return system;
     }
-
+    
     protected GetDamage(jsonData: Partial<Weapon>): DamageData {
         const jsonDamage = IH.StringValue(jsonData, 'damage');
         // ex. 15S(e)
@@ -198,5 +190,13 @@ export class WeaponParserBase extends TechnologyItemParserBase<WeaponItemData> {
             ...SR5.weaponRangeCategories[systemRangeCategory].ranges,
             category: systemRangeCategory,
         };
+    }
+
+    protected override async getFolder(jsonData: Weapon): Promise<Folder> {
+        const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
+        const rootFolder = TH.getTranslation('Weapon', {type: 'category'});
+        const path = `${rootFolder}/${folderName}`;
+
+        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
     }
 }

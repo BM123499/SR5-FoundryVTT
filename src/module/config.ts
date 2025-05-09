@@ -1405,6 +1405,7 @@ export const SR5 = {
             'negative': '',
             'positive': ''
         },
+        ritual: {},
         sin: {},
         spell: {
             'combat': '',
@@ -1414,7 +1415,10 @@ export const SR5 = {
             'illusion': '',
             'manipulation': ''
         },
-        ritual: {},
+        spirit: {
+            'extraplanar-travelers': 'critter/extraplanar-travelers',
+        },
+        sprite: {},
         sprite_power: {},
         vehicle: {
             /* Vehicles */

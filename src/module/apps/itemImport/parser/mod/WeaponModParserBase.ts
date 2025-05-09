@@ -1,22 +1,34 @@
-import { ImportHelper } from '../../helper/ImportHelper';
-import MountType = Shadowrun.MountType;
-import { TechnologyItemParserBase } from '../item/TechnologyItemParserBase';
+import { Parser } from '../Parser';
 import { Accessory } from '../../schema/WeaponsSchema';
+import { ImportHelper as IH } from '../../helper/ImportHelper';
+import { TranslationHelper as TH } from '../../helper/TranslationHelper';
 import ModificationItemData = Shadowrun.ModificationItemData;
+import MountType = Shadowrun.MountType;
 
-export class WeaponModParserBase extends TechnologyItemParserBase<ModificationItemData> {
-    override async Parse(jsonData: Accessory, item: ModificationItemData): Promise<ModificationItemData> {
-        item = await super.Parse(jsonData, item);
+export class WeaponModParserBase extends Parser<ModificationItemData> {
+    protected override parseType: string = 'modification';
 
-        item.system.type = 'weapon';
+    protected override getSystem(jsonData: Accessory): ModificationItemData['system'] {
+        const system = this.getBaseSystem('Item');
 
-        item.system.mount_point = jsonData.mount ? (jsonData.mount._TEXT.toLowerCase() as MountType) : "";
+        system.type = 'weapon';
 
-        item.system.rc = +(jsonData.rc?._TEXT ?? 0);
-        item.system.accuracy = +(jsonData.accuracy?._TEXT ?? 0);
+        system.mount_point = jsonData.mount ? (jsonData.mount._TEXT.toLowerCase() as MountType) : "";
 
-        item.system.technology.conceal.base = +(jsonData.conceal?._TEXT ?? 0);
+        system.rc = Number(jsonData.rc?._TEXT) || 0;
+        system.accuracy = Number(jsonData.accuracy?._TEXT) || 0;
 
-        return item;
+        return system;
+    }
+
+    protected override async getFolder(jsonData: Accessory): Promise<Folder> {
+        const category = jsonData.mount ? jsonData.mount._TEXT : "Other";
+        const folderName = TH.getTranslation(category, {type: 'accessory'});
+        const weapon = TH.getTranslation('Weapon', {type: 'category'}); 
+        const mods = TH.getTranslation('Mods', {type: 'category'}); 
+
+        const path = `${weapon}-${mods}/${folderName}`;
+
+        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
     }
 }

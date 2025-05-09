@@ -4,6 +4,7 @@ import { JSONStrategy } from './JSONStrategy';
 import { ImportStrategy } from './ImportStrategy';
 import { SR5Item } from "../../../item/SR5Item";
 import { BaseItem } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs';
+import { TranslationHelper as TH } from './TranslationHelper';
 type CompendiumKey = keyof typeof Constants.MAP_COMPENDIUM_KEY;
 
 export enum ImportMode {
@@ -12,12 +13,8 @@ export enum ImportMode {
 }
 
 export type OneOrMany<T> = T | T[];
-export type NotEmpty<T> = T extends object ? NonNullable<T> : never;
-
-/**
- * Extracts the element type from an array (or returns never unchanged if not an array).
- */
 export type ArrayItem<T> = T extends (infer U)[] ? U : never;
+export type NotEmpty<T> = T extends object ? NonNullable<T> : never;
 
 /**
  * An import helper to standardize data extraction.
@@ -28,6 +25,7 @@ export class ImportHelper {
     public static readonly CHAR_KEY = '_TEXT';
 
     private static s_Strategy: ImportStrategy = new XMLStrategy();
+    public static folders: Record<string, Promise<Folder>> = {};
 
     public static SetMode(mode: ImportMode) {
         switch (mode) {
@@ -58,6 +56,13 @@ export class ImportHelper {
         return [];
     }
 
+    /**
+     * Reformat the name or subtype name so it matches the categories in config.ts
+     * @param name The item's name or subtype name to reformat
+     */
+    public static formatAsSlug(name: string): string {
+        return name.trim().toLowerCase().replace((/'|,|\[|\]|\(|\)/g), '').split((/-|\s|\//g)).join('-');
+    }
 
     /**
      * Helper method to create a new folder.
@@ -149,6 +154,8 @@ export class ImportHelper {
         let currentFolder: Folder | undefined;
         let lastFolder: Folder | null = null;
 
+        console.log(path);
+
         const compendium = await this.GetCompendium(ctype);
 
         const pathSegments = path.split('/');
@@ -211,105 +218,22 @@ export class ImportHelper {
         type ItemType = CompendiumCollection<CompendiumCollection.Metadata & {type: 'Item'}>;
         const pack = game.packs?.get(Constants.MAP_COMPENDIUM_KEY[compKey].pack) as ItemType;
 
-        return pack.getDocuments({ name__in: this.getArray(name), ...(types ? { type__in: this.getArray(types) } : {}) });
+        return pack.getDocuments({
+            name__in: this.getArray(name).map(name => TH.getTranslation(name)),
+            ...(types ? { type__in: this.getArray(types) } : {})
+        });
     }
 
-    public static TranslateCategory(name, jsonCategoryTranslations?) {
-        if (jsonCategoryTranslations && jsonCategoryTranslations.hasOwnProperty(name)) {
-            return jsonCategoryTranslations[name];
-        }
+    public static async getFolder(ctype: CompendiumKey, folder1: string, folder2?: string, folder3?: string): Promise<Folder> {
+        let folder = this.folders[folder1] ??= this.NewFolder(ctype, folder1);
 
-        return name;
-    }
+        if (folder2)
+            folder = this.folders[`${folder1}/${folder2}`] ??= this.NewFolder(ctype, folder2, await folder);
 
-    public static async MakeCategoryFolders(
-        ctype: CompendiumKey,
-        jsonData: object,
-        path: string,
-        jsonCategoryTranslations?: object | undefined,
-    ): Promise<{ [name: string]: Folder }> {
-        let folders = {};
-        let jsonCategories = jsonData['categories']['category'];
+        if (folder3)
+            folder = this.folders[`${folder1}/${folder2}/${folder3}`] ??= this.NewFolder(ctype, folder3, await folder);
 
-        for (let i = 0; i < jsonCategories.length; i++) {
-            let categoryName = jsonCategories[i][ImportHelper.CHAR_KEY];
-            // use untranslated category name for easier mapping during DataImporter.Parse implementations.
-            let origCategoryName = categoryName;
-            categoryName = ImportHelper.TranslateCategory(categoryName, jsonCategoryTranslations);
-            categoryName = categoryName.replace(/[\/\\]/g, '_');
-            folders[origCategoryName.toLowerCase()] = await ImportHelper.GetFolderAtPath(ctype, `${path}/${categoryName}`, true);
-        }
-
-        return folders;
-    }
-
-    /** Extract the correct <chummer file="${dataFileName}>[...]</chummer> element from xx-xx_data.xml translations.
-     *
-     * @param jsoni18n
-     * @param dataFileName Expected translation target file name
-     */
-    public static ExtractDataFileTranslation(jsoni18n, dataFileName): object {
-        for (let i = 0; i < jsoni18n.length; i++) {
-            const translation = jsoni18n[i];
-            if (translation.$.file === dataFileName) {
-                return translation;
-            }
-        }
-        return {};
-    }
-
-    /** Extract categories translations within xx-xx_data.xml <chummer/> translation subset.
-     *
-     *  Note: Not all file translations provide categories.
-     *
-     * @param jsonChummeri18n Translations as given by ExtractDataFileTranslations
-     */
-    public static ExtractCategoriesTranslation(jsonChummeri18n) {
-        const categoryTranslations = {};
-        if (jsonChummeri18n && jsonChummeri18n.hasOwnProperty('categories')) {
-            jsonChummeri18n.categories.category.forEach((category) => {
-                const name = category[ImportHelper.CHAR_KEY];
-                const translate = category.$.translate;
-                categoryTranslations[name] = translate;
-            });
-        }
-        return categoryTranslations;
-    }
-
-    /** Extract item type translations within xx-xx_data.xml <chummer/> translation subset.
-     *
-     * @param jsonItemsi18n Translations as given by ExtractDataFileTranslations
-     * @param typeKey The item type to translate. Tends to be plural.
-     * @param listKey The item to translate. Tends to be singular.
-     */
-    public static ExtractItemTranslation(jsonItemsi18n, typeKey, listKey) {
-        const itemTranslation = {};
-        if (jsonItemsi18n && jsonItemsi18n[typeKey] && jsonItemsi18n[typeKey][listKey] && jsonItemsi18n[typeKey][listKey].length > 0) {
-            jsonItemsi18n[typeKey][listKey].forEach((item) => {
-                const name = item.name[ImportHelper.CHAR_KEY];
-                const translate = item.translate[ImportHelper.CHAR_KEY];
-                const altpage = item.altpage[ImportHelper.CHAR_KEY];
-                itemTranslation[name] = { translate, altpage };
-            });
-        }
-
-        return itemTranslation;
-    }
-
-    static MapNameToTranslationKey(translationMap, name, key, fallbackValue = ''): string {
-        if (translationMap && translationMap.hasOwnProperty(name) && translationMap[name].hasOwnProperty(key)) {
-            return translationMap[name][key];
-        }
-
-        return fallbackValue;
-    }
-
-    public static MapNameToTranslation(translationMap, name): string {
-        return ImportHelper.MapNameToTranslationKey(translationMap, name, 'translate', name);
-    }
-
-    public static MapNameToPageSource(translationMap, name, fallback='?'): string {
-        return ImportHelper.MapNameToTranslationKey(translationMap, name, 'altpage', fallback);
+        return folder;
     }
 }
 export type ItemComparer = (item: Item) => boolean;

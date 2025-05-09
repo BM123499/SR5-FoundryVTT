@@ -1,7 +1,16 @@
-import { Parser } from './Parser';
+import { Parser, ParseData } from './Parser';
 import { ImportHelper } from '../helper/ImportHelper';
 
-export class ParserMap<TResult> extends Parser<TResult> {
+export class ParserMap<TResult extends (Shadowrun.ShadowrunActorData | Shadowrun.ShadowrunItemData)> extends Parser<TResult> {
+    protected override getFolder(jsonData: ParseData): Promise<Folder> {
+        throw new Error('Method not implemented.');
+    }
+    protected override parseType: string;
+
+    protected override getSystem(jsonData: ParseData): TResult['system'] {
+        throw new Error('Method not implemented.');
+    }
+
     private readonly m_BranchKey: string | BranchFunc<TResult>;
     private readonly m_Map: Map<string, Parser<TResult>>;
 
@@ -16,7 +25,7 @@ export class ParserMap<TResult> extends Parser<TResult> {
         }
     }
 
-    public async Parse(jsonData: object, item: TResult, jsonTranslation?: object): Promise<TResult> {
+    public override async Parse(jsonData: ParseData): Promise<TResult> {
         let key;
         if (typeof this.m_BranchKey === 'function') {
             key = this.m_BranchKey(jsonData);
@@ -26,15 +35,13 @@ export class ParserMap<TResult> extends Parser<TResult> {
         }
 
         const parser = this.m_Map.get(key);
-        if (parser === undefined) {
-            console.warn(`Could not find mapped parser for category ${key}.`);
-            return item;
-        }
-        return await parser.Parse(jsonData, item, jsonTranslation);
+        if (!parser) throw new Error(`Parser not found for key: ${key}`);
+
+        return await parser.Parse(jsonData);
     }
 }
 
-type CArg<TResult> = {
+type CArg<TResult extends (Shadowrun.ShadowrunActorData | Shadowrun.ShadowrunItemData)> = {
     key: string;
     value: Parser<TResult>;
 };
