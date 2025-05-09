@@ -39,8 +39,8 @@ export class DeviceParser extends Parser<DeviceItemData> {
     }
 
     protected override async getFolder(jsonData: Gear): Promise<Folder> {
-        const path = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
+        const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', folderName);
     }
 }

@@ -59,8 +59,8 @@ export class SpellParserBase extends Parser<SpellItemData> {
     }
 
     protected override async getFolder(jsonData: Spell): Promise<Folder> {
-        const path = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
+        const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Magic", path, true);;
+        return IH.getFolder("Magic", folderName);
     }
 }

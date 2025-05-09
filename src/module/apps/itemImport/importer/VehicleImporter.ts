@@ -11,27 +11,18 @@ export class VehicleImporter extends DataImporter {
         return jsonObject.hasOwnProperty('vehicles') && jsonObject['vehicles'].hasOwnProperty('vehicle');
     }
 
-    async Parse(chummerData: VehiclesSchema): Promise<StoredDocument<SR5Actor>[]> {
-        const actors: Shadowrun.VehicleActorData[] = [];
-        const parser = new VehicleParser();
-
-        for (const jsonData of chummerData.vehicles.vehicle) {
-
-            // Check to ensure the data entry is supported and the correct category
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
+    async Parse(jsonObject: VehiclesSchema): Promise<void> {
+        const actors = await VehicleImporter.ParseItemsParallel(
+            jsonObject.vehicles.vehicle,
+            {
+                compendiumKey: "Drone",
+                parser: new VehicleParser(),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                errorPrefix: "Failed Parsing Vehicle"
             }
-
-            try {
-                const actor = await parser.Parse(jsonData);
-
-                actors.push(actor);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Vehicle:" + (jsonData.name._TEXT ?? "Unknown"));
-            }
-        }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Actor.create(actors, { pack: Constants.MAP_COMPENDIUM_KEY['Drone'].pack });
+        await Actor.create(actors, { pack: Constants.MAP_COMPENDIUM_KEY['Drone'].pack });
     }
 }

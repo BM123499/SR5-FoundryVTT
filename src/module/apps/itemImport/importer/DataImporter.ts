@@ -3,6 +3,10 @@ import { Constants } from './Constants';
 import { SR5Actor } from '../../../actor/SR5Actor';
 import { ImportHelper as IH } from '../helper/ImportHelper';
 type CompendiumKey = keyof typeof Constants.MAP_COMPENDIUM_KEY;
+import ShadowrunItemData = Shadowrun.ShadowrunItemData;
+import ShadowrunActorData = Shadowrun.ShadowrunActorData;
+import { ParseData } from "../parser/Parser";
+
 
 const xml2js = require('xml2js');
 
@@ -13,6 +17,7 @@ const xml2js = require('xml2js');
  */
 export abstract class DataImporter {
     public abstract files: string[];
+    public static setIcons: boolean = true;
     public static translationMap: Record<string, any> = {};
     public static unsupportedBooks: string[] = ['2050'];
     public static iconList: string[];
@@ -35,7 +40,7 @@ export abstract class DataImporter {
      * @param chummerData The JSON data to parse.
      * @returns An array of created objects.
      */
-    public abstract Parse(chummerData: object): Promise<Item|StoredDocument<SR5Actor>[]>;
+    public abstract Parse(chummerData: object): Promise<void>;
 
     /**
      * Parse an XML string into a JSON object.
@@ -87,5 +92,35 @@ export abstract class DataImporter {
 
         const path = pathParts.join("/");
         return await IH.GetFolderAtPath(compendium, path, true);
+    }
+
+    protected static async ParseItemsParallel<TInput extends ParseData, TOutput extends (ShadowrunActorData | ShadowrunItemData)>(
+        inputs: TInput[],
+        options: {
+            compendiumKey: keyof typeof Constants.MAP_COMPENDIUM_KEY;
+            parser: { Parse(data: TInput): Promise<TOutput> };
+            filter?: (input: TInput) => boolean;
+            injectActionTests?: (item: TOutput) => void;
+            errorPrefix?: string;
+        }
+    ): Promise<TOutput[]> {
+        const { compendiumKey, parser, filter: filter = () => true, injectActionTests, errorPrefix = "Failed Parsing Item"} = options;
+        const items: TOutput[] = [];
+
+        await IH.GetCompendium(compendiumKey);
+
+        for (const data of inputs) {
+            try {
+                if (!filter(data)) continue;
+
+                const item = await parser.Parse(data);
+                injectActionTests?.(item);
+                items.push(item);
+            } catch (error) {
+                ui.notifications?.error(`${errorPrefix}: ${data?.name?._TEXT ?? "Unknown"}`);
+            }
+        };
+
+        return items;
     }
 }

@@ -1,11 +1,10 @@
 import { Parser } from '../Parser';
 import { Mod } from '../../schema/VehiclesSchema';
 import { ImportHelper as IH } from '../../helper/ImportHelper';
-import { TranslationHelper as TH } from '../../helper/TranslationHelper';
 import ModificationItemData = Shadowrun.ModificationItemData;
 import ModificationCategoryType = Shadowrun.ModificationCategoryType;
 
-export class VehicleModParserBase extends Parser<ModificationItemData> {
+export class VehicleModParser extends Parser<ModificationItemData> {
     protected override parseType: string = 'modification';
 
     protected override getSystem(jsonData: Mod): ModificationItemData['system'] {
@@ -28,14 +27,10 @@ export class VehicleModParserBase extends Parser<ModificationItemData> {
 
     protected override async getFolder(jsonData: Mod): Promise<Folder> {
         const validCategory = ['Body', 'Cosmetic', 'Electromagnetic', 'Powertrain', 'Protection', 'Weapons'];
-
         const category = jsonData.category._TEXT;
+        const rootFolder = "Vehicle-Mods";
         const folderName = validCategory.includes(category) ? category : "Other";
-        const vehicle = TH.getTranslation('Vehicle', {type: 'category'}); 
-        const mods = TH.getTranslation('Mods', {type: 'category'}); 
 
-        const path = `${vehicle}-${mods}/${folderName}`;
-
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', rootFolder, folderName);
     }
 }

@@ -113,7 +113,7 @@ export class Import extends Application {
         new QualityImporter(),
         new WareImporter(),
         new CritterPowerImporter(),
-        new VehicleModImporter()
+        new VehicleModImporter(),
     ];
 
     //Order is important, ex. some weapons need mods to fully import

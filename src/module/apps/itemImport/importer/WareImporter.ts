@@ -6,6 +6,7 @@ import { Bioware, BiowareSchema } from '../schema/BiowareSchema';
 import { Cyberware, CyberwareSchema } from '../schema/CyberwareSchema';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
 import WareItemData = Shadowrun.WareItemData;
+type WareTypes = Bioware | Cyberware;
 
 export class WareImporter extends DataImporter {
     public files = ['cyberware.xml', 'bioware.xml'];
@@ -15,39 +16,38 @@ export class WareImporter extends DataImporter {
                jsonObject.hasOwnProperty('cyberwares') && jsonObject['cyberwares'].hasOwnProperty('cyberware');
     }
 
-    async Parse(jsonObject: BiowareSchema | CyberwareSchema): Promise<Item> {
-        const items: WareItemData[] = [];
+    static parserWrap = class {
+        constructor(private wareType: 'bioware' | 'cyberware') {}
 
+        public async Parse(jsonData: WareTypes): Promise<WareItemData> {
+            const biowareParser = new BiowareParser();
+            const cyberwareParser = new CyberwareParser();
+
+            const selectedParser = this.wareType === 'bioware' ? biowareParser : cyberwareParser;
+
+            return await selectedParser.Parse(jsonData);
+        }
+    };
+
+    async Parse(jsonObject: BiowareSchema | CyberwareSchema): Promise<void> {
         const key = 'biowares' in jsonObject ? 'bioware' : 'cyberware';
-        const bioParser = new BiowareParser();
-        const cyberParser = new CyberwareParser();
         const jsonDatas = 'biowares' in jsonObject ? jsonObject.biowares.bioware
                                                    : jsonObject.cyberwares.cyberware;
 
-        for (const jsonData of jsonDatas) {
-            // Check to ensure the data entry is supported
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
+        const items = await WareImporter.ParseItemsParallel(
+            jsonDatas,
+            {
+                compendiumKey: "Item",
+                parser: new WareImporter.parserWrap(key),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                injectActionTests: item => {
+                    UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
+                },
+                errorPrefix: `Failed Parsing ${key.capitalize()}`
             }
-
-            try {
-                const item = key === 'bioware' ? await bioParser.Parse(jsonData as Bioware)
-                                               : await cyberParser.Parse(jsonData as Cyberware);
-
-                // Bioware has no wireless feature, so disable it by default
-                if (key === 'bioware')
-                    item.system.technology.wireless = false;
-
-                // Add relevant action tests
-                UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
-
-                items.push(item);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Ware:" + (jsonData.name._TEXT ?? "Unknown"));
-            }
-        }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Item'].pack });
+        await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Item'].pack });
     }
 }

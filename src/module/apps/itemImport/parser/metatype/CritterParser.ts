@@ -176,8 +176,7 @@ export class CritterParser extends MetatypeParserBase<CharacterActorData> {
         const category = jsonData.category ? jsonData.category._TEXT : "Other";
         const rootFolder = TH.getTranslation("Critter", {type: 'category'});
         const folderName = TH.getTranslation(category, {type: 'category'});
-        const path = `${rootFolder}/${folderName}`;
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Critter", path, true);
+        return IH.getFolder('Critter', rootFolder, folderName);
     }
 }

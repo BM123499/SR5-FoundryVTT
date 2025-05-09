@@ -1,13 +1,12 @@
+import { Constants } from "./Constants";
 import { DataImporter } from './DataImporter';
+import { SpellsSchema, Spell } from '../schema/SpellsSchema';
 import { SpellParserBase } from '../parser/spell/SpellParserBase';
 import { CombatSpellParser } from '../parser/spell/CombatSpellParser';
 import { ManipulationSpellParser } from '../parser/spell/ManipulationSpellParser';
 import { IllusionSpellParser } from '../parser/spell/IllusionSpellParser';
-import { DetectionSpellImporter } from '../parser/spell/DetectionSpellImporter';
-import { ParserMap } from '../parser/ParserMap';
+import { DetectionSpellParser } from '../parser/spell/DetectionSpellParser';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
-import { Constants } from "./Constants";
-import { SpellsSchema } from '../schema/SpellsSchema';
 
 export class SpellImporter extends DataImporter{
     public files = ['spells.xml'];
@@ -16,39 +15,40 @@ export class SpellImporter extends DataImporter{
         return jsonObject.hasOwnProperty('spells') && jsonObject['spells'].hasOwnProperty('spell');
     }
 
-    async Parse(jsonObject: SpellsSchema): Promise<Item> {
-        const parser = new ParserMap<Shadowrun.SpellItemData>('category', [
-            { key: 'Combat', value: new CombatSpellParser() },
-            { key: 'Manipulation', value: new ManipulationSpellParser() },
-            { key: 'Illusion', value: new IllusionSpellParser() },
-            { key: 'Detection', value: new DetectionSpellImporter() },
-            { key: 'Health', value: new SpellParserBase() },
-            { key: 'Enchantments', value: new SpellParserBase() },
-            { key: 'Rituals', value: new SpellParserBase() },
-        ]);
+    static parserWrap = class {
+        public async Parse(jsonData: Spell): Promise<Shadowrun.SpellItemData> {
+            const spellParserBase = new SpellParserBase();
+            const combatSpellParser = new CombatSpellParser();
+            const illusionSpellParser = new IllusionSpellParser();
+            const detectionSpellParser = new DetectionSpellParser();
+            const manipulationSpellParser = new ManipulationSpellParser();
 
-        const items: Shadowrun.SpellItemData[] = [];
+            const category = jsonData.category._TEXT;
+            const selectedParser = category === 'Combat'        ? combatSpellParser
+                                 : category === 'Detection'     ? detectionSpellParser
+                                 : category === 'Illusion'      ? illusionSpellParser
+                                 : category === 'Manipulation'  ? manipulationSpellParser
+                                                                : spellParserBase;
 
-        for (const jsonData of jsonObject.spells.spell) {
-
-            // Check to ensure the data entry is supported
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
-            }
-
-            try {
-                const item = await parser.Parse(jsonData);
-
-                // Add relevant action tests
-                UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
-
-                items.push(item);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Spell:" + (jsonData.name._TEXT ?? "Unknown"));
-            }
+            return await selectedParser.Parse(jsonData);
         }
+    };
+
+    async Parse(jsonObject: SpellsSchema): Promise<void> {
+        const items = await SpellImporter.ParseItemsParallel(
+            jsonObject.spells.spell,
+            {
+                compendiumKey: "Magic",
+                parser: new SpellImporter.parserWrap(),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                injectActionTests: item => {
+                    UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
+                },
+                errorPrefix: "Failed Parsing Spell"
+            }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Magic'].pack });
+        await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Magic'].pack });
     }
 }

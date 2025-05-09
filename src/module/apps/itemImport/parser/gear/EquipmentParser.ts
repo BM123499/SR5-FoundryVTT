@@ -14,8 +14,7 @@ export class EquipmentParser extends Parser<EquipmentItemData> {
     protected override async getFolder(jsonData: Gear): Promise<Folder> {
         const rootFolder = TH.getTranslation('Gear', {type: 'category'});
         const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
-        const path = `${rootFolder}/${folderName}`
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', rootFolder, folderName);
     }
 }

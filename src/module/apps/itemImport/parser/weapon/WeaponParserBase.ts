@@ -193,10 +193,9 @@ export class WeaponParserBase extends Parser<WeaponItemData> {
     }
 
     protected override async getFolder(jsonData: Weapon): Promise<Folder> {
-        const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
         const rootFolder = TH.getTranslation('Weapon', {type: 'category'});
-        const path = `${rootFolder}/${folderName}`;
+        const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', rootFolder, folderName);
     }
 }

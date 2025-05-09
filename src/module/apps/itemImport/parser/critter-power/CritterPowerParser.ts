@@ -17,10 +17,10 @@ export class CritterPowerParser extends Parser<CritterPowerItemData> {
         system.duration = jsonData.duration ? jsonData.duration._TEXT.toLowerCase() : "";
 
         const range = jsonData.range ? jsonData.range._TEXT : "";
-        system.range = Parser.rangeMap[range] ?? 'special';
+        system.range = CritterPowerParser.rangeMap[range] ?? 'special';
 
         const type = jsonData.type ? jsonData.type._TEXT : "";
-        system.powerType = Parser.typeMap[type] ?? "";
+        system.powerType = CritterPowerParser.typeMap[type] ?? "";
 
         system.rating = 1;
 
@@ -30,8 +30,19 @@ export class CritterPowerParser extends Parser<CritterPowerItemData> {
     protected override async getFolder(jsonData: Power): Promise<Folder> {
         const rootFolder = "Critter Powers";
         const category = TH.getTranslation(jsonData.category._TEXT, { type: 'category' });
-        const path = `${rootFolder}/${category}`;
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Trait", path, true);;
+        return IH.getFolder('Trait', rootFolder, category);
     }
+
+    protected static readonly rangeMap: Record<string, string> = {
+        'T': 'touch',
+        'LOS': 'los',
+        'LOS (A)': 'los_a',
+        'Self': 'self',
+    } as const;
+
+    protected static readonly typeMap: Record<string, string> = {
+        'P': 'physical',
+        'M': 'mana',
+    } as const;
 }

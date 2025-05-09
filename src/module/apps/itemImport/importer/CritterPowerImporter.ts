@@ -1,9 +1,12 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { CritterpowersSchema } from '../schema/CritterpowersSchema';
+import { ImportHelper as IH } from '../helper/ImportHelper';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
+import { CritterpowersSchema, Power } from '../schema/CritterpowersSchema';
 import { SpritePowerParser } from '../parser/critter-power/SpritePowerParser';
 import { CritterPowerParser } from '../parser/critter-power/CritterPowerParser';
+
+type CritterPowerType = Shadowrun.CritterPowerItemData | Shadowrun.SpritePowerItemData;
 
 export class CritterPowerImporter extends DataImporter {
     public files = ['critterpowers.xml'];
@@ -12,34 +15,33 @@ export class CritterPowerImporter extends DataImporter {
         return jsonObject.hasOwnProperty('powers') && jsonObject['powers'].hasOwnProperty('power');
     }
 
-    async Parse(chummerPowers: CritterpowersSchema): Promise<Item> {
-        const items: (Shadowrun.CritterPowerItemData | Shadowrun.SpritePowerItemData)[] = [];
-        const critterPowerParser = new CritterPowerParser();
-        const spritePowerParser = new SpritePowerParser();
+    static parserWrap = class {
+        public async Parse(jsonData: Power): Promise<CritterPowerType> {
+            const critterPowerParser = new CritterPowerParser();
+            const spritePowerParser = new SpritePowerParser();
 
-        for (const jsonData of chummerPowers.powers.power) {
-            // Check to ensure the data entry is supported
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
-            }
+            const isSpritePower = jsonData.category._TEXT !== "Emergent";
+            const selectedParser = isSpritePower ? critterPowerParser : spritePowerParser;
 
-            try {
-                const isSpiritPower = jsonData.category._TEXT !== "Emergent";
-
-                // Create the item
-                const item = isSpiritPower ? await critterPowerParser.Parse(jsonData)
-                                           : await spritePowerParser.Parse(jsonData);
-
-                // Add relevant action tests
-                UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
-
-                items.push(item);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Critter Power:" + (jsonData.name._TEXT ?? "Unknown"));
-            }
+            return await selectedParser.Parse(jsonData);
         }
+    };
+
+    async Parse(jsonObject: CritterpowersSchema): Promise<void> {
+        const items = await CritterPowerImporter.ParseItemsParallel<Power, CritterPowerType>(
+            jsonObject.powers.power,
+            {
+                compendiumKey: "Trait",
+                parser: new CritterPowerImporter.parserWrap(),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                injectActionTests: item => {
+                    UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
+                },
+                errorPrefix: "Failed Parsing Critter Power"
+            }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Trait'].pack });
-    }
+        await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Trait'].pack });
+    }    
 }

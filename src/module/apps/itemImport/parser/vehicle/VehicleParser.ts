@@ -106,8 +106,7 @@ export class VehicleParser extends Parser<VehicleActorData> {
         const isDrone = category.startsWith("Drones:");
         const rootFolder = TH.getTranslation(isDrone ? "Drones" : "Vehicles");
         const folderName = isDrone ? category.substring(8) : category;
-        const path = `${rootFolder}/${folderName}`;
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Drone", path, true);
+        return IH.getFolder('Drone', rootFolder, folderName);
     }
 }

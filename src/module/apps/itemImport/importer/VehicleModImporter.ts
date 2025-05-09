@@ -2,7 +2,7 @@ import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
 import { VehiclesSchema } from '../schema/VehiclesSchema';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
-import { VehicleModParserBase } from '../parser/mod/VehicleModParserBase';
+import { VehicleModParser } from '../parser/mod/VehicleModParser';
 
 export class VehicleModImporter extends DataImporter {
     public files = ['vehicles.xml'];
@@ -11,30 +11,21 @@ export class VehicleModImporter extends DataImporter {
         return jsonObject.hasOwnProperty('mods') && jsonObject['mods'].hasOwnProperty('mod');
     }
 
-    async Parse(jsonObject: VehiclesSchema): Promise<Item> {
-        const parser = new VehicleModParserBase();
-        const datas: Shadowrun.ModificationItemData[] = [];
-
-        for (const jsonData of jsonObject.mods.mod) {
-            // Check to ensure the data entry is supported
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
+    async Parse(jsonObject: VehiclesSchema): Promise<void> {
+        const items = await VehicleModImporter.ParseItemsParallel(
+            jsonObject.mods.mod,
+            {
+                compendiumKey: "Item",
+                parser: new VehicleModParser(),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                injectActionTests: item => {
+                    UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
+                },
+                errorPrefix: "Failed Parsing Vehicle Mod"
             }
-
-            try {
-                const item = await parser.Parse(jsonData);
-
-                // Add relevant action tests
-                UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
-
-                datas.push(item);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Vehicle Mod:" + (jsonData.name._TEXT ?? "Unknown"));
-                console.log(error);
-            }
-        }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Item.create(datas, { pack: Constants.MAP_COMPENDIUM_KEY['Item'].pack });
+        await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Item'].pack });
     }
 }

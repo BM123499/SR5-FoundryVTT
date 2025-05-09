@@ -3,7 +3,7 @@ import { ImportHelper } from '../../helper/ImportHelper';
 import SpellItemData = Shadowrun.SpellItemData;
 import { Spell } from '../../schema/SpellsSchema';
 
-export class DetectionSpellImporter extends SpellParserBase {
+export class DetectionSpellParser extends SpellParserBase {
     protected override getSystem(jsonData: Spell): SpellItemData['system'] {
         const system = super.getSystem(jsonData);
 

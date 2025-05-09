@@ -46,6 +46,6 @@ export class ComplexFormParser extends Parser<ComplexFormItemData> {
     }
 
     protected override async getFolder(jsonData: Complexform): Promise<Folder> {
-        return this.folders[''] ??= IH.GetFolderAtPath("Magic", "Complex Forms", true);
+        return IH.getFolder('Magic', "Complex Forms");
     }
 }

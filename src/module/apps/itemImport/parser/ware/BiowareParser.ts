@@ -24,8 +24,7 @@ export class BiowareParser extends Parser<Ware> {
     protected override async getFolder(jsonData: Bioware): Promise<Folder> {
         const rootFolder = TH.getTranslation('Bioware', {type: 'category'});
         const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
-        const path = `${rootFolder}/${folderName}`;
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', rootFolder, folderName);
     }
 }

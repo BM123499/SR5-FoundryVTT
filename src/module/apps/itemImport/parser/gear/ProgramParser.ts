@@ -17,9 +17,9 @@ export class ProgramParser extends Parser<ProgramItemData> {
     }
 
     protected override async getFolder(jsonData: Gear): Promise<Folder> {
+        const rootFolder = game.i18n.localize('SR5.Programs');
         const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
-        const path = `${game.i18n.localize('SR5.Programs')}/${folderName}`;
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', rootFolder, folderName);
     }
 }

@@ -19,8 +19,7 @@ export class QualityParser extends Parser<QualityItemData> {
     protected override async getFolder(jsonData: Quality): Promise<Folder> {
         const rootFolder = TH.getTranslation('Quality', {type: 'category'});
         const folderName = TH.getTranslation(jsonData.category._TEXT, {type: 'category'});
-        const path = `${rootFolder}/${folderName}`;
 
-        return this.folders[path] ??= IH.GetFolderAtPath("Trait", path, true);
+        return IH.getFolder('Trait', rootFolder, folderName);
     }
 }

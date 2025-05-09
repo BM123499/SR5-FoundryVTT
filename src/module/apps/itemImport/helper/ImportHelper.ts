@@ -1,9 +1,9 @@
-import { Constants } from '../importer/Constants';
+import { BaseItem } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs';
 import { XMLStrategy } from './XMLStrategy';
 import { JSONStrategy } from './JSONStrategy';
-import { ImportStrategy } from './ImportStrategy';
 import { SR5Item } from "../../../item/SR5Item";
-import { BaseItem } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs';
+import { ImportStrategy } from './ImportStrategy';
+import { Constants } from '../importer/Constants';
 import { TranslationHelper as TH } from './TranslationHelper';
 type CompendiumKey = keyof typeof Constants.MAP_COMPENDIUM_KEY;
 
@@ -25,7 +25,7 @@ export class ImportHelper {
     public static readonly CHAR_KEY = '_TEXT';
 
     private static s_Strategy: ImportStrategy = new XMLStrategy();
-    public static folders: Record<string, Promise<Folder>> = {};
+    private static folders: Record<string, Promise<Folder>> = {};
 
     public static SetMode(mode: ImportMode) {
         switch (mode) {
@@ -236,4 +236,3 @@ export class ImportHelper {
         return folder;
     }
 }
-export type ItemComparer = (item: Item) => boolean;

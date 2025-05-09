@@ -1,8 +1,9 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { GearSchema } from '../schema/GearSchema';
 import { AmmoParser } from '../parser/gear/AmmoParser';
+import { GearSchema, Gear } from '../schema/GearSchema';
 import { DeviceParser } from '../parser/gear/DeviceParser';
+import { ImportHelper as IH } from '../helper/ImportHelper';
 import { ProgramParser } from '../parser/gear/ProgramParser';
 import { EquipmentParser } from '../parser/gear/EquipmentParser';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
@@ -17,44 +18,43 @@ export class GearImporter extends DataImporter {
         return jsonObject.hasOwnProperty('gears') && jsonObject['gears'].hasOwnProperty('gear');
     }
 
-    async Parse(jsonObject: GearSchema): Promise<Item> {
-        const items: gearTypes[] = [];
-        const ammoParser = new AmmoParser();
-        const deviceParser = new DeviceParser();
-        const programParser = new ProgramParser();
-        const equipmentParser = new EquipmentParser();
+    static parserWrap = class {
+        public async Parse(jsonData: Gear): Promise<gearTypes> {
+            const ammoParser = new AmmoParser();
+            const deviceParser = new DeviceParser();
+            const programParser = new ProgramParser();
+            const equipmentParser = new EquipmentParser();
 
-        const programTypes = ['Hacking Programs', 'Common Programs'];
-        const deviceTypes = ['Commlinks', 'Cyberdecks', 'Rigger Command Consoles'];
+            const category = jsonData.category._TEXT;
+            const programTypes = ['Hacking Programs', 'Common Programs'];
+            const deviceTypes = ['Commlinks', 'Cyberdecks', 'Rigger Command Consoles'];
 
-        for (const jsonData of jsonObject.gears.gear) {
-            // Check to ensure the data entry is supported
-            if (
-                DataImporter.unsupportedEntry(jsonData) ||
-                jsonData.id._TEXT === 'd63eb841-7b15-4539-9026-b90a4924aeeb'
-            ) {
-                continue;
-            }
+            const selectedParser = category === "Ammunition"       ? ammoParser
+                                 : deviceTypes.includes(category)  ? deviceParser
+                                 : programTypes.includes(category) ? programParser
+                                                                   : equipmentParser;
 
-            try {
-                const category = jsonData.category._TEXT;
-
-                const selectedParser = category === "Ammunition"        ? ammoParser
-                                     : deviceTypes.includes(category)   ? deviceParser
-                                     : programTypes.includes(category)  ? programParser
-                                                                        : equipmentParser; 
-
-                const item = await selectedParser.Parse(jsonData);
-
-                UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
-
-                items.push(item);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Complex Form:" + (jsonData.name._TEXT ?? "Unknown"));
-            }
+            return await selectedParser.Parse(jsonData);
         }
+    };
+
+    async Parse(jsonObject: GearSchema): Promise<void> {
+        const items = await GearImporter.ParseItemsParallel(
+            jsonObject.gears.gear,
+            {
+                compendiumKey: "Item",
+                parser: new GearImporter.parserWrap(),
+                filter: jsonData => {
+                    return !DataImporter.unsupportedEntry(jsonData) && jsonData.id._TEXT !== 'd63eb841-7b15-4539-9026-b90a4924aeeb';
+                },
+                injectActionTests: item => {
+                    UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
+                },
+                errorPrefix: "Failed Parsing Gear"
+            }
+        );
 
         // @ts-expect-error
-        return await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Item'].pack }) as Item;
-    }
+        await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Item'].pack }) as Item;
+    }    
 }

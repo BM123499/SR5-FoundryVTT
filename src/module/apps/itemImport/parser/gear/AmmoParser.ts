@@ -1,4 +1,4 @@
-import { Parser } from "../Parser";
+import { ParseData, Parser } from "../Parser";
 import AmmoItemData = Shadowrun.AmmoItemData;
 import { Gear } from "../../schema/GearSchema";
 import { ImportHelper as IH } from "../../helper/ImportHelper";
@@ -27,21 +27,27 @@ export class AmmoParser extends Parser<AmmoItemData> {
             }
         }
 
-        // // TODO: This can be improved by using the stored english name in item.system.importFlags.name
-        // const nameLower = jsonData.name._TEXT.toLowerCase();
-        // const shouldLookForWeapons = ['grenade', 'rocket', 'missile'].some(word => nameLower.includes(word));
-        // // NOTE: Should either weapons or gear not have been imported with translation, this will fail.
-        // if (shouldLookForWeapons) {
-        //     const [foundWeapon] = await IH.findItem('Item', item.name, 'weapon') ?? [];
-
-        //     if (foundWeapon && "action" in foundWeapon.system) {
-        //         const weaponData = foundWeapon.system as Shadowrun.WeaponData;
-        //         system.damage = weaponData.action.damage.value;
-        //         system.ap =weaponData.action.damage.ap.value;
-        //     }
-        // }
-
         return system;
+    }
+
+    public override async Parse(jsonData: ParseData): Promise<AmmoItemData> {
+        const item = await super.Parse(jsonData);
+
+        // TODO: This can be improved by using the stored english name in item.system.importFlags.name
+        const nameLower = jsonData.name._TEXT.toLowerCase();
+        const shouldLookForWeapons = ['grenade', 'rocket', 'missile'].some(word => nameLower.includes(word));
+        // NOTE: Should either weapons or gear not have been imported with translation, this will fail.
+        if (shouldLookForWeapons) {
+            const [foundWeapon] = await IH.findItem('Item', item.name, 'weapon') ?? [];
+
+            if (foundWeapon && "action" in foundWeapon.system) {
+                const weaponData = foundWeapon.system as Shadowrun.WeaponData;
+                item.system.damage = weaponData.action.damage.value;
+                item.system.ap =weaponData.action.damage.ap.value;
+            }
+        }
+
+        return item;
     }
 
     protected override async getFolder(jsonData: Gear): Promise<Folder> {
@@ -52,8 +58,6 @@ export class AmmoParser extends Parser<AmmoItemData> {
             folderName = splitName[0].trim();
 
         const rootFolder = TH.getTranslation('Ammunition', {type: 'category'});
-        const path = `${rootFolder}/${folderName}`;
-
-        return this.folders[path] ??= IH.GetFolderAtPath("Item", path, true);
+        return IH.getFolder('Item', rootFolder, folderName);
     }
 }

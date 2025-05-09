@@ -11,30 +11,21 @@ export class QualityImporter extends DataImporter {
         return jsonObject.hasOwnProperty('qualities') && jsonObject['qualities'].hasOwnProperty('quality');
     }
 
-    async Parse(jsonObject: QualitiesSchema): Promise<Item> {
-        const parser = new QualityParser();
-        const items: Shadowrun.QualityItemData[] = [];
-
-        for (const jsonData of jsonObject.qualities.quality) {
-            // Check to ensure the data entry is supported and the correct category
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
+    async Parse(jsonObject: QualitiesSchema): Promise<void> {
+        const items = await QualityImporter.ParseItemsParallel(
+            jsonObject.qualities.quality,
+            {
+                compendiumKey: "Trait",
+                parser: new QualityParser(),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                injectActionTests: item => {
+                    UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
+                },
+                errorPrefix: "Failed Parsing Quality"
             }
-
-            try {
-                // Create the item
-                const item = await parser.Parse(jsonData);
-
-                // Add relevant action tests
-                UpdateActionFlow.injectActionTestsIntoChangeData(item.type, item, item);
-
-                items.push(item);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Quality:" + (jsonData.name._TEXT ?? "Unknown"));
-            }
-        }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Trait'].pack });
+        await Item.create(items, { pack: Constants.MAP_COMPENDIUM_KEY['Trait'].pack });
     }
 }

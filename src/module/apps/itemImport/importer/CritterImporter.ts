@@ -1,13 +1,12 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
 import { SR5Actor } from '../../../actor/SR5Actor';
-import { MetatypeSchema } from "../schema/MetatypeSchema";
+import { MetatypeSchema, Metatype } from "../schema/MetatypeSchema";
 import { ImportHelper as IH } from '../helper/ImportHelper';
 import { SpiritParser } from '../parser/metatype/SpiritParser';
 import { SpriteParser } from '../parser/metatype/SpriteParser';
 import { CritterParser } from '../parser/metatype/CritterParser';
 
-type CrittersTypes = Shadowrun.CharacterData | Shadowrun.SpiritData | Shadowrun.SpriteData;
 type CrittersDataTypes = Shadowrun.CharacterActorData | Shadowrun.SpiritActorData | Shadowrun.SpriteActorData;
 
 export class CritterImporter extends DataImporter {
@@ -17,26 +16,35 @@ export class CritterImporter extends DataImporter {
         return jsonObject.hasOwnProperty('metatypes') && jsonObject['metatypes'].hasOwnProperty('metatype');
     }
 
-    private isSpirit(jsonData: object): Boolean {
-        const attributeKeys = [
-            "bodmin", "agimin", "reamin",
-            "strmin", "chamin", "intmin",
-            "logmin", "wilmin", "edgmin",
-        ];
+    static parserWrap = class {
+        private isSpirit(jsonData: Metatype): Boolean {
+            const attributeKeys = [
+                "bodmin", "agimin", "reamin",
+                "strmin", "chamin", "intmin",
+                "logmin", "wilmin", "edgmin",
+            ] as const;
+
+            for (const key of attributeKeys)
+                if (IH.StringValue(jsonData, key, "F").includes("F"))
+                    return true;
     
-        for (const key of attributeKeys)
-            if (IH.StringValue(jsonData, key, "F").includes("F"))
-                return true;
+            return false;
+        }
 
-        return false;
-    }
+        public async Parse(jsonData: Metatype): Promise<CrittersDataTypes> {
+            const critterParser = new CritterParser();
+            const spiritParser = new SpiritParser();
+            const spriteParser = new SpriteParser();
 
-    async Parse(chummerData: MetatypeSchema): Promise<StoredDocument<SR5Actor>[]> {
-        const actors: CrittersDataTypes[] = [];
-        const critterParser = new CritterParser();
-        const spiritParser = new SpiritParser();
-        const spriteParser = new SpriteParser();
+            const selectedParser = jsonData.category?._TEXT === 'Sprites' ? spriteParser
+                                 : this.isSpirit(jsonData) ? spiritParser : critterParser;
 
+            return await selectedParser.Parse(jsonData);
+        }
+    };
+
+    async Parse(chummerData: MetatypeSchema): Promise<void> {
+        // get metavariants as well
         const baseMetatypes = chummerData.metatypes.metatype;
         const metavariants = baseMetatypes.flatMap(metatype => {
             const parentName = metatype.name._TEXT;
@@ -48,31 +56,21 @@ export class CritterImporter extends DataImporter {
             }));
         });
 
-        const jsonDatas = [...baseMetatypes, ...metavariants];
+        const jsonDatas = [...baseMetatypes, ...metavariants].filter(
+            jsonData => !DataImporter.unsupportedEntry(jsonData)
+        );
 
-        for (const jsonData of jsonDatas) {
-            // Check to ensure the data entry is supported and the correct category
-            if (DataImporter.unsupportedEntry(jsonData)) {
-                continue;
+        const critters = await CritterImporter.ParseItemsParallel(
+            jsonDatas,
+            {
+                compendiumKey: 'Critter',
+                parser: new CritterImporter.parserWrap(),
+                filter: jsonData => !DataImporter.unsupportedEntry(jsonData),
+                errorPrefix: "Failed Parsing Critter"
             }
-
-            try {
-                const parseType = jsonData.category?._TEXT === 'Sprites' ? 'Sprite'
-                    : this.isSpirit(jsonData) ? 'Spirit' : 'Critter';
-
-                const selectedParser = parseType === 'Sprite' ? spriteParser
-                    : parseType === 'Spirit' ? spiritParser : critterParser;
-
-                const actor = await selectedParser.Parse(jsonData);
-
-                actors.push(actor);
-            } catch (error) {
-                ui.notifications?.error("Failed Parsing Critter:" + (jsonData.name._TEXT ?? "Unknown"));
-                console.log(error);
-            }
-        }
+        );
 
         // @ts-expect-error // TODO: TYPE: Remove this.
-        return await Actor.create(actors, { pack: Constants.MAP_COMPENDIUM_KEY['Critter'].pack });
-    }
+        await Actor.create(critters, { pack: Constants.MAP_COMPENDIUM_KEY['Critter'].pack });
+    }    
 }

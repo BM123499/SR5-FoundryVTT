@@ -38,51 +38,50 @@ export abstract class Parser<TResult extends (ShadowrunActorData | ShadowrunItem
     protected async getItems(jsonData: ParseData): Promise<ShadowrunItemData[]> { return []; }
 
     public async Parse(jsonData: ParseData): Promise<TResult> {
-        const itemsPromise = this.getItems(jsonData);
-        const system = this.getSystem(jsonData);
+        const itemPromise = this.getItems(jsonData);
+        let bonusPromise: Promise<void> | undefined = undefined;
 
         const name = jsonData.name._TEXT;
-        const page = jsonData.page._TEXT;
-        const source = jsonData.source._TEXT;
         const options = {id: jsonData.id._TEXT, type: this.parseType as TranslationType };
-
+        
         const entity = {
             name: TH.getTranslation(name, options),
             type: this.parseType,
-            system: system,
+            system: this.getSystem(jsonData),
         } as TResult;
-
+        
         //@ts-expect-error
         entity.folder = await this.getFolder(jsonData);
-
+        
         // Add technology
         if ('technology' in entity.system)
             this.setTechnology(entity.system, jsonData);
-
+        
         // Add Icon
-        if ('importFlags' in entity.system) {
-            const category = 'category' in jsonData ? jsonData.category?._TEXT : '';
-            entity.system.importFlags = this.genImportFlags(name, this.parseType, IH.formatAsSlug(category || ''));
-            if (true) { entity.img = IconAssign.iconAssign(entity.system.importFlags, DataImporter.iconList) };
-        }
-
+        if (DataImporter.setIcons)
+            this.setIcons(entity, jsonData);
+        
+        if ('bonus' in jsonData && jsonData.bonus)
+            bonusPromise = BH.addBonus(entity, jsonData.bonus);
+        
+        const page = jsonData.page._TEXT;
+        const source = jsonData.source._TEXT;
         entity.system.description.source = `${source} ${TH.getAltPage(name, page, options)}`;
 
         // Runtime branching
         if (this.isActor()) {
             //@ts-expect-error
-            (entity as Shadowrun.ShadowrunActorData).items = await itemsPromise;
+            entity.items = await itemPromise;
         } else {
             //@ts-expect-error
             entity.flags ??= {};
             //@ts-expect-error
             entity.flags.shadowrun5e ??= {};
             //@ts-expect-error
-            entity.flags.shadowrun5e.embeddedItems = await itemsPromise;
+            entity.flags.shadowrun5e.embeddedItems = await itemPromise;
         }
 
-        if ('bonus' in jsonData && jsonData.bonus)
-            await BH.addBonus(entity, jsonData.bonus);
+        await bonusPromise;
 
         return entity;
     }
@@ -94,6 +93,23 @@ export abstract class Parser<TResult extends (ShadowrunActorData | ShadowrunItem
         system.technology.conceal.base = 'conceal' in jsonData && jsonData.conceal ? Number(jsonData.conceal._TEXT) || 0 : 0;
     }
 
+    protected setIcons(entity: TResult, jsonData: ParseData) {
+        if ('importFlags' in entity.system) {
+            entity.system.importFlags = {
+                name: IH.formatAsSlug(jsonData.name._TEXT),
+                type: this.parseType,
+                subType: '',
+                isFreshImport: true
+            };
+            
+            const subType = 'category' in jsonData ? IH.formatAsSlug(jsonData.category?._TEXT || '') : '';
+            if (subType && Object.keys(DataImporter.SR5.itemSubTypeIconOverrides[this.parseType]).includes(subType))
+                entity.system.importFlags.subType = subType;
+
+            entity.img = IconAssign.iconAssign(entity.system.importFlags, DataImporter.iconList);
+        }
+    }
+
     protected getBaseSystem(entityType: keyof Game["model"], systemData: Partial<TResult['system']> = {}): TResult['system'] {
         try {
             // foundry.utils.duplicate source to avoid keeping reference to model data.
@@ -103,30 +119,4 @@ export abstract class Parser<TResult extends (ShadowrunActorData | ShadowrunItem
             throw new Error(`FoundryVTT doesn't have item type: ${this.parseType} registered in ${entityType}`);
         }
     };
-
-    public genImportFlags(name: string, type: string, subType?: string): Shadowrun.ImportFlagData {
-        const flags = {
-            name: IH.formatAsSlug(name), // original english name
-            type: type,
-            subType: '',
-            isFreshImport: true
-        };
-
-        if (subType && Object.keys(DataImporter.SR5.itemSubTypeIconOverrides[type]).includes(subType))
-            flags.subType = subType;
-
-        return flags;
-    }
-
-    protected static readonly rangeMap: Record<string, string> = {
-        'T': 'touch',
-        'LOS': 'los',
-        'LOS (A)': 'los_a',
-        'Self': 'self',
-    } as const;
-
-    protected static readonly typeMap: Record<string, string> = {
-        'P': 'physical',
-        'M': 'mana',
-    } as const;
 }
