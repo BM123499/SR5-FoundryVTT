@@ -15,7 +15,6 @@
         "verified": "13",
         "maximum": "13"
     },
-    "minimumCoreVersion": "12",
     "scripts": [],
     "esmodules": ["dist/bundle.js"],
     "styles": ["dist/bundle.css"],
