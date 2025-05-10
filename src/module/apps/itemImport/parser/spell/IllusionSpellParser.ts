@@ -7,15 +7,6 @@ export class IllusionSpellParser extends SpellParserBase {
     protected override getSystem(jsonData: Spell): SpellItemData['system'] {
         const system = super.getSystem(jsonData);
 
-        let descriptor = ImportHelper.StringValue(jsonData, 'descriptor');
-        // A few spells have a missing descriptor instead of an empty string.
-        // The field is <descriptor /> rather than <descriptor></descriptor>
-        // which gets imported as undefined rather than empty string (sigh)
-        // Rather than refactor our ImportHelper we'll handle it in here.
-        if (descriptor === undefined) {
-            descriptor = '';
-        }
-
         if (system.type === 'mana') {
             system.action.opposed.type = 'custom';
             system.action.opposed.attribute = 'logic';

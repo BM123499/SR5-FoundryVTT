@@ -39,7 +39,7 @@ export class GearImporter extends DataImporter {
     };
 
     async Parse(jsonObject: GearSchema): Promise<void> {
-        const items = await GearImporter.ParseItemsParallel(
+        const items = await GearImporter.ParseItems<Gear, gearTypes>(
             jsonObject.gears.gear,
             {
                 compendiumKey: "Item",

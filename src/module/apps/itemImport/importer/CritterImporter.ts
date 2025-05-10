@@ -1,11 +1,10 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { SR5Actor } from '../../../actor/SR5Actor';
-import { MetatypeSchema, Metatype } from "../schema/MetatypeSchema";
 import { ImportHelper as IH } from '../helper/ImportHelper';
 import { SpiritParser } from '../parser/metatype/SpiritParser';
 import { SpriteParser } from '../parser/metatype/SpriteParser';
 import { CritterParser } from '../parser/metatype/CritterParser';
+import { MetatypeSchema, Metatype } from "../schema/MetatypeSchema";
 
 type CrittersDataTypes = Shadowrun.CharacterActorData | Shadowrun.SpiritActorData | Shadowrun.SpriteActorData;
 
@@ -25,7 +24,7 @@ export class CritterImporter extends DataImporter {
             ] as const;
 
             for (const key of attributeKeys)
-                if (IH.StringValue(jsonData, key, "F").includes("F"))
+                if ((jsonData[key]?._TEXT || '').includes("F"))
                     return true;
     
             return false;
@@ -60,7 +59,7 @@ export class CritterImporter extends DataImporter {
             jsonData => !DataImporter.unsupportedEntry(jsonData)
         );
 
-        const critters = await CritterImporter.ParseItemsParallel(
+        const critters = await CritterImporter.ParseItems<Metatype, CrittersDataTypes>(
             jsonDatas,
             {
                 compendiumKey: 'Critter',

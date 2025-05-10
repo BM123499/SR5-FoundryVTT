@@ -12,27 +12,24 @@ export class ThrownParser extends WeaponParserBase {
             dropoff: 0,
         };
 
-        let blastCode = ImportHelper.StringValue(jsonData, 'damage');
+        let blastCode = jsonData.damage._TEXT;
 
         let radiusMatch = blastCode.match(/([0-9]+m)/)?.[0];
-        if (radiusMatch !== undefined) {
+        if (radiusMatch) {
             radiusMatch = radiusMatch.match(/[0-9]+/)?.[0];
-            if (radiusMatch !== undefined) {
+            if (radiusMatch)
                 blastData.radius = parseInt(radiusMatch);
-            }
         }
 
         let dropoffMatch = blastCode.match(/(-[0-9]+\/m)/)?.[0];
-        if (dropoffMatch !== undefined) {
+        if (dropoffMatch) {
             dropoffMatch = dropoffMatch.match(/-[0-9]+/)?.[0];
-            if (dropoffMatch !== undefined) {
+            if (dropoffMatch)
                 blastData.dropoff = parseInt(dropoffMatch);
-            }
         }
 
-        if (blastData.dropoff && !blastData.radius) {
+        if (blastData.dropoff && !blastData.radius)
             blastData.radius = -(system.action.damage.base / blastData.dropoff);
-        }
 
         return blastData;
     }
@@ -40,7 +37,7 @@ export class ThrownParser extends WeaponParserBase {
     protected override getSystem(jsonData: Weapon): WeaponItemData['system'] {
         const system = super.getSystem(jsonData);
 
-        const rangeCategory = ImportHelper.StringValue(jsonData, jsonData.hasOwnProperty('range') ? 'range' : 'category');
+        const rangeCategory = jsonData.range?._TEXT || jsonData.category._TEXT;
         system.thrown.ranges = DataDefaults.weaponRangeData(this.GetRangeDataFromImportedCategory(rangeCategory));
 
         system.thrown.blast = this.GetBlast(system, jsonData);

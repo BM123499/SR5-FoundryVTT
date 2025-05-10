@@ -46,38 +46,32 @@ export class WeaponParserBase extends Parser<WeaponItemData> {
     }
 
     private GetSkill(weaponJson: Weapon): SkillName {
-        if (weaponJson.hasOwnProperty('useskill')) {
-            let jsonSkill = IH.StringValue(weaponJson, 'useskill');
-            if (Constants.MAP_CATEGORY_TO_SKILL.hasOwnProperty(jsonSkill)) {
+        if (weaponJson.useskill?._TEXT) {
+            const jsonSkill = weaponJson.useskill._TEXT;
+            if (Constants.MAP_CATEGORY_TO_SKILL[jsonSkill])
                 return Constants.MAP_CATEGORY_TO_SKILL[jsonSkill];
-            }
+
             return jsonSkill.replace(/[\s\-]/g, '_').toLowerCase();
         } else {
-            let category = IH.StringValue(weaponJson, 'category');
-            if (Constants.MAP_CATEGORY_TO_SKILL.hasOwnProperty(category)) {
+            const category = weaponJson.category._TEXT;
+            if (Constants.MAP_CATEGORY_TO_SKILL[category])
                 return Constants.MAP_CATEGORY_TO_SKILL[category];
-            }
 
-            let type = IH.StringValue(weaponJson, 'type').toLowerCase();
+            const type = weaponJson.type._TEXT.toLowerCase();
             return type === 'ranged' ? 'exotic_range' : 'exotic_melee';
         }
     }
 
-    public static GetWeaponType(weaponJson: object): WeaponCategory {
-        let type = IH.StringValue(weaponJson, 'type');
+    public static GetWeaponType(weaponJson: Weapon): WeaponCategory {
+        let type = weaponJson.type._TEXT;
         //melee is the least specific, all melee entries are accurate
         if (type === 'Melee') {
             return 'melee';
         } else {
-            // skill takes priorities over category
-            if (weaponJson.hasOwnProperty('useskill')) {
-                let skill = IH.StringValue(weaponJson, 'useskill');
-                if (skill === 'Throwing Weapons') return 'thrown';
-            }
+            // "Throwing Weapons" maps to "thrown", preferring useskill over category
+            const skillCategory = weaponJson.useskill?._TEXT ?? weaponJson.category?._TEXT;
+            if (skillCategory === 'Throwing Weapons') return 'thrown';
 
-            // category is the fallback
-            let category = IH.StringValue(weaponJson, 'category');
-            if (category === 'Throwing Weapons') return 'thrown';
             // ranged is everything else
             return 'range';
         }
@@ -89,7 +83,7 @@ export class WeaponParserBase extends Parser<WeaponItemData> {
             {action: {type: 'varies', attribute: 'agility'}} as Shadowrun.WeaponData
         );
 
-        let category = IH.StringValue(jsonData, 'category');
+        let category = jsonData.category._TEXT;
         // A single item does not meet normal rules, thanks Chummer!
         // TODO: Check these rules after localization using a generic, non-english approach.
         if (category === 'Hold-outs') {
@@ -102,16 +96,16 @@ export class WeaponParserBase extends Parser<WeaponItemData> {
         system.action.skill = this.GetSkill(jsonData);
         system.action.damage = this.GetDamage(jsonData as any);
         
-        system.action.limit.value = IH.IntValue(jsonData, 'accuracy');
-        system.action.limit.base = IH.IntValue(jsonData, 'accuracy');
+        system.action.limit.value = Number(jsonData.accuracy?._TEXT) || 0;
+        system.action.limit.base = Number(jsonData.accuracy?._TEXT) || 0;
         
-        system.technology.conceal.base = IH.IntValue(jsonData, 'conceal');
+        system.technology.conceal.base = Number(jsonData.conceal?._TEXT);
 
         return system;
     }
     
-    protected GetDamage(jsonData: Partial<Weapon>): DamageData {
-        const jsonDamage = IH.StringValue(jsonData, 'damage');
+    protected GetDamage(jsonData: Weapon): DamageData {
+        const jsonDamage = jsonData.damage._TEXT;
         // ex. 15S(e)
         const simpleDamage = /^([0-9]+)([PSM])? ?(\([a-zA-Z]+\))?/g.exec(jsonDamage);
         // ex. ({STR}+1)P(fire)
@@ -122,19 +116,19 @@ export class WeaponParserBase extends Parser<WeaponItemData> {
         let damageBase: number = 0;
         let damageElement: DamageElement = '';
 
-        if(simpleDamage !== null) {
+        if(simpleDamage) {
             damageAttribute = '';
             damageBase = parseInt(simpleDamage[1], 10);
             damageType = this.parseDamageType(simpleDamage[2]);
             damageElement = this.parseDamageElement(simpleDamage[3])
-        } else if (strengthDamage !== null) {
+        } else if (strengthDamage) {
             damageAttribute = 'strength';
             damageBase = parseInt(strengthDamage[1], 10) || 0;
             damageType = this.parseDamageType(strengthDamage[2]);
             damageElement = this.parseDamageElement(strengthDamage[3]);
         }
 
-        const damageAp = IH.IntValue(jsonData, 'ap', 0);
+        const damageAp = Number(jsonData.ap._TEXT) || 0;
 
         const partialDamageData: RecursivePartial<DamageData> = {
             type: {

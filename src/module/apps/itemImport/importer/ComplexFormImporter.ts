@@ -1,9 +1,8 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { ImportHelper as IH } from '../helper/ImportHelper';
-import { ComplexformsSchema } from '../schema/ComplexformsSchema';
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
 import { ComplexFormParser } from '../parser/complex-form/ComplexFormParser';
+import { ComplexformsSchema, Complexform } from '../schema/ComplexformsSchema';
 
 export class ComplexFormImporter extends DataImporter {
     public files = ['complexforms.xml'];
@@ -13,7 +12,7 @@ export class ComplexFormImporter extends DataImporter {
     }
 
     async Parse(jsonObject: ComplexformsSchema): Promise<void> {
-        const items = await ComplexFormImporter.ParseItemsParallel(
+        const items = await ComplexFormImporter.ParseItems<Complexform, Shadowrun.ComplexFormItemData>(
             jsonObject.complexforms.complexform,
             {
                 compendiumKey: "Magic",

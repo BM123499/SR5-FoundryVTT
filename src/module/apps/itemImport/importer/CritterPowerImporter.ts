@@ -28,7 +28,7 @@ export class CritterPowerImporter extends DataImporter {
     };
 
     async Parse(jsonObject: CritterpowersSchema): Promise<void> {
-        const items = await CritterPowerImporter.ParseItemsParallel<Power, CritterPowerType>(
+        const items = await CritterPowerImporter.ParseItems<Power, CritterPowerType>(
             jsonObject.powers.power,
             {
                 compendiumKey: "Trait",

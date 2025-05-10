@@ -1,8 +1,6 @@
 import { SR5 } from "../../../config";
 import { Constants } from './Constants';
-import { SR5Actor } from '../../../actor/SR5Actor';
 import { ImportHelper as IH } from '../helper/ImportHelper';
-type CompendiumKey = keyof typeof Constants.MAP_COMPENDIUM_KEY;
 import ShadowrunItemData = Shadowrun.ShadowrunItemData;
 import ShadowrunActorData = Shadowrun.ShadowrunActorData;
 import { ParseData } from "../parser/Parser";
@@ -57,44 +55,41 @@ export abstract class DataImporter {
         return (await parser.parseStringPromise(xmlString))['chummer'];
     }
 
-    public static unsupportedBookSource(jsonObject) {
-        if (!jsonObject.hasOwnProperty('source')) return false;
-        const source = IH.StringValue(jsonObject, 'source', '');
+    public static unsupportedBookSource(jsonObject: ParseData): boolean {
+        const source = jsonObject.source?._TEXT ?? '';
         return DataImporter.unsupportedBooks.includes(source);
     }
 
-    public static unsupportedEntry(jsonObject) {
-        if (DataImporter.unsupportedBookSource(jsonObject)) {
+    public static unsupportedEntry(jsonObject: ParseData): boolean {
+        if (DataImporter.unsupportedBookSource(jsonObject))
             return true;
-        }
 
         return false;
     }
 
     /**
-     * Filter down objects to those actaully imported.
-     *
-     * Sometimes a single Chummer xml file contains mulitple 'categories' that don't mix with system types
-     *
-     * @param objects
-     * @returns A subset of objects
+     * Parses an array of input data into an array of output items using a specified parser.
+     * 
+     * @template TInput - The type of the input data to be parsed.
+     * @template TOutput - The type of the parsed output items.
+     * 
+     * @param inputs - An array of input data to be parsed.
+     * @param options - Configuration options for parsing:
+     *   - `compendiumKey`: The key to identify the compendium to be used.
+     *   - `parser`: An object with a `Parse` method to transform input data into output items.
+     *   - `filter`: (Optional) A function to filter input data before parsing.
+     *   - `injectActionTests`: (Optional) A function to modify or enhance parsed items.
+     *   - `errorPrefix`: (Optional) A prefix for error messages when parsing fails.
+     * 
+     * @returns A promise that resolves to an array of parsed output items.
+     * 
+     * @remarks
+     * - The function first ensures the specified compendium is loaded.
+     * - Each input is filtered (if a filter is provided) and parsed using the provided parser.
+     * - If parsing fails, an error notification is displayed with the provided or default error prefix.
+     * - Optionally, additional actions can be injected into parsed items using `injectActionTests`.
      */
-    filterObjects<T>(objects: T) : T {
-        if (!this.unsupportedCategories) return objects;
-        //@ts-expect-error
-        return objects.filter(object => !this.unsupportedCategories.includes(IH.StringValue(object, 'category', '')));
-    }
-
-    public static async getFolder(compendium: CompendiumKey, ...folderPath: (string | undefined)[]) : Promise<Folder> {
-        const pathParts = folderPath.filter(Boolean);
-
-        if (pathParts.length > 3) throw new Error("Too long path: maximum folder depth is 3");
-
-        const path = pathParts.join("/");
-        return await IH.GetFolderAtPath(compendium, path, true);
-    }
-
-    protected static async ParseItemsParallel<TInput extends ParseData, TOutput extends (ShadowrunActorData | ShadowrunItemData)>(
+    protected static async ParseItems<TInput extends ParseData, TOutput extends (ShadowrunActorData | ShadowrunItemData)>(
         inputs: TInput[],
         options: {
             compendiumKey: keyof typeof Constants.MAP_COMPENDIUM_KEY;

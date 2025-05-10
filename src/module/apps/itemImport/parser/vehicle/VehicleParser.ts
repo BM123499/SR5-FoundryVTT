@@ -65,13 +65,13 @@ export class VehicleParser extends Parser<VehicleActorData> {
         system.vehicle_stats.off_road_handling.base = handlingValues.offRoad;
         system.vehicle_stats.speed.base = speedValues.base;
         system.vehicle_stats.off_road_speed.base = speedValues.offRoad;
-        system.vehicle_stats.acceleration.base = +jsonData.accel._TEXT;
-        system.vehicle_stats.sensor.base = +jsonData.sensor._TEXT;
-        system.vehicle_stats.seats.base = +(jsonData.seats?._TEXT ?? 0);
-        system.armor.base = +jsonData.armor._TEXT;
+        system.vehicle_stats.acceleration.base = Number(jsonData.accel._TEXT) || 0;
+        system.vehicle_stats.sensor.base = Number(jsonData.sensor._TEXT) || 0;
+        system.vehicle_stats.seats.base = Number(jsonData.seats?._TEXT) || 0;
+        system.armor.base = Number(jsonData.armor._TEXT) || 0;
         system.isDrone = jsonData.category._TEXT.includes("Drone") || false;
 
-        const category = IH.StringValue(jsonData, 'category').toLowerCase();
+        const category = jsonData.category._TEXT.toLowerCase();
         system.vehicleType = /drone|hovercraft/.test(category) ? "exotic"    :
                              /boats|submarines/.test(category) ? "water"     :
                              category.includes('craft')        ? "air"       :

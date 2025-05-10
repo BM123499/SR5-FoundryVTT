@@ -7,7 +7,7 @@ export class MeleeParser extends WeaponParserBase {
     protected override getSystem(jsonData: Weapon): WeaponItemData['system'] {
         const system = super.getSystem(jsonData);
 
-        system.melee.reach = ImportHelper.IntValue(jsonData, 'reach');
+        system.melee.reach = Number(jsonData.reach._TEXT);
 
         return system;
     }

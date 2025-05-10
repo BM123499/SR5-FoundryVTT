@@ -104,10 +104,10 @@ export class Import extends Application {
 
     //Order is important, ex. some weapons need mods to fully import
     static ItemImporters: DataImporter[] = [
-        new GearImporter(),
         new WeaponModImporter(),
         new WeaponImporter(),
         new ArmorImporter(),
+        new GearImporter(),
         new SpellImporter(),
         new ComplexFormImporter(),
         new QualityImporter(),
@@ -132,8 +132,8 @@ export class Import extends Application {
      * @param setIcons Wether or not to apply system icons to the imported documents.
      */
     async parseXML(xmlSource, fileName, setIcons) {
+        const start = performance.now();
         const jsonSource = await DataImporter.xml2json(xmlSource);
-        ImportHelper.SetMode(ImportMode.XML);
 
         // Apply Item Importers based on file and their ability to parse that file.
         for (const di of Import.ItemImporters.filter(importer => importer.files.includes(fileName)))
@@ -144,6 +144,9 @@ export class Import extends Application {
         for (const di of Import.ActorImporters.filter(importer => importer.files.includes(fileName)))
             if (di.CanParse(jsonSource))
                 await di.Parse(jsonSource);
+        
+        const end = performance.now();
+        console.log(fileName, end - start, "ms");
     }
 
     async parseXmli18n(xmlSource) {

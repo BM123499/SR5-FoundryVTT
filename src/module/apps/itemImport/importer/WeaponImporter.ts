@@ -31,7 +31,7 @@ export class WeaponImporter extends DataImporter {
     };
 
     async Parse(jsonObject: WeaponsSchema): Promise<void> {
-        const items = await WeaponImporter.ParseItemsParallel(
+        const items = await WeaponImporter.ParseItems<Weapon, WeaponItemData>(
             jsonObject.weapons.weapon,
             {
                 compendiumKey: "Trait",

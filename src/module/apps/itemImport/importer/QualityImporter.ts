@@ -1,8 +1,8 @@
 import { Constants } from "./Constants";
 import { DataImporter } from './DataImporter';
 import { QualityParser } from '../parser/quality/QualityParser';
+import { QualitiesSchema, Quality } from "../schema/QualitiesSchema";
 import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
-import { QualitiesSchema } from "../schema/QualitiesSchema";
 
 export class QualityImporter extends DataImporter {
     public files = ['qualities.xml'];
@@ -12,7 +12,7 @@ export class QualityImporter extends DataImporter {
     }
 
     async Parse(jsonObject: QualitiesSchema): Promise<void> {
-        const items = await QualityImporter.ParseItemsParallel(
+        const items = await QualityImporter.ParseItems<Quality, Shadowrun.QualityItemData>(
             jsonObject.qualities.quality,
             {
                 compendiumKey: "Trait",

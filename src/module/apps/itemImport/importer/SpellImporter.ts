@@ -35,7 +35,7 @@ export class SpellImporter extends DataImporter{
     };
 
     async Parse(jsonObject: SpellsSchema): Promise<void> {
-        const items = await SpellImporter.ParseItemsParallel(
+        const items = await SpellImporter.ParseItems<Spell, Shadowrun.SpellItemData>(
             jsonObject.spells.spell,
             {
                 compendiumKey: "Magic",

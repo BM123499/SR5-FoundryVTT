@@ -24,7 +24,10 @@ export class WeaponModParser extends Parser<ModificationItemData> {
     protected override async getFolder(jsonData: Accessory): Promise<Folder> {
         const category = jsonData.mount ? jsonData.mount._TEXT : "Other";
         const rootFolder = "Weapon-Mod";
-        const folderName = TH.getTranslation(category, {type: 'accessory'});
+        let folderName = TH.getTranslation(category, {type: 'accessory'});
+
+        if (folderName.includes("/")) 
+            folderName = "Multiple Points";
 
         return IH.getFolder('Item', rootFolder, folderName);
     }

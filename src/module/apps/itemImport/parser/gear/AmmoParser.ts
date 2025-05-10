@@ -10,40 +10,40 @@ export class AmmoParser extends Parser<AmmoItemData> {
     protected override getSystem(jsonData: Gear): AmmoItemData['system'] {
         const system =  this.getBaseSystem('Item');
 
-        const bonusData = jsonData.weaponbonus;;
+        const bonusData = jsonData.weaponbonus;
         if (bonusData) {
             system.ap = Number(bonusData.ap?._TEXT) || 0;
             system.damage = Number(bonusData.damage?._TEXT) || 0;
 
             const damageType = bonusData.damagetype?._TEXT ?? '';
-            if (damageType.length > 0) {
-                if (damageType.includes('P')) {
-                    system.damageType = 'physical';
-                } else if (damageType.includes('S')) {
-                    system.damageType = 'stun';
-                } else if (damageType.includes('M')) {
-                    system.damageType = 'matrix';
-                }
-            }
+            if (damageType.includes('P'))
+                system.damageType = 'physical';
+            else if (damageType.includes('S'))
+                system.damageType = 'stun';
+            else if (damageType.includes('M'))
+                system.damageType = 'matrix';
         }
 
         return system;
     }
 
-    public override async Parse(jsonData: ParseData): Promise<AmmoItemData> {
+    public override async Parse(jsonData: Gear): Promise<AmmoItemData> {
         const item = await super.Parse(jsonData);
 
         // TODO: This can be improved by using the stored english name in item.system.importFlags.name
-        const nameLower = jsonData.name._TEXT.toLowerCase();
-        const shouldLookForWeapons = ['grenade', 'rocket', 'missile'].some(word => nameLower.includes(word));
-        // NOTE: Should either weapons or gear not have been imported with translation, this will fail.
-        if (shouldLookForWeapons) {
-            const [foundWeapon] = await IH.findItem('Item', item.name, 'weapon') ?? [];
+        if (jsonData.addweapon?._TEXT) {
+            const weaponName = jsonData.addweapon._TEXT;
+            const [foundWeapon] = await IH.findItem('Item', weaponName, 'weapon') ?? [];
 
             if (foundWeapon && "action" in foundWeapon.system) {
                 const weaponData = foundWeapon.system as Shadowrun.WeaponData;
+                item.system.damageType = weaponData.action.damage.type.base;
+                item.system.element = weaponData.action.damage.element.base;
                 item.system.damage = weaponData.action.damage.value;
-                item.system.ap =weaponData.action.damage.ap.value;
+                item.system.ap = weaponData.action.damage.ap.value;
+                item.system.blast = weaponData.thrown.blast;
+            } else if (!foundWeapon) {
+                console.log(`[Weapon Missing (Ammo)]\nAmmo: ${item.name}\nWeapon: ${weaponName}`);
             }
         }
 

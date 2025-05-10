@@ -1,8 +1,5 @@
 import { BaseItem } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/documents.mjs';
-import { XMLStrategy } from './XMLStrategy';
-import { JSONStrategy } from './JSONStrategy';
 import { SR5Item } from "../../../item/SR5Item";
-import { ImportStrategy } from './ImportStrategy';
 import { Constants } from '../importer/Constants';
 import { TranslationHelper as TH } from './TranslationHelper';
 type CompendiumKey = keyof typeof Constants.MAP_COMPENDIUM_KEY;
@@ -17,28 +14,13 @@ export type ArrayItem<T> = T extends (infer U)[] ? U : never;
 export type NotEmpty<T> = T extends object ? NonNullable<T> : never;
 
 /**
- * An import helper to standardize data extraction.
- * Mostly conceived to reduced required refactoring if Chummer changes data file layout.
- * Also contains helper methods to safely parse values to appropriate types.
+ * A utility class providing helper methods for importing and managing data in Foundry VTT.
+ * Includes functionality for handling compendiums, folders, and data normalization.
+ * Designed to streamline data processing and reduce the impact of structural changes in external data sources.
  */
 export class ImportHelper {
     public static readonly CHAR_KEY = '_TEXT';
-
-    private static s_Strategy: ImportStrategy = new XMLStrategy();
     private static folders: Record<string, Promise<Folder>> = {};
-
-    public static SetMode(mode: ImportMode) {
-        switch (mode) {
-            case ImportMode.XML:
-                ImportHelper.s_Strategy = new XMLStrategy();
-                break;
-            case ImportMode.JSON:
-                ImportHelper.s_Strategy = new JSONStrategy();
-                break;
-        }
-    }
-
-    private constructor() {}
 
     /**
      * Ensures the provided value is returned as an array.
@@ -61,30 +43,34 @@ export class ImportHelper {
      * @param name The item's name or subtype name to reformat
      */
     public static formatAsSlug(name: string): string {
-        return name.trim().toLowerCase().replace((/'|,|\[|\]|\(|\)/g), '').split((/-|\s|\//g)).join('-');
+        return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     }
 
     /**
-     * Helper method to create a new folder.
-     * @param name The name of the folder.
-     * @param folder The parent folder.
-     * @returns {Promise<Folder>} A promise that resolves with the folder object when the folder is created.
+     * Finds items in a compendium by name and optional type.
+     * 
+     * @param compKey - Compendium key mapped in `Constants.MAP_COMPENDIUM_KEY`.
+     * @param name - Name(s) to search for, translated via `TH.getTranslation`.
+     * @param types - (Optional) Type(s) to filter results.
+     * @returns Promise resolving to matching `SR5Item` array or empty if none.
      */
-    public static async NewFolder(ctype: CompendiumKey, name: string, folder: Folder | null = null): Promise<Folder> {
-        const { pack, type } = Constants.MAP_COMPENDIUM_KEY[ctype];
+    public static async findItem(
+        compKey: CompendiumKey,
+        name: OneOrMany<string>,
+        types?: OneOrMany<BaseItem['data']['type']>
+    ): Promise<SR5Item[]> {
+        if (Array.isArray(name) ? name.length === 0 : !name) return [];
 
-        const folderCreated = await Folder.create(
-            { name: name, type: type, folder: folder?.id ?? null },
-            { pack: pack }
-        );
+        type ItemType = CompendiumCollection<CompendiumCollection.Metadata & {type: 'Item'}>;
+        const pack = game.packs?.get(Constants.MAP_COMPENDIUM_KEY[compKey].pack) as ItemType;
 
-        if (!folderCreated) throw new Error("Folder creation failed.");
-        return folderCreated;
+        return pack.getDocuments({
+            name__in: this.getArray(name).map(name => TH.getTranslation(name)),
+            ...(types ? { type__in: this.getArray(types) } : {})
+        });
     }
 
     /**
-     * Helper method to get or create a compendium collection.
-     *
      * Retrieves a compendium by its mapped key. If the compendium does not exist, it will be created with the corresponding metadata.
      *
      * @param ctype The compendium key (e.g., "Actor" or "Item") mapped in MAP_COMPENDIUM_KEY.
@@ -141,95 +127,69 @@ export class ImportHelper {
     }
 
     /**
-     * Get / create a folder at a path in the items directory.
-     *
-     * Traverse path and match folder structure to the last and current path segments.
-     *
-     * @param folder_type The root path of the folder.
-     * @param path The absolute path of the folder.
-     * @param mkdirs If true, will make all folders along the hierarchy if they do not exist.
-     * @returns A promise that will resolve with the found folder.
+     * Helper method to create a new folder.
+     * @param ctype The compendium key identifying the target compendium.
+     * @param name The name of the folder.
+     * @param folder The parent folder, or `null` if the folder is at the root level.
+     * @returns {Promise<Folder>} A promise that resolves with the folder object when the folder is created.
      */
-    public static async GetFolderAtPath(ctype: CompendiumKey, path: string, mkdirs: boolean = false): Promise<Folder> {
-        let currentFolder: Folder | undefined;
-        let lastFolder: Folder | null = null;
+    public static async NewFolder(ctype: CompendiumKey, name: string, folder: Folder | null = null): Promise<Folder> {
+        const { pack, type } = Constants.MAP_COMPENDIUM_KEY[ctype];
 
+        const folderCreated = await Folder.create(
+            { name: name, type: type, folder: folder?.id ?? null },
+            { pack: pack }
+        );
+
+        if (!folderCreated) throw new Error("Folder creation failed.");
+        return folderCreated;
+    }
+
+    /**
+     * Finds or creates a folder within a compendium in Foundry VTT.
+     * 
+     * @param ctype - The compendium key identifying the target compendium.
+     * @param name - The name of the folder to find or create.
+     * @param parent - The parent folder, or `null` if the folder is at the root level.
+     * @returns A promise that resolves to the found or newly created folder.
+     * 
+     * @remarks
+     * This function first attempts to locate an existing folder in the specified compendium
+     * that matches the given name and parent. If no such folder exists, it creates a new one.
+     * Note: The `folders` property is not officially typed but is available in Foundry VTT v12.
+     */
+    private static async FindOrCreateFolder(ctype: CompendiumKey, name: string, parent: Folder | null = null): Promise<Folder> {
         const compendium = await this.GetCompendium(ctype);
 
-        const pathSegments = path.split('/');
-        for (const pathSegment of pathSegments) {
-            //@ts-expect-error: folders is not typed but exists in Foundry VTT v12
-            currentFolder = compendium.folders?.find((folder: Folder) =>
-                folder.name === pathSegment && folder.folder === lastFolder
-            );
-    
-            if (!currentFolder && !mkdirs)
-                throw new Error(`Unable to find folder: ${path}`);
-            else if (!currentFolder)
-                currentFolder = await ImportHelper.NewFolder(ctype, pathSegment, lastFolder);
-    
-            lastFolder = currentFolder;
-        }
-    
-        if (!currentFolder) throw new Error(`Failed to resolve folder at path: ${path}`);
-        return currentFolder;
+        //@ts-expect-error
+        const folder = await compendium.folders?.find((folder: Folder) =>
+            folder.name === name && folder.folder === parent
+        );
+
+        return folder || this.NewFolder(ctype, name, parent);
     }
 
     /**
-     * Get a value from the the provided jsonData, optionally returning a default value if it is not found
-     * or is unable to be parsed to an integer.
-     * @param jsonData The data to get the keyed value in.
-     * @param key The key to check for the value under.
-     * @param fallback An optional default value to return if the key is not found.
+     * Ensures a folder hierarchy exists based on provided names.
+     * Uses caching to minimize redundant operations.
+     * 
+     * @param ctype - Compendium key for folder categorization.
+     * @param folder1 - First-level folder name.
+     * @param folder2 - (Optional) Second-level folder name.
+     * @param folder3 - (Optional) Third-level folder name.
+     * @returns Promise resolving to the deepest folder.
      */
-    public static IntValue(jsonData: object, key: string, fallback: number | undefined = undefined): number {
-        return ImportHelper.s_Strategy.intValue(jsonData, key, fallback);
-    }
-
-    /**
-     * Get a value from the the provided jsonData, optionally returning a default value if it is not found.
-     * @param jsonData The data to get the keyed value in.
-     * @param key The key to check for the value under.
-     * @param fallback An optional default value to return if the key is not found.
-     */
-    public static StringValue(jsonData: object, key: string | number, fallback: string | undefined = undefined): string {
-        return ImportHelper.s_Strategy.stringValue(jsonData, key, fallback);
-    }
-
-    /**
-     * Get an object from the the provided jsonData, optionally returning a default value if it is not found.
-     * @param jsonData The data to get the keyed value in.
-     * @param key The key to check for the value under.
-     * @param fallback An optional default value to return if the key is not found.
-     */
-    public static ObjectValue(jsonData: object, key: string | number, fallback: object | null | undefined = undefined): object | null {
-        return ImportHelper.s_Strategy.objectValue(jsonData, key, fallback);
-    }
-
-    public static async findItem(
-        compKey: CompendiumKey,
-        name: OneOrMany<string>,
-        types?: OneOrMany<BaseItem['data']['type']>
-    ): Promise<SR5Item[]> {
-        if (Array.isArray(name) ? name.length === 0 : !name) return [];
-
-        type ItemType = CompendiumCollection<CompendiumCollection.Metadata & {type: 'Item'}>;
-        const pack = game.packs?.get(Constants.MAP_COMPENDIUM_KEY[compKey].pack) as ItemType;
-
-        return pack.getDocuments({
-            name__in: this.getArray(name).map(name => TH.getTranslation(name)),
-            ...(types ? { type__in: this.getArray(types) } : {})
-        });
-    }
-
     public static async getFolder(ctype: CompendiumKey, folder1: string, folder2?: string, folder3?: string): Promise<Folder> {
-        let folder = this.folders[folder1] ??= this.NewFolder(ctype, folder1);
+        let path = folder1;
+        let folder = this.folders[folder1] ??= this.FindOrCreateFolder(ctype, folder1);
 
+        path += "/" + folder2;
         if (folder2)
-            folder = this.folders[`${folder1}/${folder2}`] ??= this.NewFolder(ctype, folder2, await folder);
+            folder = this.folders[path] ??= this.FindOrCreateFolder(ctype, folder2, await folder);
 
+        path += "/" + folder3;
         if (folder3)
-            folder = this.folders[`${folder1}/${folder2}/${folder3}`] ??= this.NewFolder(ctype, folder3, await folder);
+            folder = this.folders[path] ??= this.FindOrCreateFolder(ctype, folder3, await folder);
 
         return folder;
     }

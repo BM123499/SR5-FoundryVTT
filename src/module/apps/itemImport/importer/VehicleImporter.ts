@@ -1,8 +1,7 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { SR5Actor } from '../../../actor/SR5Actor';
-import { VehiclesSchema } from '../schema/VehiclesSchema';
 import { VehicleParser } from '../parser/vehicle/VehicleParser';
+import { VehiclesSchema, Vehicle } from '../schema/VehiclesSchema';
 
 export class VehicleImporter extends DataImporter {
     public files = ["vehicles.xml"];
@@ -12,7 +11,7 @@ export class VehicleImporter extends DataImporter {
     }
 
     async Parse(jsonObject: VehiclesSchema): Promise<void> {
-        const actors = await VehicleImporter.ParseItemsParallel(
+        const actors = await VehicleImporter.ParseItems<Vehicle, Shadowrun.VehicleActorData>(
             jsonObject.vehicles.vehicle,
             {
                 compendiumKey: "Drone",

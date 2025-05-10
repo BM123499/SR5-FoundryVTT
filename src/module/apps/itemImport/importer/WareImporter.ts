@@ -34,7 +34,7 @@ export class WareImporter extends DataImporter {
         const jsonDatas = 'biowares' in jsonObject ? jsonObject.biowares.bioware
                                                    : jsonObject.cyberwares.cyberware;
 
-        const items = await WareImporter.ParseItemsParallel(
+        const items = await WareImporter.ParseItems<WareTypes, WareItemData>(
             jsonDatas,
             {
                 compendiumKey: "Item",

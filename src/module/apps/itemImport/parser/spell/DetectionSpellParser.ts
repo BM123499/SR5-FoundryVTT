@@ -7,14 +7,7 @@ export class DetectionSpellParser extends SpellParserBase {
     protected override getSystem(jsonData: Spell): SpellItemData['system'] {
         const system = super.getSystem(jsonData);
 
-        let descriptor = ImportHelper.StringValue(jsonData, 'descriptor');
-        // A few spells have a missing descriptor instead of an empty string.
-        // The field is <descriptor /> rather than <descriptor></descriptor>
-        // which gets imported as undefined rather than empty string (sigh)
-        // Rather than refactor our ImportHelper we'll handle it in here.
-        if (descriptor === undefined) {
-            descriptor = '';
-        }
+        const descriptor = jsonData.descriptor ? jsonData.descriptor._TEXT : '';
 
         system.detection.passive = descriptor.includes('Passive');
         if (!system.detection.passive) {
@@ -25,13 +18,12 @@ export class DetectionSpellParser extends SpellParserBase {
 
         system.detection.extended = descriptor.includes('Extended');
 
-        if (descriptor.includes('Psychic')) {
+        if (descriptor.includes('Psychic'))
             system.detection.type = 'psychic';
-        } else if (descriptor.includes('Directional')) {
+        else if (descriptor.includes('Directional'))
             system.detection.type = 'directional';
-        } else if (descriptor.includes('Area')) {
+        else if (descriptor.includes('Area'))
             system.detection.type = 'area';
-        }
 
         return system;
     }

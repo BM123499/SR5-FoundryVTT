@@ -14,9 +14,9 @@ export class SpellParserBase extends Parser<SpellItemData> {
             {action: {type: 'varies', attribute: 'magic', skill: 'spellcasting'}} as Shadowrun.SpellData
         );
 
-        system.category = IH.StringValue(jsonData, 'category').toLowerCase() as SpellCateogry;
+        system.category = jsonData.category._TEXT.toLowerCase() as SpellCateogry;
 
-        let damage = IH.StringValue(jsonData, 'damage');
+        const damage = jsonData.damage._TEXT;
         if (damage === 'P') {
             system.action.damage.type.base = 'physical';
             system.action.damage.type.value = 'physical';
@@ -25,7 +25,7 @@ export class SpellParserBase extends Parser<SpellItemData> {
             system.action.damage.type.value = 'stun';
         }
 
-        let duration = IH.StringValue(jsonData, 'duration');
+        const duration = jsonData.duration._TEXT;
         if (duration === 'I') {
             system.duration = 'instant';
         } else if (duration === 'S') {
@@ -34,26 +34,23 @@ export class SpellParserBase extends Parser<SpellItemData> {
             system.duration = 'permanent';
         }
 
-        let drain = IH.StringValue(jsonData, 'dv');
-        if (drain.includes('+') || drain.includes('-')) {
+        const drain = jsonData.dv._TEXT;
+        if (drain.includes('+') || drain.includes('-'))
             system.drain = parseInt(drain.substring(1, drain.length));
-        }
 
-        let range = IH.StringValue(jsonData, 'range');
-        if (range === 'T') {
+        const range = jsonData.range._TEXT;
+        if (range === 'T')
             system.range = 'touch';
-        } else if (range === 'LOS') {
+        else if (range === 'LOS')
             system.range = 'los';
-        } else if (range === 'LOS (A)') {
+        else if (range === 'LOS (A)')
             system.range = 'los_a';
-        }
-
-        let type = IH.StringValue(jsonData, 'type');
-        if (type === 'P') {
+        
+        const type = jsonData.type._TEXT;
+        if (type === 'P')
             system.type = 'physical';
-        } else if (type === 'M') {
+        else if (type === 'M')
             system.type = 'mana';
-        }
 
         return system;
     }

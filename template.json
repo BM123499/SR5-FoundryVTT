@@ -1131,7 +1131,7 @@
             }
         },
         "ic": {
-            "templates": ["common",  "skills", "attributes", "limits", "matrix"],
+            "templates": ["common",  "skills", "attributes", "limits", "matrix", "importFlags"],
             "track": {},
             "icType": "",
             "host": {

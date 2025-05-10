@@ -1,8 +1,8 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { WeaponsSchema } from '../schema/WeaponsSchema';
-import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
 import { WeaponModParser } from '../parser/mod/WeaponModParser';
+import { Accessory, WeaponsSchema } from '../schema/WeaponsSchema';
+import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
 
 export class WeaponModImporter extends DataImporter {
     public files = ['weapons.xml'];
@@ -12,7 +12,7 @@ export class WeaponModImporter extends DataImporter {
     }
 
     async Parse(jsonObject: WeaponsSchema): Promise<void> {
-        const items = await WeaponModImporter.ParseItemsParallel(
+        const items = await WeaponModImporter.ParseItems<Accessory, Shadowrun.ModificationItemData>(
             jsonObject.accessories.accessory,
             {
                 compendiumKey: "Item",

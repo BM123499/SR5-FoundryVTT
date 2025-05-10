@@ -94,14 +94,15 @@ export abstract class Parser<TResult extends (ShadowrunActorData | ShadowrunItem
     }
 
     protected setIcons(entity: TResult, jsonData: ParseData) {
-        if ('importFlags' in entity.system) {
+        // Why don't we have importFlags as base in actors?
+        if ('importFlags' in entity.system || this.isActor()) {
             entity.system.importFlags = {
                 name: IH.formatAsSlug(jsonData.name._TEXT),
                 type: this.parseType,
                 subType: '',
-                isFreshImport: true
-            };
-            
+                isFreshImport: true,
+            } as Shadowrun.ImportFlagData;
+
             const subType = 'category' in jsonData ? IH.formatAsSlug(jsonData.category?._TEXT || '') : '';
             if (subType && Object.keys(DataImporter.SR5.itemSubTypeIconOverrides[this.parseType]).includes(subType))
                 entity.system.importFlags.subType = subType;

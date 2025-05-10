@@ -1,8 +1,8 @@
 import { Constants } from './Constants';
 import { DataImporter } from './DataImporter';
-import { VehiclesSchema } from '../schema/VehiclesSchema';
-import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
+import { VehiclesSchema, Mod } from '../schema/VehiclesSchema';
 import { VehicleModParser } from '../parser/mod/VehicleModParser';
+import { UpdateActionFlow } from '../../../item/flows/UpdateActionFlow';
 
 export class VehicleModImporter extends DataImporter {
     public files = ['vehicles.xml'];
@@ -12,7 +12,7 @@ export class VehicleModImporter extends DataImporter {
     }
 
     async Parse(jsonObject: VehiclesSchema): Promise<void> {
-        const items = await VehicleModImporter.ParseItemsParallel(
+        const items = await VehicleModImporter.ParseItems<Mod, Shadowrun.ModificationItemData>(
             jsonObject.mods.mod,
             {
                 compendiumKey: "Item",
