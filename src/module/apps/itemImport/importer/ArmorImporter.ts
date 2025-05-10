@@ -9,7 +9,6 @@ export class ArmorImporter extends DataImporter {
     public files = ['armor.xml'];
 
     CanParse(jsonObject: object): boolean {
-        console.log('Armor');
         return jsonObject.hasOwnProperty('armors') && jsonObject['armors'].hasOwnProperty('armor');
     }
 

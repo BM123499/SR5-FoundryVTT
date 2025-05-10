@@ -154,8 +154,6 @@ export class ImportHelper {
         let currentFolder: Folder | undefined;
         let lastFolder: Folder | null = null;
 
-        console.log(path);
-
         const compendium = await this.GetCompendium(ctype);
 
         const pathSegments = path.split('/');
