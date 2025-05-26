@@ -14,7 +14,7 @@ export class ConditionMonitorsPrep {
         track.stun.disabled = false;
     }
 
-    static preparePhysical(system: Actor.SystemOfType<'character' | 'critter' | 'spirit' | 'sprite'>) {
+    static preparePhysical(system: Actor.SystemOfType<'character' | 'critter' | 'spirit'>) {
         const { track, attributes, modifiers } = system;
 
         track.physical.base = 8 + Math.ceil(attributes.body.value / 2);
