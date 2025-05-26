@@ -438,7 +438,7 @@ ___________________
      * @param slot
      * @return false when callback has been handled, otherwise let Foundry default handling kick in
      */
-    static hotbarDrop(bar, dropData, slot) {
+    static hotbarDrop(bar, dropData, slot): boolean {
         switch (dropData.type) {
             case 'Item':
                 createItemMacro(dropData, slot);
@@ -447,6 +447,7 @@ ___________________
                 createSkillMacro(dropData.data, slot);
                 return false;
         }
+        return true;
     }
 
     static getSceneControlButtons(controls) {
