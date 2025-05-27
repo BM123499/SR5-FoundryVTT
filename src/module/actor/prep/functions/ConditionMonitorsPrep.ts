@@ -1,8 +1,4 @@
-import PhysicalTrackActorData = Shadowrun.PhysicalTrackActorData;
-import StunTrackActorData = Shadowrun.StunTrackActorData;
-import TwoTrackActorData = Shadowrun.TwoTrackActorData;
-import {SR5} from "../../../config";
-import ActorTypesData = Shadowrun.ShadowrunActorDataData;
+import { SR5 } from "../../../config";
 
 export class ConditionMonitorsPrep {
     static prepareStun(system: Actor.SystemOfType<'character' | 'critter' | 'spirit'>) {
