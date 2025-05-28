@@ -17,41 +17,17 @@ import FireModeData = Shadowrun.FireModeData;
 import SpellForceData = Shadowrun.SpellForceData;
 import ComplexFormLevelData = Shadowrun.ComplexFormLevelData;
 import FireRangeData = Shadowrun.FireRangeData;
-import BlastData = Shadowrun.BlastData;
 import ConditionData = Shadowrun.ConditionData;
 import ActionRollData = Shadowrun.ActionRollData;
-import SpellData = Shadowrun.SpellData;
-import WeaponData = Shadowrun.WeaponData;
 import AmmoData = Shadowrun.AmmoData;
-import TechnologyData = Shadowrun.TechnologyData;
 import RangeWeaponData = Shadowrun.RangeWeaponData;
 import SpellRange = Shadowrun.SpellRange;
 import CritterPowerRange = Shadowrun.CritterPowerRange;
 import ShadowrunItemData = Shadowrun.ShadowrunItemData;
-import ActionItemData = Shadowrun.ActionItemData;
-import AdeptPowerItemData = Shadowrun.AdeptPowerItemData;
-import AmmoItemData = Shadowrun.AmmoItemData;
-import ArmorItemData = Shadowrun.ArmorItemData;
-import ComplexFormItemData = Shadowrun.ComplexFormItemData;
-import ContactItemData = Shadowrun.ContactItemData;
-import CritterPowerItemData = Shadowrun.CritterPowerItemData;
-import CyberwareItemData = Shadowrun.CyberwareItemData;
-import DeviceItemData = Shadowrun.DeviceItemData;
-import EquipmentItemData = Shadowrun.EquipmentItemData;
-import LifestyleItemData = Shadowrun.LifestyleItemData;
-import ModificationItemData = Shadowrun.ModificationItemData;
-import ProgramItemData = Shadowrun.ProgramItemData;
-import QualityItemData = Shadowrun.QualityItemData;
-import SinItemData = Shadowrun.SinItemData;
-import SpellItemData = Shadowrun.SpellItemData;
-import SpritePowerItemData = Shadowrun.SpritePowerItemData;
-import WeaponItemData = Shadowrun.WeaponItemData;
-import HostItemData = Shadowrun.HostItemData;
 import ActionResultData = Shadowrun.ActionResultData;
 import ActionTestLabel = Shadowrun.ActionTestLabel;
 import MatrixMarks = Shadowrun.MatrixMarks;
 import RollEvent = Shadowrun.RollEvent;
-import ShadowrunItemDataData = Shadowrun.ShadowrunItemDataData;
 import { LinksHelpers } from '../utils/links';
 import { TechnologyPrep } from './prep/functions/TechnologyPrep';
 import { SinPrep } from './prep/SinPrep';
@@ -76,6 +52,9 @@ import { UpdateActionFlow } from './flows/UpdateActionFlow';
 
 ActionResultFlow; // DON'T TOUCH!
 
+export type SystemTechnologyItem = 'ammo' | 'armor' | 'device' | 'equipment' | 'modification' | 'program' | 'sin' | 'bioware' | 'cyberware' | 'weapon';
+export type SystemItem = SystemTechnologyItem | 'adept_power' | 'action' | 'call_in_action' | 'complex_form' | 'contact' | 'critter_power' | 'echo' | 'host' | 'lifestyle' | 'quality' | 'sprite_power' | 'spell';
+
 /**
  * Implementation of Shadowrun5e items (owned, unowned and nested).
  *
@@ -93,10 +72,10 @@ ActionResultFlow; // DON'T TOUCH!
  *
  *       Be wary of SR5Item.actor for this reason!
  */
-export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<SubType> {
+export class SR5Item<SubType extends SystemItem = SystemItem> extends Item<SubType> {
     // Item.items isn't the Foundry default ItemCollection but is overwritten within prepareNestedItems
     // to allow for embedded items in items in actors.
-    items: SR5Item[];
+    items: SR5Item[] = [];
 
     // Item Sheet labels for quick info on an item dropdown.
     labels: {} = {};
@@ -256,22 +235,13 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         }
 
         // Switch item data preparation between types...
-        // ... this work only begun to clean up SR5item.prepareData
-        switch (this.type) {
-            case 'host':
-                HostDataPreparation(this.system as Shadowrun.HostData);
-                break;
-            case 'adept_power':
-                AdeptPowerPrep.prepareBaseData(this.system as unknown as Shadowrun.AdeptPowerData);
-                break;
-            case 'sin':
-                SinPrep.prepareBaseData(this.system as unknown as Shadowrun.SinData);
-                break;
-            case 'cyberware':
-            case 'bioware':
-                WarePrep.prepareBaseData(this.system as unknown as Shadowrun.WareData);
-                break
-        }
+        // ... this is ongoing work to clean up SR5item.prepareData
+        if (this.isType('host'))
+            HostDataPreparation(this.system);
+        else if (this.isType('adept_power'))
+            AdeptPowerPrep.prepareBaseData(this.system);
+        else if (this.isType('sin'))
+            SinPrep.prepareBaseData(this.system);
     }
 
     async postItemCard() {
@@ -322,10 +292,12 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * @returns 
      */
     async getChatData(htmlOptions = {}) {
-        const system = foundry.utils.duplicate(this.system);
+        const system = foundry.utils.duplicate(this.system) as Item.SystemOfType<SubType>;
         const { labels } = this;
+        //@ts-expect-error
         if (!system.description) system.description = { chat: '', source: '', value: '' };
         // TextEditor.enrichHTML will return null as a string, making later handling difficult.
+        //@ts-expect-error
         if (!system.description.value) system.description.value = '';
         system.description.value = await TextEditor.enrichHTML(system.description.value, { ...htmlOptions });
 
@@ -362,10 +334,8 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         return parts;
     }
 
-    getBlastData(actionTestData?: any): BlastData | undefined {
+    getBlastData(actionTestData?: any): { radius: number, dropoff: number } | undefined {
         if (this.isType('spell') && this.isAreaOfEffect()) {
-            const system = this.system as unknown as SpellData;
-
             // By default spell distance is equal to it's Force.
             let distance = this.getLastSpellForce().value;
 
@@ -375,25 +345,18 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
             }
 
             // Extended spells have a longer range.
-            if (system.extended) distance *= 10;
-            const dropoff = 0;
+            if (this.system.extended) distance *= 10;
 
             return {
                 radius: distance,
-                dropoff
+                dropoff: 0
             }
 
-        } else if (this.isGrenade) {
-            const system = this.system as WeaponData;
-
-            const distance = system.thrown.blast.radius;
-            const dropoff = system.thrown.blast.dropoff;
-
+        } else if (this.isGrenade()) {
             return {
-                radius: distance,
-                dropoff
-            }
-
+                radius: this.system.thrown.blast.radius,
+                dropoff: this.system.thrown.blast.dropoff
+            };
         } else if (this.hasExplosiveAmmo) {
             const item = this.getEquippedAmmo();
             const ammo = item?.asType('ammo');
@@ -408,21 +371,19 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
                 dropoff
             };
         }
+        return undefined;
     }
 
     getEquippedAmmo(): SR5Item<'ammo'> | undefined {
-        const equippedAmmos = (this.items || []).filter((item) =>
-            item.isAmmo &&
-            item.isEquipped());
+        const equippedAmmos = (this.items || [])
+            .filter((item) => item.isType('ammo') && item.isEquipped()) as SR5Item<'ammo'>[];
 
         // Cast Typing isn't a mistake, so long as isAmmo is filtered.
         return equippedAmmos[0];
     }
 
     getEquippedMods(): SR5Item<'modification'>[] {
-        return (this.items || []).filter((item) =>
-            item.isWeaponModification &&
-            item.isEquipped());
+        return this.items.filter((item) => item.isWeaponModification() && item.isEquipped());
     }
 
     get hasExplosiveAmmo(): boolean {
@@ -477,7 +438,9 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * @returns true, for weapons with ammunition.
      */
     usesAmmo(): boolean {
-        return this.isType('weapon') && this.system.ammo.current.max !== 0 && this.system.ammo?.current.max !== null;
+        if (this.isType('weapon'))
+            return Boolean(this.system.ammo.current.max);
+        return false;
     }
 
     /**
@@ -499,9 +462,9 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
 
         // Prepare reloading by getting ammunition information.
         const ammo = this.getEquippedAmmo()!;
-        const ammoItems = this.items.filter(item => item.isAmmo).length;
+        const ammoItems = this.items.filter(item => item.isType('ammo')).length;
 
-        const remainingBullets = Number(weapon.system.ammo.current.value);
+        const remainingBullets = weapon.system.ammo.current.value;
         // Don't adhere to clip sizes, only reload from the point of capacity left.
         const missingBullets = Math.max(0, weapon.system.ammo.current.max - remainingBullets);
         // This checks how many rounds are required for a partial reload.
@@ -515,7 +478,8 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
             ui.notifications?.info("SR5.Warnings.CantReloadWithoutSpareClip", { localize: true });
         }
         if (ammo && Number(ammo.system.technology?.quantity) === 0) {
-            return ui.notifications?.warn('SR5.Warnings.CantReloadAtAllDueToAmmo', { localize: true });
+            ui.notifications?.warn('SR5.Warnings.CantReloadAtAllDueToAmmo', { localize: true });
+            return;
         }
         if (ammo && Number(ammo.system.technology?.quantity) < missingBullets) {
             if (partialReload && partialReloadBulletsNeeded !== -1 && Number(ammo.system.technology?.quantity) < partialReloadBulletsNeeded) {
@@ -549,8 +513,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
 
         for (const item of ammoItems) {
             if (!unequipOthers && item.id !== id) continue;
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            const equip = toggle ? !item.system.technology.equipped : id === item.id;
+            const equip = toggle ? !item.system.technology?.equipped : id === item.id;
 
             updateData.push({ _id: item.id, 'system.technology.equipped': equip });
         }
@@ -587,104 +550,8 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         await this.update({ 'system.licenses': licenses });
     }
 
-    get isSin(): boolean {
-        return this.wrapper.isSin();
-    }
-
-    get asSin(): SinItemData | undefined {
-        if (this.isSin) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as SinItemData;
-        }
-    }
-
-    get isLifestyle(): boolean {
-        return this.wrapper.isLifestyle();
-    }
-
-    get asLifestyle(): LifestyleItemData | undefined {
-        if (this.isLifestyle) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as LifestyleItemData;
-        }
-    }
-
-    get isAmmo(): boolean {
-        return this.wrapper.isAmmo();
-    }
-
-    get isAoEAmmo(): boolean {
-        return this.wrapper.isAoEAmmo();
-    }
-
-    get asAmmo(): AmmoItemData | undefined {
-        if (this.isAmmo) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as AmmoItemData;
-        }
-    }
-
-    get isModification(): boolean {
-        return this.wrapper.isModification();
-    }
-
-    asModification(): ModificationItemData | undefined {
-        if (this.isModification) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as ModificationItemData;
-        }
-    }
-
-    get isWeaponModification(): boolean {
-        return this.wrapper.isWeaponModification();
-    }
-
-    get isArmorModification(): boolean {
-        return this.wrapper.isArmorModification();
-    }
-
-    get isProgram(): boolean {
-        return this.wrapper.isProgram();
-    }
-
-    get asProgram(): ProgramItemData | undefined {
-        if (this.isProgram) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as ProgramItemData;
-        }
-    }
-
-    get isQuality(): boolean {
-        return this.wrapper.isQuality();
-    }
-
-    get asQuality(): QualityItemData | undefined {
-        if (this.isQuality) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as QualityItemData;
-        }
-    }
-
-    get isAdeptPower(): boolean {
-        return this.type === 'adept_power';
-    }
-
-    asAdeptPower(): AdeptPowerItemData | undefined {
-        if (this.isAdeptPower)
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as AdeptPowerItemData;
-    }
-
-
-    get isHost(): boolean {
-        return this.type === 'host';
-    }
-
-    get asHost(): HostItemData | undefined {
-        if (this.isHost) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as HostItemData;
-        }
+    isWeaponModification(): this is SR5Item<'modification'> & { system : { type: 'weapon' } } {
+        return this.isType('modification') && this.system.type === 'weapon';
     }
 
     /**
@@ -696,17 +563,6 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         if (this.isType('sin')) {
             const licenses = this.system.licenses.splice(index, 1);
             await this.update({ 'system.licenses': licenses });
-        }
-    }
-
-    isAction(): boolean {
-        return this.wrapper.isAction();
-    }
-
-    asAction(): ActionItemData | undefined {
-        if (this.isAction()) {
-            //@ts-expect-error TODO: foundry-vtt-types v10
-            return this as ActionItemData;
         }
     }
 
@@ -766,7 +622,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     }
 
     getActionResult(): ActionResultData | undefined {
-        if (!this.isAction()) return;
+        if (!this.isType('action')) return;
 
         return this.wrapper.getActionResult();
     }
@@ -977,15 +833,15 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     }
 
     getWeaponRange(): RangeWeaponData | undefined {
-        if (this.isRangedWeapon)
+        if (this.isRangedWeapon())
             return this.getRange() as RangeWeaponData;
     }
 
     getRollName(): string {
-        if (this.isRangedWeapon) {
+        if (this.isRangedWeapon()) {
             return game.i18n.localize('SR5.RangeWeaponAttack');
         }
-        if (this.isMeleeWeapon) {
+        if (this.isMeleeWeapon()) {
             return game.i18n.localize('SR5.MeleeWeaponAttack');
         }
         if (this.isCombatSpell) {
@@ -1001,11 +857,11 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         return DEFAULT_ROLL_NAME;
     }
 
-    isType<ST extends Item.SubType = Item.SubType>(type: ST): this is SR5Item<ST> {
+    isType<ST extends SystemItem = SystemItem>(type: ST): this is SR5Item<ST> {
         return this.type === type;
     }
 
-    asType<ST extends readonly Item.SubType[]>(...types: ST): SR5Item<ST[number]> | undefined {
+    asType<ST extends readonly SystemItem[]>(...types: ST): SR5Item<ST[number]> | undefined {
         return types.some((t) => this.isType(t)) ? this : undefined;
     }
 
@@ -1024,16 +880,20 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
             || (this.isType('ammo') && this.system.blast.radius > 0);
     }
 
-    get isGrenade(): boolean {
-        return this.wrapper.isGrenade();
+    isGrenade(): this is SR5Item<'weapon'>  & { system: { category: 'thrown' } } {
+        return this.isThrownWeapon() && (this.system.thrown?.blast.radius ?? 0) > 0;
     }
 
-    get isRangedWeapon(): boolean {
-        return this.wrapper.isRangedWeapon();
+    isThrownWeapon(): this is SR5Item<'weapon'> & { system: { category: 'thrown' } } {
+        return this.isType('weapon') && this.system.category === 'thrown';
     }
 
-    get isMeleeWeapon(): boolean {
-        return this.wrapper.isMeleeWeapon();
+    isRangedWeapon(): this is SR5Item<'weapon'> & { system: { category: 'ranged' } } {
+        return this.isType('weapon') && this.system.category === 'ranged';
+    }
+
+    isMeleeWeapon(): this is SR5Item<'weapon'> & { system: { category: 'melee' } } {
+        return this.isType('weapon') && this.system.category === 'melee';
     }
 
     get isCombatSpell(): boolean {
@@ -1075,14 +935,10 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     async getLinkedActor(): Promise<SR5Actor | undefined> {
         const uuid = this.wrapper.getLinkedActorUuid();
 
-        // @ts-expect-error // parseUuid is not defined in the @league-of-foundry-developers/foundry-vtt-types package
-        if (uuid && this.asContact && foundry.utils.parseUuid(uuid).documentType === 'Actor') {
+        if (uuid && this.isType('contact') && foundry.utils.parseUuid(uuid).documentType === 'Actor')
             return await fromUuid(uuid) as SR5Actor;
-        }
-    }
 
-    asController(): SR5Item<'host'> | SR5Item<'device'> | undefined {
-        return this.asType('host') || this.asType('device') || undefined;
+        return undefined;
     }
 
     isEquipped(): boolean {
@@ -1118,6 +974,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     }
 
     setSource(source: string) {
+        //@ts-expect-error
         if (!this.system.description) this.system.description = { chat: '', source: '', value: '' };
         this.update({ 'system.description.source': source });
         this.render(true);
@@ -1175,7 +1032,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * Amount of current recoil left after recoil compensation.
      */
     get unhandledRecoil(): number {
-        if (!this.isRangedWeapon) return 0;
+        if (!this.isRangedWeapon()) return 0;
         return Math.max(this.actor.recoil - this.totalRecoilCompensation, 0);
     }
 
@@ -1183,7 +1040,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * Amount of recoil compensation configured via weapon system data.
      */
     get recoilCompensation(): number {
-        if (!this.isRangedWeapon) return 0;
+        if (!this.isRangedWeapon()) return 0;
         return this.wrapper.getRecoilCompensation();
     }
 
@@ -1193,7 +1050,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * This includes both actor and item recoil compensation.
      */
     get totalRecoilCompensation(): number {
-        if (!this.isRangedWeapon) return 0;
+        if (!this.isRangedWeapon()) return 0;
         return RangedWeaponRules.recoilCompensation(this);
     }
 
@@ -1205,22 +1062,18 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * @returns A positive number or zero.
      */
     get currentRecoilCompensation(): number {
-        if (!this.actor || !this.isRangedWeapon) return 0;
+        if (!this.actor || !this.isRangedWeapon()) return 0;
         return Math.max(this.totalRecoilCompensation - this.actor.recoil, 0);
     }
 
     getReach(): number {
-        if (this.isMeleeWeapon) {
-            const system = this.system as WeaponData;
-            return system.melee.reach ?? 0;
-        }
+        if (this.isMeleeWeapon())
+            return this.system.melee.reach ?? 0;
         return 0;
     }
 
-    getCondition(): ConditionData | undefined {
-        const technology = this.getTechnologyData();
-        if (technology && "condition_monitor" in technology)
-            return technology.condition_monitor;
+    getCondition(): Item.SystemOfType<SystemTechnologyItem>['technology']['condition_monitor'] | undefined {
+        return this.getTechnologyData()?.condition_monitor;
     }
 
     hasOpposedTest(): boolean {
@@ -1236,7 +1089,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * @param pack Optional pack collection to fetch from
      */
     async addIC(id: string, pack: string | null = null) {
-        const host = this.asHost;
+        const host = this.asType('host');
         if (!host || !id) return;
 
         // Check if actor exists before adding.
@@ -1271,7 +1124,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     async removeIC(index: number) {
         if (isNaN(index) || index < 0) return;
 
-        const host = this.asHost;
+        const host = this.asType('host');
         if (!host) return;
         if (host.system.ic.length <= index) return;
 
@@ -1296,7 +1149,6 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         data._id = this.id;
 
         // Shadowrun Items can contain other items, while Foundry Items can't. Use the system local implementation for items.
-        // @ts-expect-error
         await this.parent.updateNestedItems(data);
 
         // After updating all item embedded data, rerender the sheet to trigger the whole rerender workflow.
@@ -1314,7 +1166,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         }
 
         // Actor.item => Directly owned item by an actor!
-        return await super.update(data, options);
+        return (await super.update(data, options))!;
     }
 
     /**
@@ -1332,7 +1184,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     async setMarks(target: Token, marks: number, options?: { scene?: Scene, item?: SR5Item, overwrite?: boolean }) {
         if (!canvas!.ready) return;
 
-        if (!this.isHost) {
+        if (!this.isType('host')) {
             console.error('Only Host item types can place matrix marks!');
             return;
         }
@@ -1344,7 +1196,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
         // Build the markId string. If no item has been given, there still will be a third split element.
         // Use Helpers.deconstructMarkId to get the elements.
         const markId = Helpers.buildMarkId(scene.id as string, target.id, item?.id as string);
-        const host = this.asHost;
+        const host = this.asType('host');
 
         if (!host) return;
 
@@ -1355,12 +1207,12 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     }
 
     getMarksById(markId: string): number {
-        const host = this.asHost;
+        const host = this.asType('host');
         return host ? host.system.marks[markId] : 0;
     }
 
     getAllMarks(): MatrixMarks | undefined {
-        const host = this.asHost;
+        const host = this.asType('host');
         if (!host) return;
         return host.system.marks;
     }
@@ -1378,14 +1230,14 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      */
     getMarks(target: SR5Actor, item?: SR5Item, options?: { scene?: Scene }): number {
         if (!canvas!.ready) return 0;
-        if (!this.isHost) return 0;
+        if (!this.isType('host')) return 0;
 
         // Scene is optional.
         const scene = options?.scene || canvas!.scene as Scene;
         item = item || target.getMatrixDevice();
 
         const markId = Helpers.buildMarkId(scene.id as string, target.id as string, item?.id as string);
-        const host = this.asHost;
+        const host = this.asType('host');
 
         if (!host) return 0
 
@@ -1398,9 +1250,9 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * TODO: Allow partial deletion based on target / item
      */
     async clearMarks() {
-        if (!this.isHost) return;
+        if (!this.isType('host')) return;
 
-        const host = this.asHost;
+        const host = this.asType('host');
 
         if (!host) return;
 
@@ -1417,7 +1269,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
      * Remove ONE mark. If you want to delete all marks, use clearMarks instead.
      */
     async clearMark(markId: string) {
-        if (!this.isHost) return;
+        if (!this.isType('host')) return;
 
         const updateData = {}
         updateData[`-=${markId}`] = null;
@@ -1445,7 +1297,7 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     }
 
     async removeNetworkDevice(index: number) {
-        const controllerData = this.asController();
+        const controllerData = this.asType('host', 'device');
         if (!controllerData) return;
 
         // Convert the index to a device link.
@@ -1456,14 +1308,14 @@ export class SR5Item<SubType extends Item.SubType = Item.SubType> extends Item<S
     }
 
     async removeAllNetworkDevices() {
-        const controllerData = this.asController();
+        const controllerData = this.asType('host', 'device');
         if (!controllerData) return;
 
         return await NetworkDeviceFlow.removeAllDevicesFromNetwork(this);
     }
 
     getAllMarkedDocuments(): Shadowrun.MarkedDocument[] {
-        if (!this.isHost) return [];
+        if (!this.isType('host')) return [];
 
         const marks = this.getAllMarks();
         if (!marks) return [];
