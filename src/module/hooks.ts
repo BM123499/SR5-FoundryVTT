@@ -416,8 +416,14 @@ ___________________
         console.debug('Shadowrun5e | Registering new chat messages related hooks');
     }
 
+    /**
+     * Extend rendering of Sidebar tab 'ActorDirectory' by
+     * - the Chummer Actor Import button
+     * @param app Foundry ActorDirectory app instance
+     * @param html HTML element of the app
+     */
     static renderCompendiumDirectory(app: Application, html: HTMLElement) {
-        if (!game.user?.isGM) {
+        if (!game.user?.isGM)  {
             return;
         }
 
