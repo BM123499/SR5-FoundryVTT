@@ -32,8 +32,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
 
     describe("Weapon Damage Values", () => {
         it("Parses simple damage", () => {
-            const output = mut.GetDamage(getData("12P") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("12P"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 12,
                 value: 12,
                 type: {
@@ -44,8 +44,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
         });
 
         it("Parses elemental damage", () => {
-            const output = mut.GetDamage(getData("8S(e)") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("8S(e)"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 8,
                 value: 8,
                 type: {
@@ -60,8 +60,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
         });
 
         it("Parses strength-based damage", () => {
-            const output = mut.GetDamage(getData("({STR}+3)P") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("({STR}+3)P"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 3,
                 value: 3,
                 type: {
@@ -73,8 +73,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
         });
 
         it("Parses damage without type as physical", () => {
-            const output = mut.GetDamage(getData("11") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("11"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 11,
                 value: 11,
                 type: {
@@ -85,8 +85,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
         });
 
         it("Parses 0 damage", () => {
-            const output = mut.GetDamage(getData("0") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("0"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 0,
                 value: 0,
                 type: {
@@ -97,8 +97,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
         });
 
         it("Parses basic matrix damage", () => {
-            const output = mut.GetDamage(getData("7M") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("7M"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 7,
                 value: 7,
                 type: {
@@ -109,8 +109,8 @@ export const weaponParserBaseTesting = (context: QuenchBatchContext) => {
         });
 
         it("Parses strength-based damage without modifier", () => {
-            const output = mut.GetDamage(getData("({STR})P") as Weapon);
-            assert.deepEqual(output, DataDefaults.damageData({
+            const output = mut.GetDamage(getData("({STR})P"));
+            assert.deepEqual(output, DataDefaults.createData('damage', {
                 base: 0,
                 value: 0,
                 type: {

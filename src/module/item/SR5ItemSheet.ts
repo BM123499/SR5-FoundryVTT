@@ -8,6 +8,7 @@ import { SR5Actor } from '../actor/SR5Actor';
 import { SR5ActiveEffect } from '../effect/SR5ActiveEffect';
 import { ActionFlow } from './flows/ActionFlow';
 import RangeData = Shadowrun.RangeData;
+import { AmmunitionType } from '../types/item/WeaponModel';
 
 /**
  * FoundryVTT ItemSheetData typing
@@ -94,7 +95,7 @@ interface SR5ItemSheetData extends SR5BaseItemSheetData {
  */
 export class SR5ItemSheet extends ItemSheet {
     private _shownDesc: any[] = [];
-    private _scroll: string;
+    private _scroll: string | undefined;
 
     /**
      * Extend and override the default options used by the Simple Item Sheet
@@ -281,7 +282,7 @@ export class SR5ItemSheet extends ItemSheet {
      */
     _getSortedActiveSkillsForSelect() {
         // In case of custom skill used, inject it into the skill list.
-        const skill = 'action' in this.document.system ? this.document.system.action.skill : undefined;
+        const skill = this.document.system.action?.skill;
         const skills = skill ? [skill] : undefined;
         // Instead of item.parent, use the actorOwner as NestedItems have an actor grand parent.
         return ActionFlow.sortedActiveSkills(this.item.actorOwner, skills);
@@ -385,7 +386,7 @@ export class SR5ItemSheet extends ItemSheet {
      * User requested removal of the linked actor.
      */
     async handleLinkedActorRemove(event: any) {
-        await this.item.update({ 'system.linkedActor': '' });
+        await this.item.update({ system: { linkedActor: '' } });
     }
 
     /**
@@ -394,7 +395,7 @@ export class SR5ItemSheet extends ItemSheet {
      * @param actor The prepared actor
      */
     async updateLinkedActor(actor: SR5Actor) {
-        await this.item.update({ 'system.linkedActor': actor.uuid });
+        await this.item.update({ system: { linkedActor: actor.uuid } });
     }
 
     _addDragSupportToListItemTemplatePartial(i, item) {
@@ -686,13 +687,17 @@ export class SR5ItemSheet extends ItemSheet {
         await this.item.createNestedItem(item._source);
     }
 
-    async _onClipEquip(clipType: string) {
+    async _onClipEquip(clipType: AmmunitionType['clip_type']) {
         if (!clipType || !Object.keys(SR5.weaponCliptypes).includes(clipType)) return;
 
         const agilityValue = this.item.actor ? this.item.actor.getAttribute('agility').value : 0;
         await this.item.update({
-            'system.ammo.clip_type': clipType,
-            'system.ammo.partial_reload_value': RangedWeaponRules.partialReload(clipType, agilityValue)
+            system: {
+                ammo: {
+                    clip_type: clipType,
+                    partial_reload_value: RangedWeaponRules.partialReload(clipType, agilityValue)
+                }
+            }
         }, { render: true });
     }
 
@@ -771,7 +776,7 @@ export class SR5ItemSheet extends ItemSheet {
         html.find('input#action-modifier').on('change', async (event) => {
             const modifiers = tagify.value.map(tag => tag.id);
             // render would loose tagify input focus. submit on close will save.
-            await this.item.update({ 'system.action.modifiers': modifiers }, { render: false });
+            await this.item.update({ system: { action: { modifiers } } }, { render: false });
         });
     }
 
@@ -814,7 +819,7 @@ export class SR5ItemSheet extends ItemSheet {
             // Custom tags will not have an id, so use value as id.
             const categories = tagify.value.map(tag => tag.id ?? tag.value);
             // render would loose tagify input focus. submit on close will save.
-            await this.item.update({ 'system.action.categories': categories }, { render: false });
+            await this.item.update({ system: { action: { categories } } }, { render: false });
         });
     }
 
@@ -964,7 +969,7 @@ export class SR5ItemSheet extends ItemSheet {
         console.debug('Toggling isFreshImport on item to ->', onOff, event);
         const item = this.item;
         if (item.system.importFlags) {
-            await item.update({ 'system.importFlags.isFreshImport': onOff });
+            await item.update({ system: { importFlags: { isFreshImport: onOff } } });
         }
     }
 

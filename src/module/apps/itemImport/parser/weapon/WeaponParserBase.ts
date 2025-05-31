@@ -162,7 +162,7 @@ export class WeaponParserBase extends Parser<WeaponItemData> {
                 value: damageElement,
             }
         }
-        return DataDefaults.damageData(partialDamageData);
+        return DataDefaults.createData('damage', partialDamageData);
     }
 
     protected parseDamageType(parsedType: string | undefined): DamageType {
