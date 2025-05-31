@@ -38,7 +38,7 @@ export class ThrownParser extends WeaponParserBase {
         const system = super.getSystem(jsonData);
 
         const rangeCategory = jsonData.range?._TEXT || jsonData.category._TEXT;
-        system.thrown.ranges = DataDefaults.weaponRangeData(this.GetRangeDataFromImportedCategory(rangeCategory));
+        system.thrown.ranges = DataDefaults.createData('range', this.GetRangeDataFromImportedCategory(rangeCategory));
 
         system.thrown.blast = this.GetBlast(system, jsonData);
 
