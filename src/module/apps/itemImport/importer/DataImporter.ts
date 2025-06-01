@@ -1,6 +1,4 @@
 import { SR5 } from "../../../config";
-import { SR5Actor } from '../../../actor/SR5Actor';
-import { StoredDocument } from '@league-of-foundry-developers/foundry-vtt-types/src/types/utils.mjs';
 import { Constants } from './Constants';
 import { ParseData } from "../parser/Parser";
 import { ImportHelper as IH } from '../helper/ImportHelper';
