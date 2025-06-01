@@ -51,7 +51,7 @@ import { ActionResultType, ActionRollType } from '../types/item/ActionModel';
 ActionResultFlow; // DON'T TOUCH!
 
 export type SystemTechnologyItem = 'ammo' | 'armor' | 'device' | 'equipment' | 'modification' | 'program' | 'sin' | 'bioware' | 'cyberware' | 'weapon';
-export type SystemItem = SystemTechnologyItem | 'adept_power' | 'action' | 'call_in_action' | 'complex_form' | 'contact' | 'critter_power' | 'echo' | 'host' | 'lifestyle' | 'quality' | 'sprite_power' | 'spell';
+export type SystemItem = SystemTechnologyItem | 'adept_power' | 'action' | 'call_in_action' | 'complex_form' | 'contact' | 'critter_power' | 'echo' | 'host' | 'lifestyle' | 'metamagic' | 'quality' | 'sprite_power' | 'spell';
 
 /**
  * Implementation of Shadowrun5e items (owned, unowned and nested).
