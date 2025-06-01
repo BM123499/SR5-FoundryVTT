@@ -1,19 +1,18 @@
-import { ItemDataSource } from '@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/data/data.mjs/itemData';
 import { Parser } from '../Parser';
-import { SR5Item } from '../../../../item/SR5Item';
+import { SR5Item, SystemItem } from '../../../../item/SR5Item';
 import { ImportHelper as IH, OneOrMany } from '../../helper/ImportHelper';
 import ShadowrunActorData = Shadowrun.ShadowrunActorData;
 
 export abstract class MetatypeParserBase<TResult extends ShadowrunActorData> extends Parser<TResult> {
     getMetatypeItems(
-        items: SR5Item[],
+        items: Item.Stored<SystemItem>[],
         itemData: undefined | OneOrMany<{$?: { select?: string; rating?: string; removable?: string; }; _TEXT: string }>,
         msg_field: {type: string; critter: string},
         translatedTraitNames: Record<string, string>
-    ): ItemDataSource[] {
+    ): Item.Source[] {
         const itemMap = new Map(items.map(i => [i.name, i]));
 
-        const result: ItemDataSource[] = [];
+        const result: Item.Source[] = [];
 
         for (const item of IH.getArray(itemData)) {
             const name = item._TEXT;
@@ -45,5 +44,5 @@ export abstract class MetatypeParserBase<TResult extends ShadowrunActorData> ext
         }
 
         return result;
-    }    
+    }
 }

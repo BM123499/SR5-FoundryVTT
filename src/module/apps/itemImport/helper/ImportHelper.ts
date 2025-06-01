@@ -53,7 +53,7 @@ export class ImportHelper {
         compKey: CompendiumKey,
         name: OneOrMany<string>,
         types?: OneOrMany<BaseItem['data']['type']>
-    ): Promise<SR5Item[]> {
+    ): Promise<Item.Stored[]> {
         if (Array.isArray(name) ? name.length === 0 : !name) return [];
 
         type ItemType = CompendiumCollection<CompendiumCollection.Metadata & {type: 'Item'}>;
