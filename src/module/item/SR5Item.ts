@@ -16,6 +16,7 @@ import { SinPrep } from './prep/SinPrep';
 import { ActionPrep } from './prep/functions/ActionPrep';
 import { RangePrep } from './prep/functions/RangePrep';
 import { AdeptPowerPrep } from './prep/AdeptPowerPrep';
+import Document = foundry.abstract.Document;
 
 /**
  * WARN: I don't know why, but removing the usage of ActionResultFlow from SR5Item
@@ -65,6 +66,10 @@ export class SR5Item<SubType extends Item.ConfiguredSubTypes = Item.ConfiguredSu
     // Item Sheet labels for quick info on an item dropdown.
     labels: { roll?: string; opposedRoll?: string } = {};
     descriptionHTML: string | undefined;
+
+    constructor(data: Item.CreateData, context?: Document.ConstructionContext<Item.Parent | Item.Implementation>) {
+        super(data, context);;
+    }
 
     /**
      * Helper property to get an actual actor for an owned or embedded item. You'll need this for when you work with
