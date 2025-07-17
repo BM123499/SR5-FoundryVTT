@@ -1,5 +1,7 @@
-import { ModifiableField } from "../fields/ModifiableField";
-import { ModifiableValue, KeyValuePair } from "./Base";
+import { ModifiableField } from '../fields/ModifiableField';
+import { ModifiableValue, KeyValuePair } from './Base';
+import { ActiveSkillData, type ActiveSkillDefinition } from 'src/module/config/ActiveSkills';
+
 const { SchemaField, BooleanField, ArrayField, StringField, TypedObjectField } = foundry.data.fields;
 
 export type SkillCategories = 'active' | 'language' | 'knowledge';
@@ -19,108 +21,43 @@ export const SkillField = () => ({
     group: new StringField({ required: true }),
 });
 
-function skill(createData: foundry.data.fields.SchemaField.CreateData<ReturnType<typeof SkillField>> = {}): SkillFieldType {
+function skill(
+    createData: foundry.data.fields.SchemaField.CreateData<ReturnType<typeof SkillField>> = {},
+): SkillFieldType {
     const initialValue = new ModifiableField(SkillField()).getInitialValue(createData);
     return foundry.utils.mergeObject(initialValue, createData) as SkillFieldType;
 }
 
-export const Skills = () => new TypedObjectField(
-    new ModifiableField(SkillField()),
-    {
-        required: true,
-        initial: {
-            // Combat Skills
-            archery: skill({ attribute: 'agility' }),
-            automatics: skill({ attribute: 'agility', group: 'Firearms' }),
-            blades: skill({ attribute: 'agility', group: 'Close Combat' }),
-            clubs: skill({ attribute: 'agility', group: 'Close Combat' }),
-            exotic_melee: skill({ attribute: 'agility', canDefault: false }), // how to deal with exotic melee weapons?
-            exotic_range: skill({ attribute: 'agility', canDefault: false }), // how to deal with exotic ranged weapons?
-            heavy_weapons: skill({ attribute: 'agility', group: 'Firearms' }),
-            longarms: skill({ attribute: 'agility', group: 'Firearms' }),
-            pistols: skill({ attribute: 'agility', group: 'Firearms' }),
-            throwing_weapons: skill({ attribute: 'agility', group: 'Close Combat' }),
-            unarmed_combat: skill({ attribute: 'agility', group: 'Close Combat' }),
-
-            // Physical Skills
-            disguise: skill({ attribute: 'intuition', group: 'Stealth' }),
-            diving: skill({ attribute: 'body' }),
-            escape_artist: skill({ attribute: 'agility' }),
-            flight: skill({ attribute: 'agility', canDefault: false, hidden: true }),
-            free_fall: skill({ attribute: 'body' }),
-            gymnastics: skill({ attribute: 'agility', group: 'Athletics' }),
-            palming: skill({ attribute: 'agility', group: 'Stealth', canDefault: false }),
-            perception: skill({ attribute: 'intuition' }),
-            running: skill({ attribute: 'strength', group: 'Athletics' }),
-            sneaking: skill({ attribute: 'agility', group: 'Stealth' }),
-            survival: skill({ attribute: 'willpower', group: 'Outdoors' }),
-            swimming: skill({ attribute: 'strength', group: 'Athletics' }),
-            tracking: skill({ attribute: 'intuition', group: 'Outdoors' }),
-
-            // Social Skills
-            con: skill({ attribute: 'charisma', group: 'Acting' }),
-            etiquette: skill({ attribute: 'charisma', group: 'Influence' }),
-            impersonation: skill({ attribute: 'charisma', group: 'Acting' }),
-            instruction: skill({ attribute: 'charisma' }),
-            intimidation: skill({ attribute: 'charisma' }),
-            leadership: skill({ attribute: 'charisma', group: 'Influence' }),
-            negotiation: skill({ attribute: 'charisma', group: 'Influence' }),
-            performance: skill({ attribute: 'charisma', group: 'Acting' }),
-
-            // Magic Skills
-            alchemy: skill({ attribute: 'magic', group: 'Enchanting', canDefault: false }),
-            arcana: skill({ attribute: 'logic', canDefault: false }),
-            artificing: skill({ attribute: 'magic', group: 'Enchanting', canDefault: false }),
-            assensing: skill({ attribute: 'intuition', canDefault: false }),
-            astral_combat: skill({ attribute: 'willpower', canDefault: false }),
-            banishing: skill({ attribute: 'magic', group: 'Conjuring', canDefault: false }),
-            binding: skill({ attribute: 'magic', group: 'Conjuring', canDefault: false }),
-            counterspelling: skill({ attribute: 'magic', group: 'Sorcery', canDefault: false }),
-            disenchanting: skill({ attribute: 'magic', group: 'Enchanting', canDefault: false }),
-            ritual_spellcasting: skill({ attribute: 'magic', group: 'Sorcery', canDefault: false }),
-            spellcasting: skill({ attribute: 'magic', group: 'Sorcery', canDefault: false }),
-            summoning: skill({ attribute: 'magic', group: 'Conjuring', canDefault: false }),
-
-            // Resonance Skills
-            compiling: skill({ attribute: 'resonance', group: 'Tasking', canDefault: false }),
-            decompiling: skill({ attribute: 'resonance', group: 'Tasking', canDefault: false }),
-            registering: skill({ attribute: 'resonance', group: 'Tasking', canDefault: false }),
-
-            // Technical Skills
-            aeronautics_mechanic: skill({ attribute: 'logic', group: 'Engineering', canDefault: false }),
-            automotive_mechanic: skill({ attribute: 'logic', group: 'Engineering', canDefault: false }),
-            industrial_mechanic: skill({ attribute: 'logic', group: 'Engineering', canDefault: false }),
-            nautical_mechanic: skill({ attribute: 'logic', group: 'Engineering', canDefault: false }),
-            animal_handling: skill({ attribute: 'charisma' }),
-            armorer: skill({ attribute: 'logic' }),
-            artisan: skill({ attribute: 'intuition', canDefault: false }),
-            biotechnology: skill({ attribute: 'logic', group: 'Biotech', canDefault: false }),
-            chemistry: skill({ attribute: 'logic', canDefault: false }),
-            computer: skill({ attribute: 'logic', group: 'Electronics' }),
-            cybercombat: skill({ attribute: 'logic', group: 'Cracking' }),
-            cybertechnology: skill({ attribute: 'logic', group: 'Biotech', canDefault: false }),
-            demolitions: skill({ attribute: 'logic' }),
-            electronic_warfare: skill({ attribute: 'logic', group: 'Cracking', canDefault: false }),
-            first_aid: skill({ attribute: 'logic', group: 'Biotech' }),
-            forgery: skill({ attribute: 'logic' }),
-            hacking: skill({ attribute: 'logic', group: 'Cracking' }),
-            hardware: skill({ attribute: 'logic', group: 'Electronics', canDefault: false }),
-            locksmith: skill({ attribute: 'logic', canDefault: false }),
-            medicine: skill({ attribute: 'logic', group: 'Biotech', canDefault: false }),
-            navigation: skill({ attribute: 'intuition', group: 'Outdoors' }),
-            software: skill({ attribute: 'logic', group: 'Electronics', canDefault: false }),
-
-            // Vehicle Skills
-            gunnery: skill({ attribute: 'agility' }),
-            pilot_aerospace: skill({ attribute: 'reaction', canDefault: false }),
-            pilot_aircraft: skill({ attribute: 'reaction', canDefault: false }),
-            pilot_walker: skill({ attribute: 'reaction', canDefault: false }),
-            pilot_ground_craft: skill({ attribute: 'reaction' }),
-            pilot_water_craft: skill({ attribute: 'reaction' }),
-            pilot_exotic_vehicle: skill({ attribute: 'reaction', canDefault: false }), // how to deal with exotic vehicles?
-        }
+function createSkillFromSkillData(skillDef: ActiveSkillDefinition) {
+    const { linkedAttribute, skillGroupLabel, flags, requires } = skillDef;
+    const options: any = {
+        attribute: linkedAttribute,
+    };
+    if (skillGroupLabel) {
+        const parts = skillGroupLabel.split('.');
+        // fix close combat; TODO: Remove this stuff, and reference the label directly
+        options.group = parts[parts.length - 1].replace(/([a-z])([A-Z])/g, '$1 $2');
     }
-);
+    if (!flags.canDefault) {
+        options.canDefault = false;
+    }
+
+    // fix flight
+    const needsFlight = requires?.[0]?.characterFlags?.includes('can-fly');
+    if (needsFlight) {
+        options.hidden = true;
+    }
+
+    return options;
+}
+
+export const Skills = () =>
+    new TypedObjectField(new ModifiableField(SkillField()), {
+        required: true,
+        initial: Object.fromEntries(
+            ActiveSkillData.map((skillDef) => [skillDef.id, skill(createSkillFromSkillData(skillDef))]),
+        ) as Record<string, ReturnType<typeof skill>>,
+    });
 
 console.log(Skills().getInitialValue());
 
@@ -128,9 +65,9 @@ export const KnowledgeSkillList = (initialAttribute: string) => ({
     attribute: new StringField({
         required: true,
         initial: initialAttribute,
-        choices: ["willpower", "logic", "intuition", "charisma"]
+        choices: ['willpower', 'logic', 'intuition', 'charisma'],
     }),
-    value: new TypedObjectField(new ModifiableField(SkillField()), {required: true, initial: {}}),
+    value: new TypedObjectField(new ModifiableField(SkillField()), { required: true, initial: {} }),
 });
 
 export const KnowledgeSkills = () => ({

@@ -6,8 +6,8 @@ import { WoundsPrep } from './functions/WoundsPrep';
 import { ModifiersPrep } from './functions/ModifiersPrep';
 import { InitiativePrep } from './functions/InitiativePrep';
 import { Helpers } from '../../helpers';
-import { PartsList } from "../../parts/PartsList";
-import { SkillFlow } from "../flows/SkillFlow";
+import { PartsList } from '../../parts/PartsList';
+import { SkillFlow } from '../flows/SkillFlow';
 import { CharacterPrep } from './CharacterPrep';
 import { GruntPrep } from './functions/GruntPrep';
 import { DataDefaults } from '../../data/DataDefaults';
@@ -16,7 +16,7 @@ import { SR } from '../../constants';
 import { SkillFieldType, SkillsType } from 'src/module/types/template/Skills';
 import { SR5Item } from 'src/module/item/SR5Item';
 import { AttributesType } from 'src/module/types/template/Attributes';
-
+import { ActiveSkillsById } from '../../config/ActiveSkills';
 
 export class SpiritPrep {
     static prepareBaseData(system: Actor.SystemOfType<'spirit'>) {
@@ -83,15 +83,35 @@ export class SpiritPrep {
             }
 
             // prepare initiative data
-            initiative.meatspace.base.base = force * overrides.init_mult + overrides.init + Number(modifiers['astral_initiative']);
-            initiative.meatspace.base.mod = PartsList.AddUniquePart(initiative.meatspace.base.mod, "SR5.Bonus", Number(modifiers['meat_initiative']));
+            initiative.meatspace.base.base =
+                force * overrides.init_mult + overrides.init + Number(modifiers['astral_initiative']);
+            initiative.meatspace.base.mod = PartsList.AddUniquePart(
+                initiative.meatspace.base.mod,
+                'SR5.Bonus',
+                Number(modifiers['meat_initiative']),
+            );
             initiative.meatspace.dice.base = overrides.init_dice;
-            initiative.meatspace.dice.mod = PartsList.AddUniquePart(initiative.meatspace.dice.mod, "SR5.Bonus", Number(modifiers['meat_initiative_dice']));
+            initiative.meatspace.dice.mod = PartsList.AddUniquePart(
+                initiative.meatspace.dice.mod,
+                'SR5.Bonus',
+                Number(modifiers['meat_initiative_dice']),
+            );
 
-            initiative.astral.base.base = force * overrides.astral_init_mult + overrides.astral_init + Number(modifiers['astral_initiative_dice']);
-            initiative.astral.base.mod = PartsList.AddUniquePart(initiative.astral.base.mod, "SR5.Bonus", Number(modifiers['astral_initiative']));
+            initiative.astral.base.base =
+                force * overrides.astral_init_mult +
+                overrides.astral_init +
+                Number(modifiers['astral_initiative_dice']);
+            initiative.astral.base.mod = PartsList.AddUniquePart(
+                initiative.astral.base.mod,
+                'SR5.Bonus',
+                Number(modifiers['astral_initiative']),
+            );
             initiative.astral.dice.base = overrides.astral_init_dice;
-            initiative.astral.dice.mod = PartsList.AddUniquePart(initiative.astral.dice.mod, "SR5.Bonus", Number(modifiers['astral_initiative_dice']));
+            initiative.astral.dice.mod = PartsList.AddUniquePart(
+                initiative.astral.dice.mod,
+                'SR5.Bonus',
+                Number(modifiers['astral_initiative_dice']),
+            );
         }
     }
 
@@ -104,10 +124,12 @@ export class SpiritPrep {
     static prepareActiveSkill(skillId: string, skills: SkillsType): SkillFieldType {
         if (skills[skillId]) return skills[skillId];
 
-        const label = SR5.activeSkills[skillId];
-        const attribute = SR5.activeSkillAttribute[skillId];
+        const rawSkill = ActiveSkillsById[skillId];
+        const label = rawSkill.label;
+        const attribute = rawSkill.linkedAttribute;
+        const canDefault = rawSkill.flags.canDefault;
 
-        return DataDefaults.createData('skill_field', { label, attribute, canDefault: false })
+        return DataDefaults.createData('skill_field', { label, attribute, canDefault });
     }
 
     static prepareSpiritArmor(system: Actor.SystemOfType<'spirit'>) {
@@ -147,7 +169,7 @@ export class SpiritPrep {
             astral_init_dice: 3,
             // skills are all set to Force
             skills: [] as string[],
-            halfValueSkill: false as boolean
+            halfValueSkill: false as boolean,
         };
         switch (spiritType) {
             case 'air':
@@ -171,7 +193,15 @@ export class SpiritPrep {
                 overrides.attributes.reaction = 4;
                 overrides.attributes.strength = -3;
                 overrides.init = 4;
-                overrides.skills.push('assensing', 'astral_combat', 'exotic_range', 'impersonation', 'perception', 'running', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'impersonation',
+                    'perception',
+                    'running',
+                    'unarmed_combat',
+                );
                 break;
             case 'ally':
                 overrides.skills.push('assensing', 'astral_combat', 'perception', 'unarmed_combat');
@@ -196,7 +226,14 @@ export class SpiritPrep {
                 overrides.attributes.strength = -1;
                 overrides.attributes.charisma = 1;
                 overrides.init = 2;
-                overrides.skills.push('assensing', 'astral_combat', 'counterspelling', 'impersonation', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'impersonation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'bone':
                 overrides.attributes.body = 3;
@@ -236,7 +273,14 @@ export class SpiritPrep {
                 overrides.attributes.strength = -2;
                 overrides.attributes.intuition = 1;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'exotic_range', 'flight', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'flight',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'guardian':
                 overrides.attributes.body = 1;
@@ -244,14 +288,30 @@ export class SpiritPrep {
                 overrides.attributes.reaction = 3;
                 overrides.attributes.strength = 2;
                 overrides.init = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'blades', 'clubs', 'counterspelling', 'exotic_range', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'blades',
+                    'clubs',
+                    'counterspelling',
+                    'exotic_range',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'guidance':
                 overrides.attributes.body = 3;
                 overrides.attributes.agility = -1;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 1;
-                overrides.skills.push('arcana', 'assensing', 'astral_combat', 'counterspelling', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'arcana',
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'homunculus':
                 delete overrides.attributes.body;
@@ -300,7 +360,14 @@ export class SpiritPrep {
                 overrides.attributes.strength = 2;
                 overrides.attributes.logic = -2;
                 overrides.init = -1;
-                overrides.skills.push('navigation', 'perception', 'pilot_water_craft', 'survival', 'swimming', 'unarmed_combat');
+                overrides.skills.push(
+                    'navigation',
+                    'perception',
+                    'pilot_water_craft',
+                    'survival',
+                    'swimming',
+                    'unarmed_combat',
+                );
                 break;
             case 'task':
                 overrides.attributes.reaction = 2;
@@ -316,7 +383,13 @@ export class SpiritPrep {
                 overrides.attributes.willpower = 1;
                 overrides.attributes.logic = -2;
                 overrides.init = -1;
-                overrides.skills.push('intimidation', 'navigation', 'perception', 'pilot_ground_craft', 'unarmed_combat');
+                overrides.skills.push(
+                    'intimidation',
+                    'navigation',
+                    'perception',
+                    'pilot_ground_craft',
+                    'unarmed_combat',
+                );
                 break;
             case 'watcher':
                 delete overrides.attributes.body;
@@ -346,13 +419,28 @@ export class SpiritPrep {
                 overrides.attributes.reaction = 4;
                 overrides.attributes.strength = -3;
                 overrides.init = 4;
-                overrides.skills.push('assensing', 'astral_combat', 'exotic_range', 'perception', 'running', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'perception',
+                    'running',
+                    'unarmed_combat',
+                );
                 break;
             case 'toxic_beasts':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = 1;
                 overrides.attributes.strength = 2;
-                overrides.skills.push('assensing', 'astral_combat', 'exotic_range', 'gymnastics', 'perception', 'running', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'gymnastics',
+                    'perception',
+                    'running',
+                    'unarmed_combat',
+                );
                 break;
             case 'toxic_earth':
                 overrides.attributes.body = 4;
@@ -370,7 +458,14 @@ export class SpiritPrep {
                 overrides.attributes.strength = -2;
                 overrides.attributes.intuition = 1;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'exotic_range', 'perception', 'flight', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'perception',
+                    'flight',
+                    'unarmed_combat',
+                );
                 break;
             case 'toxic_man':
                 overrides.attributes.reaction = 2;
@@ -400,7 +495,15 @@ export class SpiritPrep {
                 overrides.attributes.reaction = 2;
                 overrides.attributes.willpower = 1;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'con', 'gymnastics', 'intimidation', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'nightmare':
                 overrides.attributes.agility = 3;
@@ -409,7 +512,15 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = 2;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'con', 'gymnastics', 'intimidation', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'shade':
                 overrides.attributes.agility = 3;
@@ -418,7 +529,15 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = 2;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'con', 'gymnastics', 'intimidation', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'succubus':
                 overrides.attributes.agility = 3;
@@ -427,7 +546,15 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = 2;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'con', 'gymnastics', 'intimidation', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'wraith':
                 overrides.attributes.agility = 3;
@@ -436,7 +563,15 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = 2;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'con', 'gymnastics', 'intimidation', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
 
             // Shedim
@@ -453,7 +588,17 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.init = 6;
                 overrides.init_dice = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'blades', 'gymnastics', 'perception', 'running', 'sneaking', 'throwing_weapons', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'blades',
+                    'gymnastics',
+                    'perception',
+                    'running',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
             case 'blade_summoned':
@@ -463,7 +608,17 @@ export class SpiritPrep {
                 overrides.attributes.strength = 1;
                 overrides.init = 2;
                 overrides.init_dice = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'blades', 'gymnastics', 'perception', 'running', 'sneaking', 'throwing_weapons', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'blades',
+                    'gymnastics',
+                    'perception',
+                    'running',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
             case 'horror_show':
@@ -473,7 +628,19 @@ export class SpiritPrep {
                 overrides.attributes.strength = 1;
                 overrides.init = 2;
                 overrides.init_dice = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'blades', 'con', 'disguise', 'gymnastics', 'impersonation', 'perception', 'running', 'sneaking', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'blades',
+                    'con',
+                    'disguise',
+                    'gymnastics',
+                    'impersonation',
+                    'perception',
+                    'running',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
 
             case 'unbreakable':
@@ -484,7 +651,15 @@ export class SpiritPrep {
                 overrides.attributes.logic = -1;
                 overrides.init = 1;
                 overrides.init_dice = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'clubs', 'perception', 'sneaking', 'throwing_weapons', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'clubs',
+                    'perception',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
             case 'master_shedim':
@@ -494,7 +669,14 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.init = 3;
                 overrides.init_dice = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'counterspelling', 'perception', 'spellcasting', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'perception',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
 
             // insect
@@ -509,13 +691,27 @@ export class SpiritPrep {
                 overrides.attributes.reaction = 3;
                 overrides.attributes.strength = 1;
                 overrides.init = 3;
-                overrides.skills.push('assensing', 'astral_combat', 'perception', 'gymnastics', 'spellcasting', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'perception',
+                    'gymnastics',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
             case 'scout':
                 overrides.attributes.agility = 2;
                 overrides.attributes.reaction = 2;
                 overrides.init = 2;
-                overrides.skills.push('assensing', 'astral_combat', 'perception', 'gymnastics', 'sneaking', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'perception',
+                    'gymnastics',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
             case 'soldier':
                 overrides.attributes.body = 3;
@@ -523,7 +719,15 @@ export class SpiritPrep {
                 overrides.attributes.reaction = 1;
                 overrides.attributes.strength = 3;
                 overrides.init = 1;
-                overrides.skills.push('assensing', 'astral_combat', 'counterspelling', 'exotic_range', 'gymnastics', 'perception', 'unarmed_combat');
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'exotic_range',
+                    'gymnastics',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
             case 'worker':
                 overrides.attributes.strength = 1;
@@ -538,15 +742,26 @@ export class SpiritPrep {
                 overrides.attributes.logic = 1;
                 overrides.attributes.intuition = 1;
                 overrides.init = 5;
-                overrides.skills.push('assensing', 'astral_combat', 'con', 'counterspelling', 'gymnastics', 'leadership', 'negotiation', 'perception', 'spellcasting', 'unarmed_combat' );
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'counterspelling',
+                    'gymnastics',
+                    'leadership',
+                    'negotiation',
+                    'perception',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
-            case "carcass":
+            case 'carcass':
                 overrides.attributes.body = 3;
                 overrides.attributes.strength = 2;
                 overrides.attributes.charisma = -1;
-                overrides.skills.push("assensing", "astral_combat", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'perception', 'unarmed_combat');
                 break;
-            case "corpse":
+            case 'corpse':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = -1;
                 overrides.attributes.reaction = 2;
@@ -554,17 +769,24 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = -1;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'perception', 'unarmed_combat');
                 break;
-            case "rot":
+            case 'rot':
                 overrides.attributes.body = 3;
                 overrides.attributes.agility = -2;
                 overrides.attributes.strength = 1;
                 overrides.attributes.logic = -1;
                 overrides.attributes.charisma = -1;
-                overrides.skills.push("assensing", "astral_combat", "counterspelling", "exotic_range", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'exotic_range',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
-            case "palefile":
+            case 'palefile':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = 1;
                 overrides.attributes.reaction = 3;
@@ -572,9 +794,16 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = -1;
                 overrides.init = 3;
-                overrides.skills.push("assensing", "astral_combat", "exotic_range", "flight", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'flight',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
-            case "detritus":
+            case 'detritus':
                 overrides.attributes.body = 5;
                 overrides.attributes.agility = -3;
                 overrides.attributes.reaction = -1;
@@ -582,194 +811,367 @@ export class SpiritPrep {
                 overrides.attributes.logic = -1;
                 overrides.attributes.charisma = -1;
                 overrides.init = -1;
-                overrides.skills.push("assensing", "astral_combat", "exotic_range", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'exotic_range', 'perception', 'unarmed_combat');
                 break;
 
             // Howling Shadow
-            case "anarch":
+            case 'anarch':
                 overrides.attributes.body = -1;
                 overrides.attributes.agility = -1;
                 overrides.attributes.reaction = 1;
                 overrides.attributes.strength = -1;
                 overrides.init = 1;
-                overrides.skills.push("assensing", "automatics", "blades", "clubs", "con", "demolitions", "disguise", "forgery", "gymnastics", "impersonation", "locksmith", "palming", "perception", "pistols", "sneaking", "throwing_weapons", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'automatics',
+                    'blades',
+                    'clubs',
+                    'con',
+                    'demolitions',
+                    'disguise',
+                    'forgery',
+                    'gymnastics',
+                    'impersonation',
+                    'locksmith',
+                    'palming',
+                    'perception',
+                    'pistols',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "arboreal":
+            case 'arboreal':
                 overrides.attributes.body = +2;
                 overrides.attributes.strength = 1;
                 overrides.attributes.essence = -2;
-                overrides.skills.push("assensing", "astral_combat", "blade", "clubs", "unarmed_combat", "exotic_range", "perception");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'blade',
+                    'clubs',
+                    'unarmed_combat',
+                    'exotic_range',
+                    'perception',
+                );
                 break;
 
-            case "blackjack":
+            case 'blackjack':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = 1;
                 overrides.attributes.reaction = 1;
                 overrides.init = 1;
-                overrides.skills.push("assensing", "automatics", "blades", "clubs", "computer", "first_aid", "gymnastics", "intimidation", "locksmith", "longarms", "perception", "pilot_ground_craft", "pistols", "sneaking", "throwing_weapons", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'automatics',
+                    'blades',
+                    'clubs',
+                    'computer',
+                    'first_aid',
+                    'gymnastics',
+                    'intimidation',
+                    'locksmith',
+                    'longarms',
+                    'perception',
+                    'pilot_ground_craft',
+                    'pistols',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "boggle":
+            case 'boggle':
                 overrides.attributes.body = -2;
                 overrides.attributes.agility = -1;
                 overrides.attributes.reaction = -1;
                 overrides.attributes.strength = -2;
                 overrides.attributes.willpower = 2;
                 overrides.init = -1;
-                overrides.skills.push("assensing", "astral_combat", "blades", "clubs", "unarmed_combat", "gymnastics", "perception");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'blades',
+                    'clubs',
+                    'unarmed_combat',
+                    'gymnastics',
+                    'perception',
+                );
                 break;
 
-            case "bugul":
+            case 'bugul':
                 overrides.attributes.agility = -1;
                 overrides.attributes.reaction = -1;
                 overrides.attributes.strength = -2;
                 overrides.attributes.willpower = 1;
                 overrides.attributes.logic = 2;
-                overrides.skills.push("artisan", "assensing", "astral_combat", "con", "counterspelling", "disenchanting", "gymnastics", "negotiation", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'artisan',
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'counterspelling',
+                    'disenchanting',
+                    'gymnastics',
+                    'negotiation',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "chindi":
+            case 'chindi':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = 1;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 1;
                 overrides.init = 2;
-                overrides.skills.push("archery", "blades", "clubs", "first_aid", "gymnastics", "intimidation", "perception", "sneaking", "throwing_weapons", "unarmed_combat");
+                overrides.skills.push(
+                    'archery',
+                    'blades',
+                    'clubs',
+                    'first_aid',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
             // HS#119: This spirit types has fixed values that don't use general spirit rules...
-            case "corpselight":
+            case 'corpselight':
                 break;
 
-            case "croki":
+            case 'croki':
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 2;
                 overrides.init = 2;
-                overrides.skills.push("artificing", "assensing", "astral_combat", "gymnastics", "perception", "ritual_spellcasting", "spellcasting");
+                overrides.skills.push(
+                    'artificing',
+                    'assensing',
+                    'astral_combat',
+                    'gymnastics',
+                    'perception',
+                    'ritual_spellcasting',
+                    'spellcasting',
+                );
                 break;
 
-            case "duende":
+            case 'duende':
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "con", "gymnastics", "perception");
+                overrides.skills.push('assensing', 'astral_combat', 'con', 'gymnastics', 'perception');
                 break;
 
-            case "ejerian":
-                overrides.skills.push("assensing", "astral_combat", "automatics", "blades", "clubs", "computer", "first_aid", "gymnastics", "intimidation", "locksmith", "longarms", "perception", "pilot_ground_craft", "pistols", "sneaking", "throwing_weapons", "unarmed_combat");
+            case 'ejerian':
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'automatics',
+                    'blades',
+                    'clubs',
+                    'computer',
+                    'first_aid',
+                    'gymnastics',
+                    'intimidation',
+                    'locksmith',
+                    'longarms',
+                    'perception',
+                    'pilot_ground_craft',
+                    'pistols',
+                    'sneaking',
+                    'throwing_weapons',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "elvar":
+            case 'elvar':
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "con", "counterspelling", "disenchanting", "gymnastics", "perception", "spellcasting");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'counterspelling',
+                    'disenchanting',
+                    'gymnastics',
+                    'perception',
+                    'spellcasting',
+                );
                 break;
 
-            case "erinyes":
+            case 'erinyes':
                 overrides.attributes.body = -1;
                 overrides.attributes.agility = 3;
                 overrides.attributes.reaction = 2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "flight", "gymnastics", "perception", "sneaking", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'flight',
+                    'gymnastics',
+                    'perception',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "green_man":
+            case 'green_man':
                 overrides.attributes.body = 3;
                 overrides.attributes.agility = -1;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 4;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "counterspelling", "gymnastics", "leadership", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'gymnastics',
+                    'leadership',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "imp":
+            case 'imp':
                 overrides.attributes.reaction = 3;
                 overrides.init = 3;
-                overrides.skills.push("alchemy", "assensing", "astral_combat", "con", "counterspelling", "disenchanting", "gymnastics", "intimidation", "perception", "spellcasting", "unarmed_combat");
+                overrides.skills.push(
+                    'alchemy',
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'counterspelling',
+                    'disenchanting',
+                    'gymnastics',
+                    'intimidation',
+                    'perception',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "jarl":
+            case 'jarl':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = -2;
                 overrides.attributes.reaction = 3;
                 overrides.attributes.strength = 2;
                 overrides.init = 4;
-                overrides.skills.push("assensing", "astral_combat", "counterspelling", "gymnastics", "leadership", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'counterspelling',
+                    'gymnastics',
+                    'leadership',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "kappa":
+            case 'kappa':
                 overrides.attributes.body = 5;
                 overrides.attributes.reaction = -1;
                 overrides.attributes.strength = 1;
                 overrides.attributes.essence = -2;
                 overrides.init = -1;
-                overrides.skills.push("assensing", "astral_combat", "exotic_range", "gymnastics", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'exotic_range',
+                    'gymnastics',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "kokopelli":
+            case 'kokopelli':
                 overrides.attributes.body = -1;
                 overrides.attributes.agility = 2;
                 overrides.attributes.reaction = 2;
                 overrides.init = 2;
-                overrides.skills.push("artisan", "assensing", "astral_combat", "leadership", "perception", "unarmed_combat");
+                overrides.skills.push(
+                    'artisan',
+                    'assensing',
+                    'astral_combat',
+                    'leadership',
+                    'perception',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "morbi":
+            case 'morbi':
                 overrides.attributes.reaction = 1;
                 overrides.attributes.strength = -2;
                 overrides.attributes.intuition = 1;
                 overrides.attributes.charisma = 2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "perception", "ritual_spellcasting", "sneaking", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'perception',
+                    'ritual_spellcasting',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "nocnitsa":
+            case 'nocnitsa':
                 overrides.attributes.body = -3;
                 overrides.attributes.agility = 4;
                 overrides.attributes.reaction = 5;
                 overrides.attributes.strength = -2;
                 overrides.attributes.willpower = -1;
                 overrides.init = 5;
-                overrides.skills.push("assensing", "astral_combat", "perception", "sneaking", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'perception', 'sneaking', 'unarmed_combat');
                 break;
 
-            case "phantom":
+            case 'phantom':
                 overrides.attributes.body = 1;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = -2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "gymnastics", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'gymnastics', 'perception', 'unarmed_combat');
                 break;
 
-            case "preta":
+            case 'preta':
                 overrides.attributes.body = -1;
                 overrides.attributes.agility = 1;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = -1;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "intimidation", "negotiation", "perception", "sneaking", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'intimidation',
+                    'negotiation',
+                    'perception',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "stabber":
+            case 'stabber':
                 overrides.attributes.body = 1;
                 overrides.attributes.agility = 4;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = 4;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "gymnastics", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'gymnastics', 'perception', 'unarmed_combat');
                 break;
 
-            case "tungak":
+            case 'tungak':
                 overrides.attributes.body = 1;
                 overrides.attributes.reaction = 2;
                 overrides.attributes.strength = -2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "gymnastics", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'gymnastics', 'perception', 'unarmed_combat');
                 break;
 
-            case "vucub_caquix":
+            case 'vucub_caquix':
                 overrides.attributes.body = 3;
                 overrides.attributes.agility = 4;
                 overrides.attributes.reaction = 4;
@@ -777,20 +1179,20 @@ export class SpiritPrep {
                 overrides.attributes.intuition = 2;
                 overrides.attributes.charisma = 4;
                 overrides.init = 5;
-                overrides.skills.push("assensing", "flight", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'flight', 'perception', 'unarmed_combat');
                 break;
 
             // AET#34-37: This spirit types has fixed values that don't use general spirit rules...
-            case "gum_toad":
+            case 'gum_toad':
                 overrides.attributes.body = 7;
                 overrides.attributes.agility = -2;
                 overrides.attributes.strength = 2;
                 overrides.attributes.charisma = 1;
                 overrides.attributes.willpower = -1;
-                overrides.skills.push("assensing", "astral_combat", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'perception', 'unarmed_combat');
                 break;
 
-            case "crawler":
+            case 'crawler':
                 overrides.attributes.body = 4;
                 overrides.attributes.reaction = 3;
                 overrides.attributes.strength = 6;
@@ -799,47 +1201,84 @@ export class SpiritPrep {
                 overrides.attributes.willpower = -1;
                 overrides.init = 6;
                 overrides.astral_init = 6;
-                overrides.skills.push("assensing", "astral_combat", "perception", "running", "sneaking", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'perception',
+                    'running',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
-                
-            case "ghasts":
+
+            case 'ghasts':
                 overrides.attributes.body = 2;
                 overrides.attributes.reaction = 2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "flight", "perception", "spellcasting", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'flight',
+                    'perception',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "vrygoths":
+            case 'vrygoths':
                 overrides.attributes.body = 4;
                 overrides.attributes.strength = 3;
                 overrides.attributes.logic = 3;
-                overrides.skills.push("assensing", "astral_combat", "flight", "perception", "spellcasting", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'flight',
+                    'perception',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "gremlin":
+            case 'gremlin':
                 overrides.attributes.reaction = 3;
                 overrides.init = 3;
-                overrides.skills.push("assensing", "astral_combat", "con", "counterspelling", "intimidation", "perception", "spellcasting", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'con',
+                    'counterspelling',
+                    'intimidation',
+                    'perception',
+                    'spellcasting',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "anansi":
+            case 'anansi':
                 overrides.attributes.agility = 2;
                 overrides.attributes.reaction = 2;
                 overrides.init = 2;
-                overrides.skills.push("assensing", "astral_combat", "gymnastics", "perception", "sneaking", "unarmed_combat");
+                overrides.skills.push(
+                    'assensing',
+                    'astral_combat',
+                    'gymnastics',
+                    'perception',
+                    'sneaking',
+                    'unarmed_combat',
+                );
                 break;
 
-            case "tsuchigumo_warrior":
+            case 'tsuchigumo_warrior':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = 2;
                 overrides.attributes.reaction = 1;
                 overrides.attributes.strength = 3;
                 overrides.init = 1;
-                overrides.skills.push("assensing", "astral_combat", "counterspelling", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'counterspelling', 'perception', 'unarmed_combat');
                 break;
 
             // HT#129
-            case "corps_cadavre":
+            case 'corps_cadavre':
                 overrides.attributes.body = 2;
                 overrides.attributes.agility = -2;
                 overrides.attributes.reaction = -2;
@@ -852,7 +1291,7 @@ export class SpiritPrep {
                 overrides.init_mult = 1;
                 overrides.astral_init_dice = 1;
                 overrides.astral_init_mult = 1;
-                overrides.skills.push("assensing", "astral_combat", "perception", "unarmed_combat");
+                overrides.skills.push('assensing', 'astral_combat', 'perception', 'unarmed_combat');
                 break;
         }
 
@@ -861,10 +1300,10 @@ export class SpiritPrep {
 
     /**
      * The spirits force value is used for the force attribute value.
-     * 
+     *
      * NOTE: This separation is mainly a legacy concern. Attributes are available as testable (and modifiable values)
      *       flat values like force aren't. For this reason the flat value is transformed to an attribute.
-     * 
+     *
      * @param system The spirit system data to prepare
      */
     static prepareAttributesWithForce(system: Actor.SystemOfType<'spirit'>) {

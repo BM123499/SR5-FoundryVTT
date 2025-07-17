@@ -1,9 +1,10 @@
-import { SR5 } from "../config";
+import { SR5 } from '../config';
 import MarkedDocument = Shadowrun.MarkedDocument;
 import { InventorySheetDataByType } from '../actor/sheets/SR5BaseActorSheet';
 import { SR5ActiveEffect } from '../effect/SR5ActiveEffect';
 import { formatStrict } from '../utils/strings';
 import { SR5Item } from '../item/SR5Item';
+import { ActiveSkillsById } from '../config/ActiveSkills';
 
 /**
  * Typing around the legacy item list helper.
@@ -11,53 +12,54 @@ import { SR5Item } from '../item/SR5Item';
 interface ItemListRightSide {
     // Provide a simple text, main use for column headers.
     text?: {
-        text: string | number | undefined
-        title?: string // TODO: This doesn't seem to be doing anything in ListItem.html
-        cssClass?: string
-    }
+        text: string | number | undefined;
+        title?: string; // TODO: This doesn't seem to be doing anything in ListItem.html
+        cssClass?: string;
+    };
     // Provide a button element, main use for column values.
     button?: {
-        text: string | number
-        cssClass?: string
+        text: string | number;
+        cssClass?: string;
         // Shorten the button visually...
-        short?: boolean
-    }
+        short?: boolean;
+    };
     // Provide a input element, main use for column values.
     input?: {
-        type: string
-        value: any
-        cssClass?: string
-    }
+        type: string;
+        value: any;
+        cssClass?: string;
+    };
     // Provide html as string.
     html?: {
-        text: string
-        cssClass?: string
-    }
+        text: string;
+        cssClass?: string;
+    };
 }
 
 export const registerItemLineHelpers = () => {
     Handlebars.registerHelper('InventoryHeaderIcons', function (section: InventorySheetDataByType) {
         var icons = Handlebars.helpers['ItemHeaderIcons'](section.type) as object[];
 
-        icons.push(section.isOpen
-            ? {
-                icon: 'fas fa-square-chevron-up',
-                title: game.i18n.localize('SR5.Collapse'),
-                cssClass: 'item-toggle',
-                // Add HTML data attributes using a key<string>:value<string> structure
-                data: {}
-            }
-            : {
-                icon: 'fas fa-square-chevron-down',
-                title: game.i18n.localize('SR5.Expand'),
-                cssClass: 'item-toggle',
-                // Add HTML data attributes using a key<string>:value<string> structure
-                data: {}
-            }
+        icons.push(
+            section.isOpen
+                ? {
+                      icon: 'fas fa-square-chevron-up',
+                      title: game.i18n.localize('SR5.Collapse'),
+                      cssClass: 'item-toggle',
+                      // Add HTML data attributes using a key<string>:value<string> structure
+                      data: {},
+                  }
+                : {
+                      icon: 'fas fa-square-chevron-down',
+                      title: game.i18n.localize('SR5.Expand'),
+                      cssClass: 'item-toggle',
+                      // Add HTML data attributes using a key<string>:value<string> structure
+                      data: {},
+                  },
         );
 
         return icons;
-    })
+    });
 
     Handlebars.registerHelper('ItemHeaderIcons', function (type: string) {
         const PlusIcon = 'fas fa-plus';
@@ -68,7 +70,7 @@ export const registerItemLineHelpers = () => {
             title: formatStrict('SR5.Create', { type: 'SR5.Item' }),
             cssClass: 'item-create',
             // Add HTML data attributes using a key<string>:value<string> structure
-            data: {}
+            data: {},
         };
         switch (type) {
             case 'lifestyle':
@@ -168,7 +170,7 @@ export const registerItemLineHelpers = () => {
             title: formatStrict('SR5.Create', { type: 'SR5.Item' }),
             cssClass: 'inventory-item-create',
             // Add HTML data attributes using a key<string>:value<string> structure
-            data: { inventory: name }
+            data: { inventory: name },
         };
 
         return [addItemIcon];
@@ -287,23 +289,23 @@ export const registerItemLineHelpers = () => {
                 return [
                     {
                         text: {
-                            text: game.i18n.localize('SR5.CritterPower.Type')
-                        }
+                            text: game.i18n.localize('SR5.CritterPower.Type'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.CritterPower.Range')
-                        }
+                            text: game.i18n.localize('SR5.CritterPower.Range'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.CritterPower.Duration')
-                        }
+                            text: game.i18n.localize('SR5.CritterPower.Duration'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Rating')
-                        }
+                            text: game.i18n.localize('SR5.Rating'),
+                        },
                     },
                 ];
             case 'quality':
@@ -311,7 +313,7 @@ export const registerItemLineHelpers = () => {
                     {
                         text: {
                             text: game.i18n.localize('SR5.QualityType'),
-                        }
+                        },
                     },
                     {
                         text: {
@@ -326,72 +328,72 @@ export const registerItemLineHelpers = () => {
                 return [
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Summoning.SpiritType')
-                        }
+                            text: game.i18n.localize('SR5.Summoning.SpiritType'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Force')
-                        }
-                    }
-                ]
+                            text: game.i18n.localize('SR5.Force'),
+                        },
+                    },
+                ];
             case 'compilation':
                 return [
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Compilation.SpriteType')
-                        }
+                            text: game.i18n.localize('SR5.Compilation.SpriteType'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Level')
-                        }
-                    }
-                ]
+                            text: game.i18n.localize('SR5.Level'),
+                        },
+                    },
+                ];
 
             // General use case item lines
             case 'modifiers':
                 return [
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Value')
-                        }
-                    }
-                ]
+                            text: game.i18n.localize('SR5.Value'),
+                        },
+                    },
+                ];
             case 'itemEffects':
                 return [
                     {
                         text: {
-                            text: game.i18n.localize('SR5.ActiveEffect.ApplyTo')
-                        }
+                            text: game.i18n.localize('SR5.ActiveEffect.ApplyTo'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Duration')
-                        }
+                            text: game.i18n.localize('SR5.Duration'),
+                        },
                     },
                     {
                         text: {
                             // Used as a placeholder for effect line icons.
                             // This way the header column is empty (as no +Add makes sense)
                             // However the line column contains the normal interaction icons.
-                            text: ''
-                        }
-                    }
-                ]
+                            text: '',
+                        },
+                    },
+                ];
             case 'effects':
                 return [
                     {
                         text: {
-                            text: game.i18n.localize('SR5.ActiveEffect.ApplyTo')
-                        }
+                            text: game.i18n.localize('SR5.ActiveEffect.ApplyTo'),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize('SR5.Duration')
-                        }
-                    }
-                ]
+                            text: game.i18n.localize('SR5.Duration'),
+                        },
+                    },
+                ];
             default:
                 return [];
         }
@@ -441,13 +443,17 @@ export const registerItemLineHelpers = () => {
                     {
                         text: {
                             // Instead of 'complex' only show C. This might break in some languages. At that point, you can call me lazy.
-                            text: system.action.type ? game.i18n.localize(SR5.actionTypes[system.action.type] ?? '')[0] : ''
+                            text: system.action.type
+                                ? game.i18n.localize(SR5.actionTypes[system.action.type] ?? '')[0]
+                                : '',
                         },
                     },
                     {
                         text: {
                             // Either use the legacy skill localization OR just the skill name/id instead.
-                            text: game.i18n.localize(SR5.activeSkills[system.action.skill ?? ''] ?? system.action.skill),
+                            text: game.i18n.localize(
+                                ActiveSkillsById[system.action.skill ?? ''].label ?? system.action.skill,
+                            ),
                             cssClass: 'six',
                         },
                     },
@@ -460,7 +466,9 @@ export const registerItemLineHelpers = () => {
                     {
                         text: {
                             // Legacy actions could have both skill and attribute2 set, which would show both information, when it shouldn't.
-                            text: system.action.skill ? '' : game.i18n.localize(SR5.attributes[system.action.attribute2 ?? '']),
+                            text: system.action.skill
+                                ? ''
+                                : game.i18n.localize(SR5.attributes[system.action.attribute2 ?? '']),
                             cssClass: 'six',
                         },
                     },
@@ -487,24 +495,23 @@ export const registerItemLineHelpers = () => {
                     return [
                         {
                             text: {
-                                text: game.i18n.localize(SR5.modificationCategories[item.system.modification_category])
+                                text: game.i18n.localize(SR5.modificationCategories[item.system.modification_category]),
                             },
-
                         },
                         {
                             text: {
-                                text: item.system.slots || ''
+                                text: item.system.slots || '',
                             },
                         },
                         qtyInput,
                     ];
-                };
+                }
 
                 if (item.isType('modification') && item.system.type === 'drone') {
                     return [
                         {
                             text: {
-                                text: item.system.slots || ''
+                                text: item.system.slots || '',
                             },
                         },
                         qtyInput,
@@ -526,12 +533,13 @@ export const registerItemLineHelpers = () => {
                     const reloadLinks: ItemListRightSide[] = [];
 
                     // Show reload on both no ammo configured and partially consumed clips.
-                    const textReload = count < max ?
-                        `${game.i18n.localize('SR5.Weapon.Reload')} ` :
-                        `${game.i18n.localize('SR5.AmmoFull')}`;
-                        
+                    const textReload =
+                        count < max
+                            ? `${game.i18n.localize('SR5.Weapon.Reload')} `
+                            : `${game.i18n.localize('SR5.AmmoFull')}`;
+
                     const cssClassReload = 'no-break';
-                    
+
                     reloadLinks.push({
                         text: {
                             title: `${game.i18n.localize('SR5.Weapon.AmmoCount')}: `,
@@ -551,10 +559,12 @@ export const registerItemLineHelpers = () => {
                                 cssClass: cssClassFullReload,
                             },
                         });
-                    }       
+                    }
 
-                    if(count < max && partialReloadRounds > 0) {
-                        const textPartialReload = `${game.i18n.localize('SR5.Weapon.PartialReload')} (+${partialReloadRounds})`;
+                    if (count < max && partialReloadRounds > 0) {
+                        const textPartialReload = `${game.i18n.localize(
+                            'SR5.Weapon.PartialReload',
+                        )} (+${partialReloadRounds})`;
                         const cssClassPartialReload = 'no-break partial-reload-ammo roll';
 
                         reloadLinks.push({
@@ -564,10 +574,10 @@ export const registerItemLineHelpers = () => {
                                 cssClass: cssClassPartialReload,
                             },
                         });
-                    }       
+                    }
 
-                    reloadLinks.push(qtyInput)
-                    
+                    reloadLinks.push(qtyInput);
+
                     return reloadLinks;
                 } else {
                     return [qtyInput];
@@ -578,13 +588,13 @@ export const registerItemLineHelpers = () => {
                     {
                         text: {
                             text: game.i18n.localize(SR5.qualityTypes[item.system.type ?? '']),
-                        }
+                        },
                     },
                     {
                         text: {
                             text: item.system.rating || '',
                         },
-                    }
+                    },
                 ];
 
             case 'adept_power':
@@ -604,7 +614,9 @@ export const registerItemLineHelpers = () => {
                     },
                     {
                         text: {
-                            text: game.i18n.localize(SR5.spellRanges[(item.system as Item.SystemOfType<'spell'>).range ?? '']),
+                            text: game.i18n.localize(
+                                SR5.spellRanges[(item.system as Item.SystemOfType<'spell'>).range ?? ''],
+                            ),
                         },
                     },
                     {
@@ -622,24 +634,28 @@ export const registerItemLineHelpers = () => {
                 return [
                     {
                         text: {
-                            text: game.i18n.localize(SR5.critterPower.types[item.system.powerType ?? ''])
-                        }
+                            text: game.i18n.localize(SR5.critterPower.types[item.system.powerType ?? '']),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize(SR5.critterPower.ranges[(item.system as Item.SystemOfType<'critter_power'>).range ?? ''])
-                        }
+                            text: game.i18n.localize(
+                                SR5.critterPower.ranges[
+                                    (item.system as Item.SystemOfType<'critter_power'>).range ?? ''
+                                ],
+                            ),
+                        },
                     },
                     {
                         text: {
-                            text: game.i18n.localize(SR5.critterPower.durations[item.system.duration ?? ''])
-                        }
+                            text: game.i18n.localize(SR5.critterPower.durations[item.system.duration ?? '']),
+                        },
                     },
                     {
                         text: {
-                            text: item.system.rating ?? ''
-                        }
-                    }
+                            text: item.system.rating ?? '',
+                        },
+                    },
                 ];
 
             case 'complex_form':
@@ -666,7 +682,9 @@ export const registerItemLineHelpers = () => {
                         button: {
                             cssClass: `item-equip-toggle ${item.isEquipped() ? 'light' : ''}`,
                             short: true,
-                            text: item.isEquipped() ? game.i18n.localize('SR5.Loaded') : game.i18n.localize('SR5.Load') + ' >>',
+                            text: item.isEquipped()
+                                ? game.i18n.localize('SR5.Loaded')
+                                : game.i18n.localize('SR5.Load') + ' >>',
                         },
                     },
                 ];
@@ -686,15 +704,15 @@ export const registerItemLineHelpers = () => {
                     return [
                         {
                             text: {
-                                text: game.i18n.localize(spiritTypeLabel)
-                            }
+                                text: game.i18n.localize(spiritTypeLabel),
+                            },
                         },
                         {
                             text: {
-                                text: summoningData.spirit.force
-                            }
-                        }
-                    ]
+                                text: summoningData.spirit.force,
+                            },
+                        },
+                    ];
                 }
 
                 if (item.system.actor_type === 'sprite') {
@@ -704,15 +722,15 @@ export const registerItemLineHelpers = () => {
                     return [
                         {
                             text: {
-                                text: game.i18n.localize(spriteTypeLabel)
-                            }
+                                text: game.i18n.localize(spriteTypeLabel),
+                            },
                         },
                         {
                             text: {
-                                text: compilationData.sprite.level
-                            }
-                        }
-                    ]
+                                text: compilationData.sprite.level,
+                            },
+                        },
+                    ];
                 }
 
             default:
@@ -737,7 +755,7 @@ export const registerItemLineHelpers = () => {
         const enableIcon = {
             icon: `${item.system.enabled ? 'fas fa-check-circle' : 'far fa-circle'} item-enable-toggle`,
             title: game.i18n.localize('SR5.ToggleEquip'),
-        }
+        };
         const pdfIcon = {
             icon: 'fas fa-file open-source',
             title: game.i18n.localize('SR5.OpenSource'),
@@ -759,12 +777,13 @@ export const registerItemLineHelpers = () => {
     Handlebars.registerHelper('EffectRightSide', function (effect: SR5ActiveEffect) {
         const getDurationLabel = () => {
             if (effect.duration.seconds) return `${effect.duration.seconds}s`;
-            if (effect.duration.rounds && effect.duration.turns) return `${effect.duration.rounds}r, ${effect.duration.turns}t`;
+            if (effect.duration.rounds && effect.duration.turns)
+                return `${effect.duration.rounds}r, ${effect.duration.turns}t`;
             if (effect.duration.rounds) return `${effect.duration.rounds}r`;
             if (effect.duration.turns) return `${effect.duration.turns}t`;
 
             return '';
-        }
+        };
 
         return [
             {
@@ -772,15 +791,15 @@ export const registerItemLineHelpers = () => {
                 text: {
                     text: game.i18n?.localize(SR5.effectApplyTo[effect.system.applyTo]),
                     cssClass: 'six',
-                }
+                },
             },
             {
                 // Duration Column
                 text: {
                     text: getDurationLabel(),
                     cssClass: 'six',
-                }
-            }
+                },
+            },
         ];
     });
 
@@ -788,7 +807,7 @@ export const registerItemLineHelpers = () => {
         const item = new SR5Item(itemStored as SR5Item);
         const moveIcon = {
             icon: 'fas fa-exchange-alt inventory-item-move',
-            title: game.i18n.localize('SR5.MoveItemInventory')
+            title: game.i18n.localize('SR5.MoveItemInventory'),
         };
         const editIcon = {
             icon: 'fas fa-edit item-edit',
@@ -824,23 +843,23 @@ export const registerItemLineHelpers = () => {
         const editIcon = {
             icon: 'fas fa-edit effect-control',
             title: game.i18n.localize('SR5.EditItem'),
-            data: { action: 'edit' }
+            data: { action: 'edit' },
         };
         const removeIcon = {
             icon: 'fas fa-trash effect-control',
             title: game.i18n.localize('SR5.DeleteItem'),
-            data: { action: 'delete' }
+            data: { action: 'delete' },
         };
         const disableIcon = {
             icon: `${effect.disabled ? 'far fa-circle' : 'fas fa-check-circle'} effect-control`,
             title: game.i18n.localize('SR5.ToggleActive'),
-            data: { action: "toggle" }
+            data: { action: 'toggle' },
         };
         const openOriginIcon = {
             icon: 'fas fa-file effect-control',
             title: game.i18n.localize('SR5.OpenOrigin'),
-            data: { action: "open-origin" }
-        }
+            data: { action: 'open-origin' },
+        };
         // Disallow changes to effects that aren't of direct origin.
         let icons = [disableIcon, editIcon, removeIcon];
         if (effect.isOriginOwned) icons = [openOriginIcon, ...icons];
@@ -854,17 +873,17 @@ export const registerItemLineHelpers = () => {
         const openOriginIcon = {
             icon: 'fas fa-file item-effect-control',
             title: game.i18n.localize('SR5.OpenOrigin'),
-            data: { action: "open-origin" }
-        }
+            data: { action: 'open-origin' },
+        };
         const disableIcon = {
             icon: `${effect.disabled ? 'far fa-circle' : 'fas fa-check-circle'} item-effect-control`,
             title: game.i18n.localize('SR5.ToggleActive'),
-            data: { action: "toggle" }
+            data: { action: 'toggle' },
         };
         const editIcon = {
             icon: 'fas fa-edit item-effect-control',
             title: game.i18n.localize('SR5.EditItem'),
-            data: { action: 'edit' }
+            data: { action: 'edit' },
         };
 
         return [openOriginIcon, disableIcon, editIcon];
@@ -879,7 +898,7 @@ export const registerItemLineHelpers = () => {
                 cssClass: 'marks-qty',
             },
         };
-        return [quantityInput]
+        return [quantityInput];
     });
 
     // Matrix Mark interaction on a Sheet.
@@ -887,13 +906,13 @@ export const registerItemLineHelpers = () => {
         const incrementIcon = {
             icon: 'fas fa-plus marks-add-one',
             title: game.i18n.localize('SR5.Labels.Sheet.AddOne'),
-            data: { action: 'add-one' }
+            data: { action: 'add-one' },
         };
         const decrementIcon = {
             icon: 'fas fa-minus marks-remove-one',
             title: game.i18n.localize('SR5.Labels.Sheet.SubtractOne'),
-            data: { action: 'remove-one' }
-        }
+            data: { action: 'remove-one' },
+        };
 
         return [incrementIcon, decrementIcon];
     });
@@ -914,16 +933,19 @@ export const registerItemLineHelpers = () => {
                 text: {
                     text: game.i18n.localize('SR5.Qty'),
                 },
-            }]
+            },
+        ];
     });
 
     Handlebars.registerHelper('MarkListHeaderIcons', () => {
-        return [{
-            icon: 'fas fa-trash',
-            title: game.i18n.localize('SR5.ClearMarks'),
-            text: game.i18n.localize('SR5.Del'),
-            cssClass: 'marks-clear-all'
-        }];
+        return [
+            {
+                icon: 'fas fa-trash',
+                title: game.i18n.localize('SR5.ClearMarks'),
+                text: game.i18n.localize('SR5.Del'),
+                cssClass: 'marks-clear-all',
+            },
+        ];
     });
 
     Handlebars.registerHelper('NetworkDevicesListRightSide', () => {
@@ -937,19 +959,22 @@ export const registerItemLineHelpers = () => {
                 text: {
                     text: game.i18n.localize('SR5.FOUNDRY.Item'),
                 },
-            }]
-    })
+            },
+        ];
+    });
 
     Handlebars.registerHelper('NetworkDevicesListHeaderIcons', () => {
-        return [{
-            icon: 'fas fa-trash',
-            title: game.i18n.localize('SR5.Labels.Sheet.ClearNetwork'),
-            text: game.i18n.localize('SR5.Del'),
-            cssClass: 'network-clear'
-        }];
-    })
+        return [
+            {
+                icon: 'fas fa-trash',
+                title: game.i18n.localize('SR5.Labels.Sheet.ClearNetwork'),
+                text: game.i18n.localize('SR5.Del'),
+                cssClass: 'network-clear',
+            },
+        ];
+    });
 
     Handlebars.registerHelper('EmptyIcons', () => {
         return [{}];
-    })
+    });
 };

@@ -1,34 +1,41 @@
-import { DataDefaults } from "src/module/data/DataDefaults";
-import { SR5 } from "../../../config";
+import { DataDefaults } from 'src/module/data/DataDefaults';
 import { Helpers } from '../../../helpers';
 import { PartsList } from '../../../parts/PartsList';
 import { SkillFieldType } from 'src/module/types/template/Skills';
+import { ActiveSkillsById } from 'src/module/config/ActiveSkills';
 
 export class SkillsPrep {
     /**
      * Prepare missing skill data as early in during data preparation as possible.
-     * 
+     *
      * template.json is incomplete, so we need to fill in the missing fields.
      * This is mostly a legacy design and should be fixed in the future when DataModel's are used.
-     * 
+     *
      * NOTE: Foundry also calls the prepareData multiple times with incomplete source data, causing some value properties to be missing.
-     * @param system 
+     * @param system
      */
-    static prepareSkillData(system: Actor.SystemOfType<'character' | 'critter' | 'ic' | 'spirit' | 'sprite' | 'vehicle'>) {
+    static prepareSkillData(
+        system: Actor.SystemOfType<'character' | 'critter' | 'ic' | 'spirit' | 'sprite' | 'vehicle'>,
+    ) {
         const { language, active, knowledge } = system.skills;
 
         // Active skills aren't grouped and can be prepared skill by skill.
-        Object.values(active)
-            .forEach((skill) => { DataDefaults.createData('skill_field', skill)} );
+        Object.values(active).forEach((skill) => {
+            DataDefaults.createData('skill_field', skill);
+        });
 
         // Language skills aren't group, but might lack the value property.
         if (language.value)
-            Object.values(language.value).forEach((skill) => { DataDefaults.createData('skill_field', skill)} );
+            Object.values(language.value).forEach((skill) => {
+                DataDefaults.createData('skill_field', skill);
+            });
 
         // Knowledge skills are groupd and might also lack the value property.
         Object.values(knowledge).forEach((group) => {
             if (group.value)
-                Object.values(group.value).forEach((skill) => { DataDefaults.createData('skill_field', skill)} );
+                Object.values(group.value).forEach((skill) => {
+                    DataDefaults.createData('skill_field', skill);
+                });
         });
     }
 
@@ -61,8 +68,10 @@ export class SkillsPrep {
 
         const entries = Object.entries(system.skills.language.value);
         // remove entries which are deleted TODO figure out how to delete these from the data
-        entries.forEach(([key, val]: [string, { _delete?: boolean }]) => val._delete && delete system.skills.language.value[key]);
-        
+        entries.forEach(
+            ([key, val]: [string, { _delete?: boolean }]) => val._delete && delete system.skills.language.value[key],
+        );
+
         for (const skill of Object.values(language.value)) {
             prepareSkill(skill);
             skill.attribute = 'intuition';
@@ -70,8 +79,7 @@ export class SkillsPrep {
 
         // setup knowledge skills
         for (const [, group] of Object.entries(knowledge)) {
-
-            if(!group?.value) {
+            if (!group?.value) {
                 continue;
             }
 
@@ -90,7 +98,7 @@ export class SkillsPrep {
         }
 
         for (const [skillKey, skillValue] of Object.entries(active)) {
-            skillValue.label = SR5.activeSkills[skillKey];
+            skillValue.label = ActiveSkillsById[skillKey].label;
         }
     }
 }

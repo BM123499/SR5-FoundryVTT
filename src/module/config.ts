@@ -19,7 +19,7 @@ export const SR5 = {
         modification: 'SR5.Compendiums.Modification',
         weapon: 'SR5.Compendiums.Weapon',
     },
-    
+
     itemTypes: {
         action: 'SR5.ItemTypes.Action',
         adept_power: 'SR5.ItemTypes.AdeptPower',
@@ -44,7 +44,7 @@ export const SR5 = {
         spell: 'SR5.ItemTypes.Spell',
         sprite_power: 'SR5.ItemTypes.SpritePower',
         weapon: 'SR5.ItemTypes.Weapon',
-        call_in_action: 'TYPES.Item.call_in_action'
+        call_in_action: 'TYPES.Item.call_in_action',
     },
 
     // All available attributes. These are available as testable attributes across all actor types.
@@ -88,7 +88,7 @@ export const SR5 = {
         sensor: 'SR5.Vehicle.Stats.Sensor',
         handling: 'SR5.Vehicle.Stats.Handling',
         magic: 'SR5.AttrMagic',
-        initiation: 'SR5.Initiation'
+        initiation: 'SR5.Initiation',
     },
 
     specialTypes: {
@@ -100,7 +100,7 @@ export const SR5 = {
     damageTypes: {
         physical: 'SR5.DmgTypePhysical',
         stun: 'SR5.DmgTypeStun',
-        matrix: 'SR5.DmgTypeMatrix'
+        matrix: 'SR5.DmgTypeMatrix',
     },
 
     weaponRangeCategories: {
@@ -364,8 +364,7 @@ export const SR5 = {
                 long: -1,
                 extreme: -1,
             },
-        }
-
+        },
     },
 
     elementTypes: {
@@ -381,7 +380,7 @@ export const SR5 = {
         detection: 'SR5.Spell.CatDetection',
         health: 'SR5.Spell.CatHealth',
         illusion: 'SR5.Spell.CatIllusion',
-        manipulation: 'SR5.Spell.CatManipulation'
+        manipulation: 'SR5.Spell.CatManipulation',
     },
 
     spellTypes: {
@@ -451,13 +450,13 @@ export const SR5 = {
 
     weaponCliptypes: {
         removable_clip: 'SR5.Weapon.Cliptype.RemovableClip',
-        break_action:'SR5.Weapon.Cliptype.BreakAction',
-        belt_fed:'SR5.Weapon.Cliptype.BeltFed',
-        internal_magazin:'SR5.Weapon.Cliptype.InternalMagazin',
-        muzzle_loader:'SR5.Weapon.Cliptype.MuzzleLoader',
-        cylinder:'SR5.Weapon.Cliptype.Cylinder',
-        drum:'SR5.Weapon.Cliptype.Drum',
-        bow:'SR5.Weapon.Cliptype.Bow',
+        break_action: 'SR5.Weapon.Cliptype.BreakAction',
+        belt_fed: 'SR5.Weapon.Cliptype.BeltFed',
+        internal_magazin: 'SR5.Weapon.Cliptype.InternalMagazin',
+        muzzle_loader: 'SR5.Weapon.Cliptype.MuzzleLoader',
+        cylinder: 'SR5.Weapon.Cliptype.Cylinder',
+        drum: 'SR5.Weapon.Cliptype.Drum',
+        bow: 'SR5.Weapon.Cliptype.Bow',
     },
 
     weaponRanges: {
@@ -470,7 +469,7 @@ export const SR5 = {
     qualityTypes: {
         positive: 'SR5.QualityTypePositive',
         negative: 'SR5.QualityTypeNegative',
-        lifemodule: 'SR5.QualityTypeLifeModule'
+        lifemodule: 'SR5.QualityTypeLifeModule',
     },
 
     adeptPower: {
@@ -503,91 +502,12 @@ export const SR5 = {
         interests: 'SR5.KnowledgeSkillInterests',
     },
 
-    activeSkills: {
-        archery: 'SR5.Skill.Archery',
-        automatics: 'SR5.Skill.Automatics',
-        blades: 'SR5.Skill.Blades',
-        clubs: 'SR5.Skill.Clubs',
-        exotic_melee: 'SR5.Skill.ExoticMelee',
-        exotic_range: 'SR5.Skill.ExoticRange',
-        heavy_weapons: 'SR5.Skill.HeavyWeapons',
-        longarms: 'SR5.Skill.Longarms',
-        pistols: 'SR5.Skill.Pistols',
-        throwing_weapons: 'SR5.Skill.ThrowingWeapons',
-        unarmed_combat: 'SR5.Skill.UnarmedCombat',
-        disguise: 'SR5.Skill.Disguise',
-        diving: 'SR5.Skill.Diving',
-        escape_artist: 'SR5.Skill.EscapeArtist',
-        free_fall: 'SR5.Skill.FreeFall',
-        gymnastics: 'SR5.Skill.Gymnastics',
-        palming: 'SR5.Skill.Palming',
-        perception: 'SR5.Skill.Perception',
-        running: 'SR5.Skill.Running',
-        sneaking: 'SR5.Skill.Sneaking',
-        survival: 'SR5.Skill.Survival',
-        swimming: 'SR5.Skill.Swimming',
-        tracking: 'SR5.Skill.Tracking',
-        con: 'SR5.Skill.Con',
-        etiquette: 'SR5.Skill.Etiquette',
-        impersonation: 'SR5.Skill.Impersonation',
-        instruction: 'SR5.Skill.Instruction',
-        intimidation: 'SR5.Skill.Intimidation',
-        leadership: 'SR5.Skill.Leadership',
-        negotiation: 'SR5.Skill.Negotiation',
-        performance: 'SR5.Skill.Performance',
-        alchemy: 'SR5.Skill.Alchemy',
-        arcana: 'SR5.Skill.Arcana',
-        artificing: 'SR5.Skill.Artificing',
-        assensing: 'SR5.Skill.Assensing',
-        astral_combat: 'SR5.Skill.AstralCombat',
-        banishing: 'SR5.Skill.Banishing',
-        binding: 'SR5.Skill.Binding',
-        counterspelling: 'SR5.Skill.Counterspelling',
-        disenchanting: 'SR5.Skill.Disenchanting',
-        ritual_spellcasting: 'SR5.Skill.RitualSpellcasting',
-        spellcasting: 'SR5.Skill.Spellcasting',
-        summoning: 'SR5.Skill.Summoning',
-        compiling: 'SR5.Skill.Compiling',
-        decompiling: 'SR5.Skill.Decompiling',
-        registering: 'SR5.Skill.Registering',
-        aeronautics_mechanic: 'SR5.Skill.AeronauticsMechanic',
-        automotive_mechanic: 'SR5.Skill.AutomotiveMechanic',
-        industrial_mechanic: 'SR5.Skill.IndustrialMechanic',
-        nautical_mechanic: 'SR5.Skill.NauticalMechanic',
-        animal_handling: 'SR5.Skill.AnimalHandling',
-        armorer: 'SR5.Skill.Armorer',
-        artisan: 'SR5.Skill.Artisan',
-        biotechnology: 'SR5.Skill.Biotechnology',
-        chemistry: 'SR5.Skill.Chemistry',
-        computer: 'SR5.Skill.Computer',
-        cybercombat: 'SR5.Skill.Cybercombat',
-        cybertechnology: 'SR5.Skill.Cybertechnology',
-        demolitions: 'SR5.Skill.Demolitions',
-        electronic_warfare: 'SR5.Skill.ElectronicWarfare',
-        first_aid: 'SR5.Skill.FirstAid',
-        forgery: 'SR5.Skill.Forgery',
-        hacking: 'SR5.Skill.Hacking',
-        hardware: 'SR5.Skill.Hardware',
-        locksmith: 'SR5.Skill.Locksmith',
-        medicine: 'SR5.Skill.Medicine',
-        navigation: 'SR5.Skill.Navigation',
-        software: 'SR5.Skill.Software',
-        gunnery: 'SR5.Skill.Gunnery',
-        pilot_aerospace: 'SR5.Skill.PilotAerospace',
-        pilot_aircraft: 'SR5.Skill.PilotAircraft',
-        pilot_walker: 'SR5.Skill.PilotWalker',
-        pilot_ground_craft: 'SR5.Skill.PilotGroundCraft',
-        pilot_water_craft: 'SR5.Skill.PilotWaterCraft',
-        pilot_exotic_vehicle: 'SR5.Skill.PilotExoticVehicle',
-        flight: 'SR5.Skill.Flight'
-    },
-
     /**
      * Some skills are created on the fly and don't exist on all actors.
      * These values are used for those.
      */
     activeSkillAttribute: {
-        flight: 'agility'
+        flight: 'agility',
     },
 
     actionTypes: {
@@ -603,53 +523,53 @@ export const SR5 = {
         add: '+',
         subtract: '-',
         multiply: '*',
-        divide: '/'
+        divide: '/',
     },
 
     // Map all Shadowrun.ActionCategories to their matching labels.
     // For more information around action categories, see type documentation.
     actionCategories: {
-        'addiction_mental': "SR5.ActionCategory.AddictionMental",
-        'addiction_physical': "SR5.ActionCategory.AddictionPhysical",
-        'addiction': "SR5.ActionCategory.Addiction",
-        'attack_melee': "SR5.ActionCategory.AttackMelee",
-        'attack_ranged': "SR5.ActionCategory.AttackRanged", 
-        'attack_thrown': "SR5.ActionCategory.AttackThrown",
-        'attack': "SR5.ActionCategory.Attack",
-        'brute_force': "SR5.ActionCategory.BruteForce",
-        "climbing": "SR5.ActionCategory.Climbing",
-        'compiling': "SR5.ActionCategory.Compiling",
-        'complex_form': "SR5.ActionCategory.ComplexForm",
-        'defense_suppression': "SR5.ActionCategory.DefenseSuppression",
-        'defense': "SR5.ActionCategory.Defense", 
-        'drain': "SR5.ActionCategory.Drain",
-        'fade': "SR5.ActionCategory.Fade", 
-        'hack_on_the_fly': "SR5.ActionCategory.HackOnTheFly",
-        'magic': "SR5.ActionCategory.Magic",
-        'matrix': 'SR5.ActionCategory.Matrix',
-        'recovery_physical': "SR5.ActionCategory.RecoveryPhysical",
-        'recovery_stun': "SR5.ActionCategory.RecoveryStun",
-        'recovery': "SR5.ActionCategory.Recovery",
-        'resist_disease': "SR5.ActionCategory.ResistDisease",
-        'resist_toxin': "SR5.ActionCategory.ResistToxin",
-        'resist': "SR5.ActionCategory.Resist",
-        'resonance': "SR5.ActionCategory.Resonance",
-        'rigging': "SR5.ActionCategory.Rigging",
-        'social': 'SR5.ActionCategory.Social',
-        'spell_combat': "SR5.ActionCategory.SpellCombat",
-        'spell_detection': "SR5.ActionCategory.SpellDetection",
-        'spell_healing': "SR5.ActionCategory.SpellHealing",
-        'spell_illusion': "SR5.ActionCategory.SpellIllusion", 
-        'spell_manipulation': "SR5.ActionCategory.SpellManipulation",
-        'spell_ritual': "SR5.ActionCategory.SpellRitual",
-        'summoning': "SR5.ActionCategory.Summoning",
+        addiction_mental: 'SR5.ActionCategory.AddictionMental',
+        addiction_physical: 'SR5.ActionCategory.AddictionPhysical',
+        addiction: 'SR5.ActionCategory.Addiction',
+        attack_melee: 'SR5.ActionCategory.AttackMelee',
+        attack_ranged: 'SR5.ActionCategory.AttackRanged',
+        attack_thrown: 'SR5.ActionCategory.AttackThrown',
+        attack: 'SR5.ActionCategory.Attack',
+        brute_force: 'SR5.ActionCategory.BruteForce',
+        climbing: 'SR5.ActionCategory.Climbing',
+        compiling: 'SR5.ActionCategory.Compiling',
+        complex_form: 'SR5.ActionCategory.ComplexForm',
+        defense_suppression: 'SR5.ActionCategory.DefenseSuppression',
+        defense: 'SR5.ActionCategory.Defense',
+        drain: 'SR5.ActionCategory.Drain',
+        fade: 'SR5.ActionCategory.Fade',
+        hack_on_the_fly: 'SR5.ActionCategory.HackOnTheFly',
+        magic: 'SR5.ActionCategory.Magic',
+        matrix: 'SR5.ActionCategory.Matrix',
+        recovery_physical: 'SR5.ActionCategory.RecoveryPhysical',
+        recovery_stun: 'SR5.ActionCategory.RecoveryStun',
+        recovery: 'SR5.ActionCategory.Recovery',
+        resist_disease: 'SR5.ActionCategory.ResistDisease',
+        resist_toxin: 'SR5.ActionCategory.ResistToxin',
+        resist: 'SR5.ActionCategory.Resist',
+        resonance: 'SR5.ActionCategory.Resonance',
+        rigging: 'SR5.ActionCategory.Rigging',
+        social: 'SR5.ActionCategory.Social',
+        spell_combat: 'SR5.ActionCategory.SpellCombat',
+        spell_detection: 'SR5.ActionCategory.SpellDetection',
+        spell_healing: 'SR5.ActionCategory.SpellHealing',
+        spell_illusion: 'SR5.ActionCategory.SpellIllusion',
+        spell_manipulation: 'SR5.ActionCategory.SpellManipulation',
+        spell_ritual: 'SR5.ActionCategory.SpellRitual',
+        summoning: 'SR5.ActionCategory.Summoning',
     },
 
     matrixAttributes: {
         attack: 'SR5.MatrixAttrAttack',
         sleaze: 'SR5.MatrixAttrSleaze',
         data_processing: 'SR5.MatrixAttrDataProc',
-        firewall: 'SR5.MatrixAttrFirewall'
+        firewall: 'SR5.MatrixAttrFirewall',
     },
 
     initiativeCategories: {
@@ -663,7 +583,7 @@ export const SR5 = {
         weapon: 'SR5.Weapon.Weapon',
         armor: 'SR5.Armor',
         vehicle: 'SR5.Vehicle.Vehicle',
-        drone: 'SR5.Vehicle.Drone'
+        drone: 'SR5.Vehicle.Drone',
     },
 
     mountPoints: {
@@ -818,18 +738,18 @@ export const SR5 = {
      * Define here what kind of active test is to be used for the different weapon categories as a main action test.
      */
     weaponCategoryActiveTests: {
-        'range': 'RangedAttackTest',
-        'melee': 'MeleeAttackTest',
-        'thrown': 'ThrownAttackTest'
+        range: 'RangedAttackTest',
+        melee: 'MeleeAttackTest',
+        thrown: 'ThrownAttackTest',
     },
 
     /**
      * When casting tests from these item types, use these tests as active tests
      */
     activeTests: {
-        'spell': 'SpellCastingTest',
-        'ritual': 'RitualSpellcastingTest',
-        'complex_form': 'ComplexFormTest'
+        spell: 'SpellCastingTest',
+        ritual: 'RitualSpellcastingTest',
+        complex_form: 'ComplexFormTest',
     },
 
     /**
@@ -840,9 +760,9 @@ export const SR5 = {
      * }
      */
     opposedTests: {
-        'spell': {
-            'combat': 'CombatSpellDefenseTest'
-        }
+        spell: {
+            combat: 'CombatSpellDefenseTest',
+        },
     },
 
     /**
@@ -852,16 +772,16 @@ export const SR5 = {
      * }
      */
     opposedResistTests: {
-        'spell': {
-            'combat': 'PhysicalResistTest'
-        }
+        spell: {
+            combat: 'PhysicalResistTest',
+        },
     },
 
     /**
      * When a test is cast an active test this defines what tests should follow that tests completion
      */
     followedTests: {
-        'SpellCastingTest': 'DrainTest'
+        SpellCastingTest: 'DrainTest',
     },
 
     // When a firemode with suppression is used, this test should defend against it.
@@ -871,8 +791,8 @@ export const SR5 = {
      * Names of FoundryVTT packs supplied by the system to be used as action sources.
      */
     packNames: {
-        'generalActions': 'general-actions',
-        'matrixActions': 'matrix-actions'
+        generalActions: 'general-actions',
+        matrixActions: 'matrix-actions',
     },
 
     programTypes: {
@@ -940,36 +860,36 @@ export const SR5 = {
         queen: 'SR5.Spirit.Types.Queen',
 
         // Necro types
-        carcass: "SR5.Spirit.Types.Carcass",
-        corpse: "SR5.Spirit.Types.Corpse",
-        rot: "SR5.Spirit.Types.Rot",
-        palefire: "SR5.Spirit.Types.Palefire",
-        detritus: "SR5.Spirit.Types.Detritus",
+        carcass: 'SR5.Spirit.Types.Carcass',
+        corpse: 'SR5.Spirit.Types.Corpse',
+        rot: 'SR5.Spirit.Types.Rot',
+        palefire: 'SR5.Spirit.Types.Palefire',
+        detritus: 'SR5.Spirit.Types.Detritus',
 
         // Howling Shadow spirits
-        anarch: "SR5.Spirit.Types.Anarch",
-        arboreal: "SR5.Spirit.Types.Arboreal",
-        blackjack: "SR5.Spirit.Types.Blackjack",
-        boggle: "SR5.Spirit.Types.Boggle",
-        bugul: "SR5.Spirit.Types.Bugul",
-        chindi: "SR5.Spirit.Types.Chindi",
-        croki: "SR5.Spirit.Types.Croki",
-        duende: "SR5.Spirit.Types.Duende",
-        ejerian: "SR5.Spirit.Types.Ejerian",
-        elvar: "SR5.Spirit.Types.Elvar",
-        erinyes: "SR5.Spirit.Types.Erinyes",
-        green_man: "SR5.Spirit.Types.GreenMan",
-        imp: "SR5.Spirit.Types.Imp",
-        jarl: "SR5.Spirit.Types.Jarl",
-        kappa: "SR5.Spirit.Types.Kappa",
-        kokopelli: "SR5.Spirit.Types.Kokopelli",
-        morbi: "SR5.Spirit.Types.Morbi",
-        nocnitsa: "SR5.Spirit.Types.Nocnitsa",
-        phantom: "SR5.Spirit.Types.Phantom",
-        preta: "SR5.Spirit.Types.Preta",
-        stabber: "SR5.Spirit.Types.Stabber",
-        tungak: "SR5.Spirit.Types.Tungak",
-        vucub_caquix: "SR5.Spirit.Types.VucubCaquix",
+        anarch: 'SR5.Spirit.Types.Anarch',
+        arboreal: 'SR5.Spirit.Types.Arboreal',
+        blackjack: 'SR5.Spirit.Types.Blackjack',
+        boggle: 'SR5.Spirit.Types.Boggle',
+        bugul: 'SR5.Spirit.Types.Bugul',
+        chindi: 'SR5.Spirit.Types.Chindi',
+        croki: 'SR5.Spirit.Types.Croki',
+        duende: 'SR5.Spirit.Types.Duende',
+        ejerian: 'SR5.Spirit.Types.Ejerian',
+        elvar: 'SR5.Spirit.Types.Elvar',
+        erinyes: 'SR5.Spirit.Types.Erinyes',
+        green_man: 'SR5.Spirit.Types.GreenMan',
+        imp: 'SR5.Spirit.Types.Imp',
+        jarl: 'SR5.Spirit.Types.Jarl',
+        kappa: 'SR5.Spirit.Types.Kappa',
+        kokopelli: 'SR5.Spirit.Types.Kokopelli',
+        morbi: 'SR5.Spirit.Types.Morbi',
+        nocnitsa: 'SR5.Spirit.Types.Nocnitsa',
+        phantom: 'SR5.Spirit.Types.Phantom',
+        preta: 'SR5.Spirit.Types.Preta',
+        stabber: 'SR5.Spirit.Types.Stabber',
+        tungak: 'SR5.Spirit.Types.Tungak',
+        vucub_caquix: 'SR5.Spirit.Types.VucubCaquix',
 
         // blood magic spirits
         blood_shade: 'SR5.Spirit.Types.BloodShade',
@@ -993,8 +913,8 @@ export const SR5 = {
      * set in it's system.action_type property.
      */
     callInActorTypes: {
-        'spirit': 'TYPES.Actor.spirit',
-        'sprite': 'TYPES.Actor.sprite'
+        spirit: 'TYPES.Actor.spirit',
+        sprite: 'TYPES.Actor.sprite',
     },
 
     critterPower: {
@@ -1041,7 +961,7 @@ export const SR5 = {
         fault: 'SR5.Sprite.Types.Fault',
         machine: 'SR5.Sprite.Types.Machine',
         companion: 'SR5.Sprite.Types.Companion',
-        generalist:'SR5.Sprite.Types.Generalist',
+        generalist: 'SR5.Sprite.Types.Generalist',
     },
 
     spritePower: {
@@ -1076,7 +996,7 @@ export const SR5 = {
             acceleration: 'SR5.Vehicle.Stats.Acceleration',
             pilot: 'SR5.Vehicle.Stats.Pilot',
             sensor: 'SR5.Vehicle.Stats.Sensor',
-            seats: 'SR5.Vehicle.Stats.Seats'
+            seats: 'SR5.Vehicle.Stats.Seats',
         },
         control_modes: {
             manual: 'SR5.Vehicle.ControlModes.Manual',
@@ -1092,27 +1012,27 @@ export const SR5 = {
 
     ic: {
         types: {
-            acid: "SR5.IC.Types.Acid",
-            binder: "SR5.IC.Types.Binder",
-            black_ic: "SR5.IC.Types.BlackIC",
-            blaster: "SR5.IC.Types.Blaster",
-            bloodhound: "SR5.IC.Types.Bloodhound",
-            blue_goo: "SR5.IC.Types.BlueGoo",
-            catapult: "SR5.IC.Types.Catapult",
-            crash: "SR5.IC.Types.Crash",
-            flicker: "SR5.IC.Types.Flicker",
-            jammer: "SR5.IC.Types.Jammer",
-            killer: "SR5.IC.Types.Killer",
-            marker: "SR5.IC.Types.Marker",
-            patrol: "SR5.IC.Types.Patrol",
-            probe: "SR5.IC.Types.Probe",
-            scramble: "SR5.IC.Types.Scramble",
-            shocker: "SR5.IC.Types.Shocker",
-            sleuther: "SR5.IC.Types.Sleuther",
-            sparky: "SR5.IC.Types.Sparky",
-            tar_baby: "SR5.IC.Types.TarBaby",
-            track: "SR5.IC.Types.Track"
-        }
+            acid: 'SR5.IC.Types.Acid',
+            binder: 'SR5.IC.Types.Binder',
+            black_ic: 'SR5.IC.Types.BlackIC',
+            blaster: 'SR5.IC.Types.Blaster',
+            bloodhound: 'SR5.IC.Types.Bloodhound',
+            blue_goo: 'SR5.IC.Types.BlueGoo',
+            catapult: 'SR5.IC.Types.Catapult',
+            crash: 'SR5.IC.Types.Crash',
+            flicker: 'SR5.IC.Types.Flicker',
+            jammer: 'SR5.IC.Types.Jammer',
+            killer: 'SR5.IC.Types.Killer',
+            marker: 'SR5.IC.Types.Marker',
+            patrol: 'SR5.IC.Types.Patrol',
+            probe: 'SR5.IC.Types.Probe',
+            scramble: 'SR5.IC.Types.Scramble',
+            shocker: 'SR5.IC.Types.Shocker',
+            sleuther: 'SR5.IC.Types.Sleuther',
+            sparky: 'SR5.IC.Types.Sparky',
+            tar_baby: 'SR5.IC.Types.TarBaby',
+            track: 'SR5.IC.Types.Track',
+        },
     },
 
     character: {
@@ -1135,18 +1055,13 @@ export const SR5 = {
      * NOTE: This list is also used for sorting order of ranged weapon mode.
      *       Alter it with care.
      */
-    rangeWeaponMode: [
-        'single_shot',
-        'semi_auto',
-        'burst_fire',
-        'full_auto'
-    ],
+    rangeWeaponMode: ['single_shot', 'semi_auto', 'burst_fire', 'full_auto'],
 
     rangeWeaponModeLabel: {
-        'single_shot': 'SR5.Weapon.Mode.SingleShot',
-        'semi_auto': 'SR5.Weapon.Mode.SemiAuto',
-        'burst_file': 'SR5.Weapon.Mode.BurstFire',
-        'full_auto': 'SR5.Weapon.Mode.FullAuto'
+        single_shot: 'SR5.Weapon.Mode.SingleShot',
+        semi_auto: 'SR5.Weapon.Mode.SemiAuto',
+        burst_file: 'SR5.Weapon.Mode.BurstFire',
+        full_auto: 'SR5.Weapon.Mode.FullAuto',
     },
 
     /**
@@ -1156,79 +1071,79 @@ export const SR5 = {
      * ranged weapon mode.
      */
     fireModes: [
-    {
-        label: "SR5.Weapon.Mode.SingleShot",
-        value: 1,
-        recoil: false,
-        defense: 0,
-        suppression: false,
-        action: 'simple',
-        mode: 'single_shot'
-    },
-    {
-        label: "SR5.Weapon.Mode.SemiAutoShort",
-        value: 1,
-        recoil: true,
-        defense: 0,
-        suppression: false,
-        action: 'simple',
-        mode: 'semi_auto'
-    },
-    {
-        label: "SR5.Weapon.Mode.SemiAutoBurst",
-        value: 3,
-        recoil: true,
-        defense: -2,
-        suppression: false,
-        action: 'complex',
-        mode: 'semi_auto'
-    },
+        {
+            label: 'SR5.Weapon.Mode.SingleShot',
+            value: 1,
+            recoil: false,
+            defense: 0,
+            suppression: false,
+            action: 'simple',
+            mode: 'single_shot',
+        },
+        {
+            label: 'SR5.Weapon.Mode.SemiAutoShort',
+            value: 1,
+            recoil: true,
+            defense: 0,
+            suppression: false,
+            action: 'simple',
+            mode: 'semi_auto',
+        },
+        {
+            label: 'SR5.Weapon.Mode.SemiAutoBurst',
+            value: 3,
+            recoil: true,
+            defense: -2,
+            suppression: false,
+            action: 'complex',
+            mode: 'semi_auto',
+        },
 
-    {
-        label: "SR5.Weapon.Mode.BurstFire",
-        value: 3,
-        recoil: true,
-        defense: -2,
-        suppression: false,
-        action: 'simple',
-        mode: 'burst_fire'
-    },
-    {
-        label: "SR5.Weapon.Mode.BurstFireLong",
-        value: 6,
-        recoil: true,
-        defense: -5,
-        suppression: false,
-        action: 'complex',
-        mode: 'burst_fire',
-    },
-    {
-        label: "SR5.Weapon.Mode.FullAutoShort",
-        value: 6,
-        recoil: true,
-        defense: -5,
-        suppression: false,
-        action: 'simple',
-        mode: 'full_auto'
-    },
-    {
-        label: 'SR5.Weapon.Mode.FullAutoLong',
-        value: 10,
-        recoil: true,
-        defense: -9,
-        suppression: false,
-        action: 'complex',
-        mode: 'full_auto'
-    },
-    {
-        label: 'SR5.Suppressing',
-        value: 20,
-        recoil: false,
-        defense: 0,
-        suppression: true,
-        action: 'complex',
-        mode: 'full_auto'
-    }
+        {
+            label: 'SR5.Weapon.Mode.BurstFire',
+            value: 3,
+            recoil: true,
+            defense: -2,
+            suppression: false,
+            action: 'simple',
+            mode: 'burst_fire',
+        },
+        {
+            label: 'SR5.Weapon.Mode.BurstFireLong',
+            value: 6,
+            recoil: true,
+            defense: -5,
+            suppression: false,
+            action: 'complex',
+            mode: 'burst_fire',
+        },
+        {
+            label: 'SR5.Weapon.Mode.FullAutoShort',
+            value: 6,
+            recoil: true,
+            defense: -5,
+            suppression: false,
+            action: 'simple',
+            mode: 'full_auto',
+        },
+        {
+            label: 'SR5.Weapon.Mode.FullAutoLong',
+            value: 10,
+            recoil: true,
+            defense: -9,
+            suppression: false,
+            action: 'complex',
+            mode: 'full_auto',
+        },
+        {
+            label: 'SR5.Suppressing',
+            value: 20,
+            recoil: false,
+            defense: 0,
+            suppression: true,
+            action: 'complex',
+            mode: 'full_auto',
+        },
     ],
 
     /**
@@ -1237,18 +1152,18 @@ export const SR5 = {
      * actor is the default Foundry apply to type of ActiveEffects and will be affect actor data.
      */
     effectApplyTo: {
-        'actor': 'SR5.FOUNDRY.Actor',
+        actor: 'SR5.FOUNDRY.Actor',
         // 'item': 'SR5.FOUNDRY.Item', // Disabled, as systems nested item approach brings issues.
-        'targeted_actor': 'SR5.ActiveEffect.ApplyTos.TargetedActor',
-        'test_all': 'SR5.Test',
-        'test_item': 'SR5.ActiveEffect.ApplyTos.TestItem',
-        'modifier': 'SR5.Modifier'
+        targeted_actor: 'SR5.ActiveEffect.ApplyTos.TargetedActor',
+        test_all: 'SR5.Test',
+        test_item: 'SR5.ActiveEffect.ApplyTos.TestItem',
+        modifier: 'SR5.Modifier',
     },
 
     itemSubTypeIconOverrides: {
         action: {},
         adept_power: {
-            'adept-spell': 'spell/spell'
+            'adept-spell': 'spell/spell',
         },
         ammo: {
             'ammo': '',
@@ -1260,14 +1175,14 @@ export const SR5 = {
             'minigrenade': '',
             'missile': '',
             'rocket': '',
-            'torpedo-grenade': ''
+            'torpedo-grenade': '',
         },
         armor: {
             'armor': '',
             'cloaks': '',
             'clothing': '',
             'high-fashion-armor-clothing': '',
-            'specialty-armor': ''
+            'specialty-armor': '',
         },
         bioware: {
             'basic': 'bioware/bioware',
@@ -1285,7 +1200,7 @@ export const SR5 = {
             'phenotype-adjustment': 'bioware/biosculpting',
             'symbionts': 'bioware/cultured',
             'transgenic-alteration': 'bioware/transgenic-alteration',
-            'transgenics': ''
+            'transgenics': '',
         },
         character: {
             'dracoforms': 'critter/dracoforms',
@@ -1302,8 +1217,8 @@ export const SR5 = {
         complex_form: {},
         contact: {},
         critter_power: {
-            'mana': '',
-            'physical': 'critter_power/critter_power'
+            mana: '',
+            physical: 'critter_power/critter_power',
         },
         cyberware: {
             'auto-injector-mods': '',
@@ -1321,12 +1236,12 @@ export const SR5 = {
             'headware': 'cyberware/cyberware',
             'nanocybernetics': 'cyberware/hard-nanoware',
             'soft-nanoware': 'cyberware/hard-nanoware',
-            'special-biodrone-cyberware': ''
+            'special-biodrone-cyberware': '',
         },
         device: {
-            'commlink': 'device',
-            'cyberdeck': '',
-            'rcc': ''
+            commlink: 'device',
+            cyberdeck: '',
+            rcc: '',
         },
         echo: {},
         equipment: {
@@ -1395,36 +1310,36 @@ export const SR5 = {
             'tools-of-the-trade': '',
             'toxins': '',
             'vision-devices': '',
-            'vision-enhancements': ''
+            'vision-enhancements': '',
         },
         host: {},
         lifestyle: {},
         metamagic: {},
         modification: {
-            'barrel': '',
-            'other': '',
-            'side': '',
-            'stock': '',
-            'top': '',
-            'under': 'modification/modification'
+            barrel: '',
+            other: '',
+            side: '',
+            stock: '',
+            top: '',
+            under: 'modification/modification',
         },
-        program:        {
-            'common_program': '',
-            'hacking_program': ''
+        program: {
+            common_program: '',
+            hacking_program: '',
         },
         quality: {
-            'negative': '',
-            'positive': ''
+            negative: '',
+            positive: '',
         },
         ritual: {},
         sin: {},
         spell: {
-            'combat': '',
-            'detection': '',
-            'enchantments': '',
-            'health': '',
-            'illusion': '',
-            'manipulation': ''
+            combat: '',
+            detection: '',
+            enchantments: '',
+            health: '',
+            illusion: '',
+            manipulation: '',
         },
         spirit: {
             'extraplanar-travelers': 'critter/extraplanar-travelers',
@@ -1506,7 +1421,7 @@ export const SR5 = {
             'tasers': '',
             'torpedo-grenade': 'ammo/torpedo-grenade',
             'unarmed': '',
-            'underbarrel-weapons': 'modification/modification'
-        }
-    }
+            'underbarrel-weapons': 'modification/modification',
+        },
+    },
 } as const;
