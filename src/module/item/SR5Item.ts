@@ -800,9 +800,8 @@ export class SR5Item extends Item {
                 const item = foundry.utils.duplicate(ogItem);
                 item._id = randomID(16);
                 if (item.type === 'ammo' || item.type === 'modification') {
-                    if (item?.system?.technology?.equipped) {
-                        item.system.technology.equipped = false;
-                    }
+                    if (item?.system?.technology && 'equipped' in item.system.technology)
+                        item.system.technology.equipped = true;
                     currentItems.push(item);
                 }
             });
