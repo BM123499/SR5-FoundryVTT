@@ -32,7 +32,8 @@
     /* Key, Mode, Value Columns */
     .effect-change > .key,
     .effect-change > .value,
-    .effect-change > .mode {
+    .effect-change > .mode,
+    .effect-change > .priority {
         padding: 0 3px;
     }
 
@@ -47,6 +48,10 @@
     .effect-change > .mode {
         flex: 0 0 auto;
         min-width: 14ch;
+    }
+
+    .effect-change > .priority {
+        flex: 0 0 4ch;
     }
 
     /* Control Buttons Column */
