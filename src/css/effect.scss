@@ -14,57 +14,36 @@
 
     /* Effects Tab Container */
     section.tab[data-tab="effects"] {
-        padding: 0.75em;
+        padding: 0.5em;
         padding-top: 0;
         font-size: 14px;
         color: #111;
     }
 
-    /* Header Row */
-    .effects-header {
+    .tab.changes header {
         font-weight: bold;
-        padding: 0.25em 0;
         border-bottom: 1px solid #bbb;
-        color: #111;
+    }
+
+    .tab.changes header,
+    .tab.changes ol li {
+        display: grid;
+        grid-template-columns: 3.5fr 2fr 2.5fr 1fr 0.5fr;
         align-items: center;
-    }
-
-    /* Key, Mode, Value Columns */
-    .effect-change > .key,
-    .effect-change > .value,
-    .effect-change > .mode,
-    .effect-change > .priority {
-        padding: 0 3px;
-    }
-
-    .effect-change > .key {
-        flex: 1.5 1 0;
-    }
-
-    .effect-change > .value {
-        flex: 1 1 0;
-    }
-
-    .effect-change > .mode {
-        flex: 0 0 auto;
-        min-width: 14ch;
-    }
-
-    .effect-change > .priority {
-        flex: 0 0 4ch;
+        gap: 0.25rem;
+        margin: 0;
+        padding: 2px;
+        position: relative;
     }
 
     /* Control Buttons Column */
     .effect-controls {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 0.3em;
         padding: 0 0.4em;
-        align-items: center;
     }
 
     /* Input Fields */
     .effect-change input[type="text"],
+    .effect-change input[type="number"],
     .effect-change select {
         width: 100%;
         box-sizing: border-box;
@@ -74,23 +53,11 @@
         border-radius: 3px;
     }
 
-    .effect-change > .mode select {
-        width: auto;
-        min-width: 8ch;
-        max-width: 100%;
-        white-space: nowrap;
-    }
-
     /* Row Items */
     .changes-list {
         margin: 0.5em 0 0;
         padding: 0;
         list-style: none;
-    }
-
-    .changes-list > .effect-change {
-        padding: 0.25em 0;
-        align-items: center;
     }
 
     /* Add/Delete Buttons */
@@ -103,5 +70,9 @@
 
     .effect-control:hover {
         color: #000;
+    }
+
+    .effect-change > .priority input {
+        text-align: center;
     }
 }
