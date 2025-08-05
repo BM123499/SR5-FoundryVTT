@@ -85,6 +85,12 @@ interface SR5ItemSheetData extends SR5BaseItemSheetData {
 
     isUsingRangeCategory: boolean
 
+    // Define if the miscellaneous tab is shown or not.
+    showMiscTab: boolean
+
+    // Misc. Tab has different sections that can be shown or hidden.
+    miscMatrixPart: boolean
+
     // Allow users to view what values is calculated and what isn´t
     calculatedEssence: boolean
     calculatedCost: boolean
@@ -208,7 +214,10 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
         // Enrich descriptions
         await Promise.all(
             [ammunition, weaponMods, armorMods, vehicleMods, droneMods].flat().map(
-                async item => foundry.applications.ux.TextEditor.implementation.enrichHTML(item.system.description.value).then(html => item.descriptionHTML = html)
+                async item => {
+                    const html = await foundry.applications.ux.TextEditor.implementation.enrichHTML(item.system.description.value);
+                    item.descriptionHTML = html;
+                }
             )
         );
 
@@ -274,6 +283,12 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
 
         data.rollModes = CONFIG.Dice.rollModes;
 
+        // What tabs should be shown on this sheet?
+        data.showMiscTab = this._prepareShowMiscTab();
+
+        // What sections should be shown on the misc. tab?
+        data.miscMatrixPart = this.item.hasActionCategory('matrix');
+
         return {
             ...data,
             linkedActor
@@ -314,11 +329,6 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
         const skills = skill ? [skill] : undefined;
         // Instead of item.parent, use the actorOwner as NestedItems have an actor grand parent.
         return ActionFlow.sortedActiveSkills(this.item.actorOwner, skills);
-    }
-
-    _getNetworkDevices(): SR5Item[] {
-        // return NetworkDeviceFlow.getNetworkDevices(this.item);
-        return [];
     }
 
     /* -------------------------------------------- */
@@ -480,10 +490,8 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
 
         // CASE - Handle dropping of documents directly into the source field like urls and pdfs.
         const targetElement = event.toElement || event.target;
-        if (targetElement?.name === 'system.description.source') {
-            this.item.setSource(data.uuid);
-            return;
-        }
+        if (targetElement?.name === 'system.description.source')
+            return this.item.setSource(data.uuid);
 
         // CASE - Handle ActiveEffects
         if (data.type === 'ActiveEffect') {
@@ -600,28 +608,17 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
         }
     }
 
-    //Swap slots (att1, att2, etc.) for ASDF matrix attributes
+    /**
+     * User selected a new matrix attribute on a specific matrix attribute slot (att1, att2,)
+     * Switch out slots for the old and selected matrix attribute.
+     */
     async _onMatrixAttributeSelected(event) {
-        if (!('atts' in this.item.system) || !this.item.system.atts) return;
+        if (!this.item.system.atts) return;
 
-        // sleaze, attack, etc.
-        const selectedAtt = event.currentTarget.value;
-        // att1, att2, etc..
+        const attribute = event.currentTarget.value;
         const changedSlot = event.currentTarget.dataset.att;
 
-        const oldValue = this.item.system.atts[changedSlot].att;
-
-        const data = {}
-
-        Object.entries(this.item.system.atts).forEach(([slot, { att }]) => {
-            if (slot === changedSlot) {
-                data[`system.atts.${slot}.att`] = selectedAtt;
-            } else if (att === selectedAtt) {
-                data[`system.atts.${slot}.att`] = oldValue;
-            }
-        });
-
-        await this.item.update(data);
+        await this.item.changeMatrixAttributeSlot(changedSlot, attribute);
     }
 
     async _onEditItem(event) {
@@ -637,14 +634,9 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
         const list = entityRemove.data('list');
         const position = entityRemove.data('position');
 
-        if (!list) return;
-
-        switch (list) {
-            // Handle Host item lists...
-            case 'ic':
-                await this.item.removeIC(position);
-                break;
-        }
+        // Handle Host item lists...
+        if (list === 'ic')
+            await this.item.removeIC(position);
     }
 
     async _onAddLicense(event) {
@@ -682,15 +674,13 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
 
     async _onAddWeaponMod(event) {
         event.preventDefault();
-        // TODO: Move this into DataDefaults...
         const type = 'modification';
-        const itemData = {
-            name: `${game.i18n.localize('SR5.New')} ${Helpers.label(game.i18n.localize(SR5.itemTypes[type]))}`,
-            type: type as Item.SubType,
+        const name = `${game.i18n.localize('SR5.New')} ${Helpers.label(game.i18n.localize(SR5.itemTypes[type]))}`;
+        const item = new SR5Item({
+            name, type,
             system: { type: 'weapon' }
-        };
-        const item = new SR5Item(itemData);
-        await this.item.createNestedItem(item._source);
+        });
+        await this.item.createNestedItem(item.toObject());
     }
 
     async _onAmmoReload(event, partialReload: boolean) {
@@ -790,10 +780,8 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
         if (!('action' in this.item.system)) return;
         const inputElement = html.find('input#action-modifier').get(0);
 
-        if (!inputElement) {
-            console.error('Shadowrun 5e | Action item sheet does not contain an action-modifier input element');
-            return;
-        }
+        if (!inputElement)
+            return console.error('Shadowrun 5e | Action item sheet does not contain an action-modifier input element');
 
         // Tagify expects this format for localized tags.
         const whitelist = Object.keys(SR5.modifierTypes).map(modifier => ({
@@ -1053,5 +1041,24 @@ export class SR5ItemSheet extends foundry.appv1.sheets.ItemSheet {
         }
 
         this.item.render(false);
+    }
+
+    /**
+     * Go through an action item action categories and if at least one is found that needs additional
+     * configuration, let the sheet show the misc. tab.
+     *
+     * @returns true, when the tab is to be shown.
+     */
+    _prepareShowMiscTab() {
+        // Currently, only action items use this tab.
+        const action = this.object.asType('action');
+        if (!action) return false;
+
+        const relevantCategories: Shadowrun.ActionCategories[] = ['matrix'];
+        for (const category of relevantCategories) {
+            if (this.document.hasActionCategory(category)) return true;
+        }
+
+        return false;
     }
 }

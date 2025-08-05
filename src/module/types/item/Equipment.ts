@@ -1,18 +1,17 @@
 import { BaseItemData, ItemBase } from "./ItemBase";
-import { ActionRollData } from "./Action";
-import { TechnologyData } from "../template/Technology";
-const { SchemaField } = foundry.data.fields;
+import { ActionPartData } from "./Action";
+import { TechnologyPartData } from "../template/Technology";
 
-const EquipmentData = {
+const EquipmentData = () => ({
     ...BaseItemData(),
-    action: new SchemaField(ActionRollData()),
-    technology: new SchemaField(TechnologyData()),
-}
+    ...ActionPartData(),
+    ...TechnologyPartData(),
+});
 
-export class Equipment extends ItemBase<typeof EquipmentData> {
+export class Equipment extends ItemBase<ReturnType<typeof EquipmentData>> {
     static override defineSchema() {
-        return EquipmentData;
+        return EquipmentData();
     }
 }
 
-console.log("EquipmentData", EquipmentData, new Equipment());
+console.log("EquipmentData", EquipmentData(), new Equipment());

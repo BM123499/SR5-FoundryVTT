@@ -1,10 +1,10 @@
-import { ActionRollData } from "./Action";
+import { ActionPartData } from "./Action";
 import { BaseItemData, ItemBase } from "./ItemBase";
-const { SchemaField, NumberField, StringField } = foundry.data.fields;
+const { NumberField, StringField } = foundry.data.fields;
 
-const QualityData = {
+const QualityData = () => ({
     ...BaseItemData(),
-    action: new SchemaField(ActionRollData()),
+    ...ActionPartData(),
 
     type: new StringField({
         required: true,
@@ -13,12 +13,12 @@ const QualityData = {
     }),
     karma: new NumberField({ required: true, nullable: false, initial: 0 }),
     rating: new NumberField({ required: true, nullable: false, integer: true, initial: 0, min: 0 }),
-}
+});
 
-export class Quality extends ItemBase<typeof QualityData> {
+export class Quality extends ItemBase<ReturnType<typeof QualityData>> {
     static override defineSchema() {
-        return QualityData;
+        return QualityData();
     }
 }
 
-console.log("QualityData", QualityData, new Quality());
+console.log("QualityData", QualityData(), new Quality());

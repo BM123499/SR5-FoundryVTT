@@ -1,14 +1,14 @@
-import { ArmorValueData } from "./Armor";
-import { ActionRollData } from "./Action";
+import { ArmorPartData } from "./Armor";
+import { ActionPartData } from "./Action";
 import { BaseItemData, ItemBase } from "./ItemBase";
-import { TechnologyData } from "../template/Technology";
-const { SchemaField, NumberField, StringField } = foundry.data.fields;
+import { TechnologyPartData } from "../template/Technology";
+const { NumberField, StringField } = foundry.data.fields;
 
-const CyberwareData = {
+const CyberwareData = () => ({
     ...BaseItemData(),
-    action: new SchemaField(ActionRollData()),
-    armor: new SchemaField(ArmorValueData()),
-    technology: new SchemaField(TechnologyData()),
+    ...ActionPartData(),
+    ...ArmorPartData(),
+    ...TechnologyPartData(),
 
     essence: new NumberField({ required: true, nullable: false, initial: 0 }),
     capacity: new NumberField({ required: true, nullable: false, integer: true, initial: 0, min: 0 }),
@@ -17,12 +17,12 @@ const CyberwareData = {
         initial: 'standard',
         choices: ['alpha', 'beta', 'delta', 'gamma', 'standard', 'used'],
     }),
-}
+});
 
-export class Cyberware extends ItemBase<typeof CyberwareData> {
+export class Cyberware extends ItemBase<ReturnType<typeof CyberwareData>> {
     static override defineSchema() {
-        return CyberwareData;
+        return CyberwareData();
     }
 }
 
-console.log("CyberwareData", CyberwareData, new Cyberware());
+console.log("CyberwareData", CyberwareData(), new Cyberware());

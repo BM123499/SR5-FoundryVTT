@@ -1,7 +1,7 @@
 import { parseDescription, getArray, getValues, parseTechnology, createItemData, formatAsSlug, genImportFlags, setSubType } from "../importHelper/BaseParserFunctions";
 import * as IconAssign from '../../../../iconAssigner/iconAssign';
+import { DamageTypeType } from "src/module/types/item/Action";
 import { DataDefaults } from "src/module/data/DataDefaults";
-import { DamageType } from "src/module/types/item/Action";
 import { SR5Item } from "src/module/item/SR5Item";
 import { ActorSchema } from "../../ActorSchema";
 import { Unwrap } from "../ItemsParser";
@@ -10,7 +10,7 @@ export class WeaponParser {
     private parseDamage(val: string) {
         const damage = {
             damage: 0,
-            type: '' as DamageType['type']['base'],
+            type: '' as DamageTypeType,
             radius: 0,
             dropoff: 0,
         };
@@ -258,7 +258,7 @@ export class WeaponParser {
 
             const ammo: any[] = [];
             clips.forEach((clip) => {
-                const ammobonus = clip.ammotype!;
+                const ammobonus = clip.ammotype;
                 const systemAmmo = DataDefaults.baseSystemData('ammo', {
                     accuracy: Number(ammobonus.weaponbonusacc) || 0,
                     ap: Number(ammobonus.weaponbonusap) || 0,
@@ -278,7 +278,7 @@ export class WeaponParser {
                     }
                 });
                 const currentAmmo = createItemData(clip.name, 'ammo', systemAmmo);
-                currentAmmo._id = randomID(16)
+                currentAmmo._id = foundry.utils.randomID();
                 ammo.push(currentAmmo);
             });
 

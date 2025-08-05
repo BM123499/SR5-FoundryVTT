@@ -1,14 +1,14 @@
-import { ArmorValueData } from "./Armor";
-import { ActionRollData } from "./Action";
+import { ArmorPartData } from "./Armor";
+import { ActionPartData } from "./Action";
 import { BaseItemData, ItemBase } from "./ItemBase";
-const { SchemaField, NumberField, BooleanField, StringField } = foundry.data.fields;
+const { NumberField, BooleanField, StringField } = foundry.data.fields;
 
 export const CritterPowerCategories = ['mundane', 'paranormal', 'weakness', 'emergent', 'drake', 'shapeshifter', 'free_spirit', 'paranormal_infected', 'echoes'] as const;
 
-const CritterPowerData = {
+const CritterPowerData = () => ({
     ...BaseItemData(),
-    action: new SchemaField(ActionRollData()),
-    armor: new SchemaField(ArmorValueData()),
+    ...ActionPartData(),
+    ...ArmorPartData(),
 
     category: new StringField({
         blank: true,
@@ -22,12 +22,12 @@ const CritterPowerData = {
     rating: new NumberField({ required: true, nullable: false, integer: true, initial: 0, min: 0 }),
     optional: new StringField({ required: true, initial: "standard", choices: ['standard', 'enabled_option', 'disabled_option'] }),
     enabled: new BooleanField({ initial: true }),
-}
+});
 
-export class CritterPower extends ItemBase<typeof CritterPowerData> {
+export class CritterPower extends ItemBase<ReturnType<typeof CritterPowerData>> {
     static override defineSchema() {
-        return CritterPowerData;
+        return CritterPowerData();
     }
 }
 
-console.log("CritterPowerData", CritterPowerData, new CritterPower());
+console.log("CritterPowerData", CritterPowerData(), new CritterPower());

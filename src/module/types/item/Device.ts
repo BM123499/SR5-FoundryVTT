@@ -1,30 +1,30 @@
 import { BaseItemData, ItemBase } from "./ItemBase";
 import { MatrixAttributes } from "../template/Matrix";
-import { TechnologyData } from "../template/Technology";
+import { TechnologyPartData } from "../template/Technology";
 const { SchemaField, ArrayField, StringField, DocumentUUIDField, NumberField } = foundry.data.fields;
 
 export const DevicePartData = () => ({
     category: new StringField({
         required: true,
         initial: 'commlink',
-        choices: ['commlink', 'cyberdeck', 'rcc'],
+        choices: ['commlink', 'cyberdeck', 'rcc', 'host'],
     }),
     atts: new SchemaField(MatrixAttributes(true)),
     slaves: new ArrayField(new DocumentUUIDField({ blank: true, required: true, nullable: false })),
 });
 
-const DeviceData = {
+export const DeviceData = () => ({
     ...BaseItemData(),
     ...DevicePartData(),
-    technology: new SchemaField(TechnologyData()),
+    ...TechnologyPartData(),
 
     programs: new NumberField({ required: true, nullable: false, integer: true, initial: 0, min: 0 }),
-};
+});
 
-export class Device extends ItemBase<typeof DeviceData> {
+export class Device extends ItemBase<ReturnType<typeof DeviceData>> {
     static override defineSchema() {
-        return DeviceData;
+        return DeviceData();
     }
 }
 
-console.log("DeviceData", DeviceData, new Device());
+console.log("DeviceData", DeviceData(), new Device());

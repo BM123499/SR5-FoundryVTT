@@ -1,22 +1,22 @@
 import { BaseItemData, ItemBase } from "./ItemBase";
-import { TechnologyData } from "../template/Technology";
-const { SchemaField, StringField } = foundry.data.fields;
+import { TechnologyPartData } from "../template/Technology";
+const { StringField } = foundry.data.fields;
 
-const ProgramData = {
+const ProgramData = () => ({
     ...BaseItemData(),
-    technology: new SchemaField(TechnologyData()),
+    ...TechnologyPartData(),
 
     type: new StringField({
         required: true,
         initial: 'common_program',
         choices: ['common_program', 'hacking_program', 'agent']
     }),
-}
+});
 
-export class Program extends ItemBase<typeof ProgramData> {
+export class Program extends ItemBase<ReturnType<typeof ProgramData>> {
     static override defineSchema() {
-        return ProgramData;
+        return ProgramData();
     }
 }
 
-console.log("ProgramData", ProgramData, new Program());
+console.log("ProgramData", ProgramData(), new Program());

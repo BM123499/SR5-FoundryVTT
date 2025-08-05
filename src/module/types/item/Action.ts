@@ -65,6 +65,7 @@ export const DamageData = () => ({
         }),
     }),
     ap: new ModifiableField(ModifiableValueLinked()),
+    attribute: new StringField({ required: true }),
     source: new SchemaField({
         actorId: new StringField({ required: true }),
         itemId: new StringField({ required: true }),
@@ -132,24 +133,34 @@ export const ActionRollData = (
     }),
 });
 
-const ActionData = {
+export const ActionPartData = (args: {
+    test?: string;
+    opposedTest?: string;
+    resistTest?: string;
+    followedTest?: string;
+} = {}) => ({
+    action: new SchemaField(ActionRollData(args)),
+});
+
+const ActionData = () => ({
     ...BaseItemData(),
-    action: new SchemaField(ActionRollData()),
+    ...ActionPartData(),
 
     result: new SchemaField(ActionResultData()),
-};
+});
 
 export type DamageType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof DamageData>>;
+export type DamageTypeType = DamageType['type']['base'];
 export type ActionRollType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof ActionRollData>>;
 export type OpposedTestType = ActionRollType['opposed'];
 export type ActionResultType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof ActionResultData>>;
 export type ResultActionType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof ResultActionData>>;
 export type MinimalActionType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof MinimalActionData>>;
 
-export class Action extends ItemBase<typeof ActionData> {
+export class Action extends ItemBase<ReturnType<typeof ActionData>> {
     static override defineSchema() {
-        return ActionData;
+        return ActionData();
     }
 };
 
-console.log("ActionData", ActionData, new Action());
+console.log("ActionData", ActionData(), new Action());

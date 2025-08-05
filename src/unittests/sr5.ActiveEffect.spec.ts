@@ -90,7 +90,7 @@ export const shadowrunSR5ActiveEffect = (context: QuenchBatchContext) => {
             assert.strictEqual(actor.system.attributes.agility.value, 3);
 
             // Case - ModifableValue with a direct key not part of value calculation (see SR5ActiveEffect.modifiableValueProperties)
-            // Skill automatics normally can default, wich we overwrite here.
+            // Skill automatics normally can default, which we overwrite here.
             // FVTT types currently do not support the `TypedObjectField` type, so we need to cast it.
             const active = actor.system.skills.active;
             assert.deepEqual(active.automatics.mod, []);
@@ -373,8 +373,8 @@ export const shadowrunSR5ActiveEffect = (context: QuenchBatchContext) => {
         it('A wireless only effect should not apply for a wireless item', async () => {
             const actor = await factory.createActor({ type: 'character' });
             const items = await actor.createEmbeddedDocuments('Item', [
-                { type: 'cyberware', name: 'Wired Item', system: { technology: { wireless: false } } },
-                { type: 'cyberware', name: 'Wireless Item', system: { technology: { wireless: true } } }
+                { type: 'cyberware', name: 'Wired Item', system: { technology: { wireless: 'none' } } },
+                { type: 'cyberware', name: 'Wireless Item', system: { technology: { wireless: 'online' } } }
             ]);
 
             let item = items.pop()!;
@@ -423,8 +423,8 @@ export const shadowrunSR5ActiveEffect = (context: QuenchBatchContext) => {
         it('A wireless and equipped only effect should not apply for a wired and unequipped item', async () => {
             const actor = await factory.createActor({ type: 'character' });
             const items = await actor.createEmbeddedDocuments('Item', [
-                { type: 'cyberware', name: 'Wireless Equipped Item', system: { technology: { equipped: true, wireless: true } } },
-                { type: 'cyberware', name: 'Wired Unequipped Item', system: { technology: { equipped: false, wireless: false } } }
+                { type: 'cyberware', name: 'Wireless Equipped Item', system: { technology: { equipped: true, wireless: 'online' } } },
+                { type: 'cyberware', name: 'Wired Unequipped Item', system: { technology: { equipped: false, wireless: 'offline' } } }
             ]);
 
             let item = items.pop()!;
@@ -448,7 +448,7 @@ export const shadowrunSR5ActiveEffect = (context: QuenchBatchContext) => {
         it('A wireless and equipped only effect should not apply if it the effec titself disabled', async () => {
             const actor = await factory.createActor({ type: 'character' });
             const items = await actor.createEmbeddedDocuments('Item', [
-                { type: 'cyberware', name: 'Wireless Equipped Item', system: { technology: { equipped: true, wireless: true } } },
+                { type: 'cyberware', name: 'Wireless Equipped Item', system: { technology: { equipped: true, wireless: 'online' } } },
             ]);
 
             const item = items.pop()!;

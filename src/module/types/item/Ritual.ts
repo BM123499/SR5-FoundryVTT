@@ -1,25 +1,23 @@
 import { BaseItemData, ItemBase } from "./ItemBase";
-import { ActionRollData } from "./Action";
-const { SchemaField, StringField } = foundry.data.fields;
+import { ActionPartData } from "./Action";
+const { StringField } = foundry.data.fields;
 
-const RitualData = {
+const RitualData = () => ({
     ...BaseItemData(),
-    action: new SchemaField(
-        ActionRollData({
-            test: 'RitualSpellcastingTest',
-            opposedTest: 'OpposedRitualTest',
-            followedTest: 'DrainTest'
-        }),
-    ),
+    ...ActionPartData({
+        test: 'RitualSpellcastingTest',
+        opposedTest: 'OpposedRitualTest',
+        followedTest: 'DrainTest'
+    }),
 
     type: new StringField({ required: true }),
     descriptors: new StringField({ required: true }),
-};
+});
 
-export class Ritual extends ItemBase<typeof RitualData> {
+export class Ritual extends ItemBase<ReturnType<typeof RitualData>> {
     static override defineSchema() {
-        return RitualData;
+        return RitualData();
     }
 }
 
-console.log("Ritual", RitualData, new Ritual());
+console.log("Ritual", RitualData(), new Ritual());
