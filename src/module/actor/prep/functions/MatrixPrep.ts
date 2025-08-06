@@ -43,7 +43,7 @@ export class MatrixPrep {
             matrix.rating = device.getRating();
             matrix.is_cyberdeck = device.system.category === 'cyberdeck';
             matrix.name = device.name;
-            matrix.item = device;
+            matrix.item = device.system;
             matrix.running_silent = device.isRunningSilent();
             const deviceAtts = device.getASDF();
             if (deviceAtts) {
