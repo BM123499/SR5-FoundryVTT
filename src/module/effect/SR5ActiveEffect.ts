@@ -425,17 +425,9 @@ export class SR5ActiveEffect extends ActiveEffect {
             return {};
         }
 
-        // Foundry default effect application will use DataModel.applyChange.
-        const changes = super.apply(model, change);
-
         // ModifiableField applies some changes outside of Foundry behavior, not causing a override value.
         // Those override values are then undefined and should be hidden from Foundries 'override' behavior.
-        for (const key of Object.keys(changes))
-            if (changes[key] === undefined)
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete changes[key];
-
-        return changes;
+        return Object.fromEntries(Object.entries(super.apply(model, change)).filter(([, v]) => v !== undefined));
     }
 
     /**
