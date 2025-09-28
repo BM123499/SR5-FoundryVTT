@@ -1,12 +1,11 @@
 import { SkillsPrep } from './functions/SkillsPrep';
-import { ModifiersPrep } from './functions/ModifiersPrep';
+import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { InitiativePrep } from './functions/InitiativePrep';
 import { AttributesPrep } from './functions/AttributesPrep';
 import { LimitsPrep } from './functions/LimitsPrep';
 import { MatrixPrep } from './functions/MatrixPrep';
 import { Helpers } from '../../helpers';
 import { PartsList } from '../../parts/PartsList';
-import { SkillFieldType } from 'src/module/types/template/Skills';
 import { SR5Item } from 'src/module/item/SR5Item';
 
 /**
@@ -14,11 +13,9 @@ import { SR5Item } from 'src/module/item/SR5Item';
  */
 export class SpritePrep {
     static prepareBaseData(system: Actor.SystemOfType<'sprite'>) {
-        SpritePrep.prepareSpriteSpecial(system);
-        SkillsPrep.prepareSkillData(system);
+        ModifierFieldPrep.resetAllModifiers(system);
 
-        ModifiersPrep.clearAttributeMods(system);
-        ModifiersPrep.clearLimitMods(system);
+        SpritePrep.prepareSpriteSpecial(system);
     }
 
     static prepareDerivedData(system: Actor.SystemOfType<'sprite'>, items: SR5Item[]) {
@@ -37,6 +34,8 @@ export class SpritePrep {
         SpritePrep.prepareSpriteInitiative(system);
 
         InitiativePrep.prepareCurrentInitiative(system);
+
+        ModifierFieldPrep.setAllModifiers(system);
     }
 
     static prepareSpriteSpecial(system: Actor.SystemOfType<'sprite'>) {

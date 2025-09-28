@@ -1,4 +1,4 @@
-import {ModifiersPrep} from "./functions/ModifiersPrep";
+import {ModifierFieldPrep} from "./functions/ModifierFieldPrep";
 import {InitiativePrep} from "./functions/InitiativePrep";
 import {AttributesPrep} from "./functions/AttributesPrep";
 import {PartsList} from "../../parts/PartsList";
@@ -12,8 +12,7 @@ import { SR5Item } from "src/module/item/SR5Item";
 
 export class ICPrep {
     static prepareBaseData(system: Actor.SystemOfType<'ic'>) {
-        ModifiersPrep.clearAttributeMods(system);
-        SkillsPrep.prepareSkillData(system);
+        ModifierFieldPrep.resetAllModifiers(system);
 
         ICPrep.hideMeatAttributes(system);
         ICPrep.addHostAttributes(system);
@@ -34,6 +33,8 @@ export class ICPrep {
 
         ICPrep.prepareMatrixInit(system);
         InitiativePrep.prepareCurrentInitiative(system);
+
+        ModifierFieldPrep.setAllModifiers(system);
     }
 
     static prepareMatrix(system: Actor.SystemOfType<'ic'>) {

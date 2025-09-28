@@ -1,6 +1,6 @@
 import { CharacterPrep } from './CharacterPrep';
 import { SkillsPrep } from './functions/SkillsPrep';
-import { ModifiersPrep } from './functions/ModifiersPrep';
+import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { InitiativePrep } from './functions/InitiativePrep';
 import { AttributesPrep } from './functions/AttributesPrep';
 import { LimitsPrep } from './functions/LimitsPrep';
@@ -16,11 +16,7 @@ import { SR5Item } from 'src/module/item/SR5Item';
 
 export class VehiclePrep {
     static prepareBaseData(system: Actor.SystemOfType<'vehicle'>) {
-        SkillsPrep.prepareSkillData(system);
-
-        ModifiersPrep.clearAttributeMods(system);
-        ModifiersPrep.clearArmorMods(system);
-        ModifiersPrep.clearLimitMods(system);
+        ModifierFieldPrep.resetAllModifiers(system);
     }
 
     static prepareDerivedData(system: Actor.SystemOfType<'vehicle'>, items: SR5Item[]) {
@@ -50,6 +46,8 @@ export class VehiclePrep {
         VehiclePrep.prepareArmor(system);
         CharacterPrep.prepareRecoil(system);
         VehiclePrep.prepareRecoilCompensation(system);
+
+        ModifierFieldPrep.setAllModifiers(system);
     }
 
     static prepareVehicleStats(system: Actor.SystemOfType<'vehicle'>) {

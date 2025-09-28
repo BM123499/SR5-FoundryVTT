@@ -1,41 +1,45 @@
-import { SR5 } from "../../../config";
+import { ModifiableValueType } from "@/module/types/template/Base";
 
-export class ModifiersPrep {
-    static clearAttributeMods(system: Actor.SystemOfType<'character' | 'critter' | 'ic' | 'spirit' | 'sprite' | 'vehicle'>) {
-        const { attributes } = system;
-        for (const [name, attribute] of Object.entries(attributes)) {
-            // Check for valid attributes. Active Effects can cause unexpected properties to appear.
-            if (!SR5.attributes.hasOwnProperty(name) || !attribute) return;
+export class ModifierPrep {
 
-            attribute.mod = [];
-        }
-    }
+    static readonly applyModifiers = {
+        // Limits
+        'physical_limit': 'limits.physical',
+        'mental_limit': 'limits.mental',
+        'social_limit': 'limits.social',
 
-    static clearArmorMods(system:Actor.SystemOfType<'character' | 'critter' | 'spirit' | 'vehicle'>) {
-        const {armor} = system;
+        // Initiative
+        'meat_initiative': 'initiative.meatspace.base',
+        'meat_initiative_dice': 'initiative.meatspace.dice',
+        'astral_initiative': 'initiative.astral.base',
+        'astral_initiative_dice': 'initiative.astral.dice',
+        'matrix_initiative': 'initiative.matrix.base',
+        'matrix_initiative_dice': 'initiative.matrix.dice',
 
-        armor.mod = [];
-    }
+        // Tracks
+        'physical_track': 'track.physical',
+        'stun_track': 'track.stun',
+        'matrix_track': 'matrix.condition_monitor',
+        'physical_overflow_track': 'track.physical.overflow',
 
-    static clearLimitMods(system: Actor.SystemOfType<'character' | 'critter' | 'spirit' | 'sprite' | 'vehicle'>) {
-        const {limits} = system;
-        for (const [name, limit] of Object.entries(limits)) {
-            if (!SR5.limits.hasOwnProperty(name) || !limit) return;
+        // Combat/Defense
+        'armor': 'armor',
+        'recoil': 'values.recoil',
+    } as const satisfies Record<string, string>;
 
-            limit.mod = [];
-        }
-    }
+    static setAllModifiers(system: Actor.Implementation['system']) {
+        for (const [modKey, targetPath] of Object.entries(this.applyModifiers)) {
+            if (!(modKey in system.modifiers) || !system.modifiers[modKey]) continue;
+            const modValue = system.modifiers[modKey] as number;
+            const targetField = foundry.utils.getProperty(system, targetPath) as ModifiableValueType;
 
-    /**
-     * Clear out modifierse from all calculate values, no matter where from and what.
-     * 
-     * This is necessary to avoid items and naive modifications doubling up shoudl they be
-     * saved with update calls
-     * 
-     */
-    static clearValueMods(system: Actor.SystemOfType<'character'>) {
-        for (const [, values] of Object.entries(system.values)) {
-            values.mod = [];
+            targetField.changes.push({
+                name: `SR5.Bonus`,
+                value: modValue,
+                mode: 2,
+                unused: false,
+                priority: 20
+            });
         }
     }
 }

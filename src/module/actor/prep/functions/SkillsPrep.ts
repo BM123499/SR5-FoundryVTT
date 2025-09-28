@@ -6,33 +6,6 @@ import { SkillFieldType } from 'src/module/types/template/Skills';
 
 export class SkillsPrep {
     /**
-     * Prepare missing skill data as early in during data preparation as possible.
-     * 
-     * template.json is incomplete, so we need to fill in the missing fields.
-     * This is mostly a legacy design and should be fixed in the future when DataModel's are used.
-     * 
-     * NOTE: Foundry also calls the prepareData multiple times with incomplete source data, causing some value properties to be missing.
-     * @param system 
-     */
-    static prepareSkillData(system: Actor.SystemOfType<'character' | 'critter' | 'ic' | 'spirit' | 'sprite' | 'vehicle'>) {
-        const { language, active, knowledge } = system.skills;
-
-        // Active skills aren't grouped and can be prepared skill by skill.
-        Object.values(active)
-            .forEach((skill) => { DataDefaults.createData('skill_field', skill)} );
-
-        // Language skills aren't group, but might lack the value property.
-        if (language.value)
-            Object.values(language.value).forEach((skill) => { DataDefaults.createData('skill_field', skill)} );
-
-        // Knowledge skills are groupd and might also lack the value property.
-        Object.values(knowledge).forEach((group) => {
-            if (group.value)
-                Object.values(group.value).forEach((skill) => { DataDefaults.createData('skill_field', skill)} );
-        });
-    }
-
-    /**
      * Prepare actor data for skills
      */
     static prepareSkills(system: Actor.SystemOfType<'character' | 'critter' | 'ic' | 'spirit' | 'sprite' | 'vehicle'>) {
@@ -42,7 +15,7 @@ export class SkillsPrep {
         }
 
         // function that will set the total of a skill correctly
-        const prepareSkill = (skill) => {
+        const prepareSkill = (skill: SkillFieldType) => {
             if (!skill.base) skill.base = 0;
             if (skill.bonus?.length) {
                 for (const bonus of skill.bonus) {

@@ -1,7 +1,6 @@
 import { Helpers } from '../../../helpers';
 import {SR} from "../../../constants";
 import {SR5} from "../../../config";
-import { PartsList } from '../../../parts/PartsList';
 import { ItemPrep } from './ItemPrep';
 import { SR5Actor } from '../../SR5Actor';
 import { AttributeFieldType } from 'src/module/types/template/Attributes';
@@ -55,7 +54,7 @@ export class AttributesPrep {
         // Each attribute can have a unique value range.
         // TODO:  Implement metatype attribute value ranges for character actors.
         const range = ranges ? ranges[name] : SR.attributes.ranges[name];
-        Helpers.calcTotal(attribute, range);
+        attribute.value = Helpers.applyRange(attribute.value, range);
     }
 
     /**
@@ -68,15 +67,15 @@ export class AttributesPrep {
         // The essence base is fixed. Changes should be made through the attribute.temp field.
         system.attributes.essence.base = SR.attributes.defaults.essence;
 
-        // Modify essence by actor modifer
-        const parts = new PartsList<number>(system.attributes.essence.mod);
-
-        const essenceMod = system.modifiers['essence'];
-        if (essenceMod && !Number.isNaN(essenceMod)) {
-            parts.addUniquePart('SR5.Bonus', Number(essenceMod));
-        }
-
-        system.attributes.essence.mod = parts.list;
+        const value = system.modifiers['essence'];
+        if (value)
+            system.attributes.essence.changes.push({
+                value,
+                priority: 20,
+                unused: false,
+                name: "SR5.Bonus",
+                mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+            });
 
         ItemPrep.prepareWareEssenceLoss(system, items);
 

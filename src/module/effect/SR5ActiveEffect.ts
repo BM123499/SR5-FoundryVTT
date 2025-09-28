@@ -80,7 +80,7 @@ export class SR5ActiveEffect extends ActiveEffect {
     /**
      * Render the sheet of the active effect source
      */
-    public renderSourceSheet() {
+    public async renderSourceSheet() {
         if (this.source instanceof SR5Actor || this.source instanceof SR5Item)
             return this.source?.sheet?.render(true);
         return undefined;
@@ -92,56 +92,6 @@ export class SR5ActiveEffect extends ActiveEffect {
 
     async disable(disabled) {
         return this.update({ disabled });
-    }
-
-    /**
-     * Foundry provides a functionless custom mode, we make use of as our 'Modify' mode
-     * till they provide a generic way of adding additional custom modes.
-     */
-    override _applyCustom(actor: SR5Actor, change: ActiveEffect.ChangeData, current, delta, changes) {
-        return this._applyModify(actor, change, current, delta, changes);
-    }
-
-    /**
-     * Apply a modification to a ModifiableValue.
-     * Both direct key matches to the whole value and indirect matches to a value property are supported.
-     */
-    protected _applyModify(actor: SR5Actor, change: ActiveEffect.ChangeData, current, delta, changes) {
-        if (SR5ActiveEffect.applyModifyToModifiableValue(this, actor, change, current, delta, changes)) return;
-
-        // fallback to Foundry add mode for all other value types.
-        super._applyAdd(actor, change, current, delta, changes);
-    }
-
-    /**
-     * Apply for the custom (modify) mode but, if possible, apply to a ModifiableValue.
-     * 
-     * This method is designed to handle application and report back if further application is needed.
-     * 
-     * The modify mode is intended to inject each change value into the mod array, while the total value is
-     * calculated later during document data prep.
-     * 
-     * @param effect
-     * @param model
-     * @param change
-     * @param current
-     * @param delta
-     * @param changes
-     * @returns
-     */
-    static applyModifyToModifiableValue(effect: SR5ActiveEffect, model: DataModel.Any, change: ActiveEffect.ChangeData, current, delta, changes?) {
-        const value = SR5ActiveEffect.getModifiableValue(model, change.key);
-        if (value) {
-            value.mod.push({ name: effect.name, value: Number(change.value) });
-
-            return true;
-        }
-
-        // Don't apply any changes if there is NO matching value.
-        if (value === undefined) return true;
-
-        // Hand back application to other methods.
-        return false;
     }
 
     /**
@@ -243,97 +193,6 @@ export class SR5ActiveEffect extends ActiveEffect {
     }
 
     /**
-     * Overriding can be tricky if the overwritten value is a ModifiableValue with derived values.
-     *
-     * To keep the ActiveEffect workflow simple and still allow to override values that aren't a ModifiableValue,
-     * check for such values and give the ActorDataPreparation flow some hints.
-     *
-     * To complicate things, there are some use cases when overwriting an actual property of a ValueField
-     * is needed. The SR5 uneducated quality needs to override the canDefault field of a skill.
-     */
-    override _applyOverride(actor: SR5Actor, change: ActiveEffect.ChangeData, current, delta, changes) {
-        if(SR5ActiveEffect.applyOverrideToModifiableValue(this, actor, change, current, delta)) return;
-
-        super._applyOverride(actor, change, current, delta, changes);
-    }
-
-    /**
-     * Inject system upgrade / downgrade behavior into change keys using ModifiableValue.
-     */
-    override _applyUpgrade(actor: SR5Actor, change: ActiveEffect.ChangeData, current, delta, changes) {
-        // Foundry passes both upgrade and downgrade into _applyUpgrade within _applyLegacy
-        if (change.mode === CONST.ACTIVE_EFFECT_MODES.UPGRADE) {
-            if(SR5ActiveEffect.applyUpgradeToModifiableValue(this, actor, change, current, delta)) return;
-        }
-        if (change.mode === CONST.ACTIVE_EFFECT_MODES.DOWNGRADE) {
-            if(SR5ActiveEffect.applyDowngradeToModifiableValue(this, actor, change, current, delta)) return;
-        }
-
-        super._applyUpgrade(actor, change, current, delta, changes);
-    }
-
-    /**
-     * Apply for the override mode but, if possible, apply to a ModifiableValue.
-     * 
-     * This method is designed to handle application and report back if further application is needed.
-     * 
-     * @param effect
-     * @param model
-     * @param change
-     * @param current
-     * @param delta
-     * @param changes
-     * @returns true, if a ModifiableValue was found and the override was applied.
-     */
-    static applyOverrideToModifiableValue(effect: SR5ActiveEffect, model: DataModel.Any, change: ActiveEffect.ChangeData, current, delta) {
-        const modValue = SR5ActiveEffect.getModifiableValue(model, change.key);
-        if (!modValue) return false;
-
-        const value = Number(change.value);
-        if (isNaN(value)) return true;
-
-        modValue.override = { name: effect.name, value };
-
-        return true;
-    }
-
-    /**
-     * Apply for the Upgrade mode but, if possible, apply to a ModifiableValue.
-     * @returns true, if a ModifiableValue was found and the override was applied.
-    */
-    static applyUpgradeToModifiableValue(effect: SR5ActiveEffect, model: DataModel.Any, change: ActiveEffect.ChangeData, current, delta) {
-        const modValue = SR5ActiveEffect.getModifiableValue(model, change.key);
-        if (!modValue) return false;
-
-        const value = Number(change.value);
-        if (isNaN(value)) return true;
-
-        // Apply only the strongest (highest) upgrade
-        if (!modValue.upgrade || value > modValue.upgrade.value)
-            modValue.upgrade = { name: effect.name, value };
-
-        return true;
-    }
-
-    /**
-     * Apply for the Downgrade mode but, if possible, apply to a ModifiableValue.
-     * @returns true, if a ModifiableValue was found and the override was applied.
-     */
-    static applyDowngradeToModifiableValue(effect: SR5ActiveEffect, model: DataModel.Any, change: ActiveEffect.ChangeData, current, delta) {
-        const modValue = SR5ActiveEffect.getModifiableValue(model, change.key);
-        if (!modValue) return false;
-
-        const value = Number(change.value);
-        if (isNaN(value)) return true;
-
-        // Store only the strongest (lowest) cap
-        if (!modValue.downgrade || value < modValue.downgrade.value)
-            modValue.downgrade = { name: effect.name, value };
-
-        return true;
-    }
-
-    /**
      * Return a ModifiableValue at the given key if it matches the ModifiableValue shape.
      * 
      * @param model Data model or plain object to resolve the key against.
@@ -425,9 +284,7 @@ export class SR5ActiveEffect extends ActiveEffect {
             return {};
         }
 
-        // ModifiableField applies some changes outside of Foundry behavior, not causing a override value.
-        // Those override values are then undefined and should be hidden from Foundries 'override' behavior.
-        return Object.fromEntries(Object.entries(super.apply(model, change)).filter(([, v]) => v !== undefined));
+        return super.apply(model, change);
     }
 
     /**

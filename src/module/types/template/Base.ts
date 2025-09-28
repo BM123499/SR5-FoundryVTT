@@ -1,4 +1,4 @@
-const { SchemaField, NumberField, ArrayField, StringField } = foundry.data.fields;
+const { BooleanField, SchemaField, NumberField, ArrayField, StringField } = foundry.data.fields;
 
 export const PhysicalAttribute = new StringField({
     choices: ['body', 'agility', 'reaction', 'strength'],
@@ -31,23 +31,22 @@ export const ModListEntry = () => ({
     value: new NumberField({ required: true, nullable: false, integer: true, initial: 0 }),
 });
 
-export const OverrideModEntry = () => ({
-    ...ModListEntry(),
+export const NewModListEntryType = () => ({
+    name: new StringField({ required: true }),
+    unused: new BooleanField({ initial: false }),
+    mode: new NumberField({ required: true, nullable: false, integer: true, initial: 0 }),
+    value: new NumberField({ required: true, nullable: false, integer: true, initial: 0 }),
+    priority: new NumberField({ required: true, nullable: false, integer: true, initial: 0 }),
 });
 
+export const NewModList = () => new ArrayField(new SchemaField(ModListEntry()));
 export const ModList = () => new ArrayField(new SchemaField(ModListEntry()));
 
 export const ModifiableValue = () => ({
     ...BaseValuePair(),
-    mod: ModList(),
-    mode: new StringField({
-        required: true,
-        nullable: true,
-        choices: ['override', 'upgrade', 'downgrade']
-    }),
-    override: new SchemaField(OverrideModEntry(), { required: false, nullable: true, initial: null }),
-    downgrade: new SchemaField(OverrideModEntry(), { required: false, nullable: true, initial: null }),
-    upgrade: new SchemaField(OverrideModEntry(), { required: false, nullable: true, initial: null }),
+    mod: NewModList(),
+    changes: new ArrayField(new SchemaField(NewModListEntryType())),
+    override: new SchemaField(ModListEntry(), { required: false, nullable: true, initial: null }),
     temp: new NumberField({ required: true, nullable: false, integer: true, initial: 0 }),
 });
 

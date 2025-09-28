@@ -51,15 +51,16 @@ export class ItemPrep {
      * Modify essence by items essence loss
      */
     static prepareWareEssenceLoss(system: Actor.SystemOfType<'character' | 'critter'>, items: SR5Item[]) {
-        const parts = new PartsList<number>(system.attributes.essence.mod);
-        
         for (const item of items) {
             if (item.isEquipped() && item.isType('bioware', 'cyberware')) {
-                const loss = item.getEssenceLoss();
-                if (loss) parts.addPart(item.name, -loss);
+                system.attributes.essence.changes.push({
+                    priority: 20,
+                    unused: false,
+                    name: item.name,
+                    value: -item.getEssenceLoss(),
+                    mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+                });
             }
         }
-
-        system.attributes.essence.mod = parts.list;
     }
 }

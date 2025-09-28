@@ -1,7 +1,7 @@
 import { PartsList } from './../../parts/PartsList';
 import { RangedWeaponRules } from './../../rules/RangedWeaponRules';
 import { InitiativePrep } from './functions/InitiativePrep';
-import { ModifiersPrep } from './functions/ModifiersPrep';
+import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { MatrixPrep } from './functions/MatrixPrep';
 import { ItemPrep } from './functions/ItemPrep';
 import { SkillsPrep } from './functions/SkillsPrep';
@@ -17,13 +17,8 @@ import { SR5Item } from 'src/module/item/SR5Item';
 
 export class CharacterPrep {
     static prepareBaseData(system: Actor.SystemOfType<'character'>) {
+        ModifierFieldPrep.resetAllModifiers(system);
         CharacterPrep.addSpecialAttributes(system);
-        SkillsPrep.prepareSkillData(system);
-
-        ModifiersPrep.clearAttributeMods(system);
-        ModifiersPrep.clearArmorMods(system);
-        ModifiersPrep.clearLimitMods(system);
-        ModifiersPrep.clearValueMods(system);
     }
 
     /**
@@ -65,6 +60,7 @@ export class CharacterPrep {
 
         CharacterPrep.prepareRecoil(system);
         CharacterPrep.prepareRecoilCompensation(system);
+        ModifierFieldPrep.setAllModifiers(system);
     }
 
     /**
@@ -73,7 +69,7 @@ export class CharacterPrep {
      * @param system Physical humanoid system data.
      */
     static prepareRecoil(system: Actor.SystemOfType<'character' | 'critter' | 'spirit' | 'vehicle'>) {
-        Helpers.calcTotal(system.values.recoil, { min: 0 });
+        Helpers.applyRange(system.values.recoil.value, { min: 0 });
     }
 
     /**
@@ -87,7 +83,7 @@ export class CharacterPrep {
         system.values.recoil_compensation.base = baseRc;
         PartsList.AddUniquePart(system.values.recoil_compensation.mod, 'SR5.RecoilCompensation', recoilCompensation);
 
-        Helpers.calcTotal(system.values.recoil_compensation, { min: 0 });
+        Helpers.applyRange(system.values.recoil_compensation.value, { min: 0 });
     }
 
     static addSpecialAttributes(system: Actor.SystemOfType<'character'>) {

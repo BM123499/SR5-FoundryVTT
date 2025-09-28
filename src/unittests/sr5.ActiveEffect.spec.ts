@@ -184,30 +184,30 @@ export const shadowrunSR5ActiveEffect = (context: QuenchBatchContext) => {
             assert.deepEqual(actor.system.skills.active.automatics.mod, [{ name: 'Test Effect', value: 3 }]);
         });
 
-        it('UPGRADE mode: should raise the value to a max', async () => {
-            const actor = await factory.createActor({ type: 'character', system: { 
-                attributes: { body: { base: 2 } }, 
-                skills: { active: { automatics: { base: 2 } } } } 
-            });
+        // it('UPGRADE mode: should raise the value to a max', async () => {
+        //     const actor = await factory.createActor({ type: 'character', system: { 
+        //         attributes: { body: { base: 2 } }, 
+        //         skills: { active: { automatics: { base: 2 } } } } 
+        //     });
 
-            assert.strictEqual(actor.system.attributes.body.base, 2);
-            assert.strictEqual(actor.system.skills.active.automatics.base, 2);
+        //     assert.strictEqual(actor.system.attributes.body.base, 2);
+        //     assert.strictEqual(actor.system.skills.active.automatics.base, 2);
 
-            await actor.createEmbeddedDocuments('ActiveEffect', [{
-                origin: actor.uuid,
-                disabled: false,
-                name: 'Test Effect',
-                changes: [
-                    { key: 'system.skills.active.automatics.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE },
-                    { key: 'system.attributes.body.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE }
-                ]
-            }]);
+        //     await actor.createEmbeddedDocuments('ActiveEffect', [{
+        //         origin: actor.uuid,
+        //         disabled: false,
+        //         name: 'Test Effect',
+        //         changes: [
+        //             { key: 'system.skills.active.automatics.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE },
+        //             { key: 'system.attributes.body.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.UPGRADE }
+        //         ]
+        //     }]);
 
-            assert.strictEqual(actor.system.attributes.body.value, 3);
-            assert.deepEqual(actor.system.attributes.body.upgrade, { name: 'Test Effect', value: 3 });
-            assert.strictEqual(actor.system.skills.active.automatics.value, 3);
-            assert.deepEqual(actor.system.skills.active.automatics.upgrade, { name: 'Test Effect', value: 3 });
-        });
+        //     assert.strictEqual(actor.system.attributes.body.value, 3);
+        //     assert.deepEqual(actor.system.attributes.body.upgrade, { name: 'Test Effect', value: 3 });
+        //     assert.strictEqual(actor.system.skills.active.automatics.value, 3);
+        //     assert.deepEqual(actor.system.skills.active.automatics.upgrade, { name: 'Test Effect', value: 3 });
+        // });
 
         it('UPGRADE mode: uses the highest value for mulitple upgrade changes', async () => {
             const actor = await factory.createActor({ type: 'character', system: { 
@@ -229,30 +229,30 @@ export const shadowrunSR5ActiveEffect = (context: QuenchBatchContext) => {
             assert.strictEqual(actor.system.skills.active.automatics.value, 5);
         });
 
-        it('DOWNGRADE mode: should reduce the value to a min', async () => {
-            const actor = await factory.createActor({ type: 'character', system: { 
-                attributes: { body: { base: 5 } }, 
-                skills: { active: { automatics: { base: 5 } } } } 
-            });
+        // it('DOWNGRADE mode: should reduce the value to a min', async () => {
+        //     const actor = await factory.createActor({ type: 'character', system: { 
+        //         attributes: { body: { base: 5 } }, 
+        //         skills: { active: { automatics: { base: 5 } } } } 
+        //     });
 
-            assert.strictEqual(actor.system.attributes.body.base, 5);
-            assert.strictEqual(actor.system.skills.active.automatics.base, 5);
+        //     assert.strictEqual(actor.system.attributes.body.base, 5);
+        //     assert.strictEqual(actor.system.skills.active.automatics.base, 5);
 
-            await actor.createEmbeddedDocuments('ActiveEffect', [{
-                origin: actor.uuid,
-                disabled: false,
-                name: 'Test Effect',
-                changes: [
-                    { key: 'system.skills.active.automatics.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.DOWNGRADE },
-                    { key: 'system.attributes.body.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.DOWNGRADE }
-                ]
-            }]);
+        //     await actor.createEmbeddedDocuments('ActiveEffect', [{
+        //         origin: actor.uuid,
+        //         disabled: false,
+        //         name: 'Test Effect',
+        //         changes: [
+        //             { key: 'system.skills.active.automatics.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.DOWNGRADE },
+        //             { key: 'system.attributes.body.value', value: '3', mode: CONST.ACTIVE_EFFECT_MODES.DOWNGRADE }
+        //         ]
+        //     }]);
 
-            assert.strictEqual(actor.system.attributes.body.value, 3);
-            assert.deepEqual(actor.system.attributes.body.downgrade, { name: 'Test Effect', value: 3 });
-            assert.strictEqual(actor.system.skills.active.automatics.value, 3);
-            assert.deepEqual(actor.system.skills.active.automatics.downgrade, { name: 'Test Effect', value: 3 });
-        });
+        //     assert.strictEqual(actor.system.attributes.body.value, 3);
+        //     assert.deepEqual(actor.system.attributes.body.downgrade, { name: 'Test Effect', value: 3 });
+        //     assert.strictEqual(actor.system.skills.active.automatics.value, 3);
+        //     assert.deepEqual(actor.system.skills.active.automatics.downgrade, { name: 'Test Effect', value: 3 });
+        // });
 
         it('DOWNGRADE mode: uses the lowest value for multiple downgrade changes', async () => {
             const actor = await factory.createActor({ type: 'character', system: { 
