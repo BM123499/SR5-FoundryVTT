@@ -1,5 +1,6 @@
 import { ImportFlagData } from "../template/ImportFlags";
 import { DescriptionData } from "../template/Description";
+import { ModifierFieldPrep } from "../prep/ModifiersFieldPrep";
 const { SchemaField } = foundry.data.fields;
 
 export const BaseItemData = () => ({
@@ -14,4 +15,8 @@ export const BaseItemData = () => ({
  * Subclasses should extend this class to inherit default schema structure and standardized
  * data migration logic for shared item properties across the system.
  */
-export abstract class ItemBase<DS extends ReturnType<typeof BaseItemData>> extends foundry.abstract.TypeDataModel<DS, Item.Implementation> {}
+export abstract class ItemBase<DS extends ReturnType<typeof BaseItemData>> extends foundry.abstract.TypeDataModel<DS, Item.Implementation> {
+    override prepareBaseData() {
+        ModifierFieldPrep.resetAllModifiers(this);
+    }
+}

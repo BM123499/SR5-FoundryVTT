@@ -16,7 +16,6 @@ export class SkillsPrep {
 
         // function that will set the total of a skill correctly
         const prepareSkill = (skill: SkillFieldType) => {
-            if (!skill.base) skill.base = 0;
             if (skill.bonus?.length) {
                 for (const bonus of skill.bonus) {
                     skill.mod = PartsList.AddUniquePart(skill.mod, bonus.key, Number(bonus.value));

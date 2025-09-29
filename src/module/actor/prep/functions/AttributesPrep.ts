@@ -73,7 +73,7 @@ export class AttributesPrep {
                 value,
                 priority: 20,
                 unused: false,
-                name: "SR5.Bonus",
+                name: "SR5.Temporary",
                 mode: CONST.ACTIVE_EFFECT_MODES.ADD,
             });
 

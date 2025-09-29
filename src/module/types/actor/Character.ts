@@ -1,4 +1,4 @@
-import { CommonData, CharacterLimits, CreateModifiers, MagicData, ActorBase, CharacterValues, } from "./Common";
+import { CharacterLimits, CreateModifiers, MagicData, CharacterValues, CommonData, } from "./Common";
 import { Attributes, AttributeField, MatrixActorAttributes } from '../template/Attributes';
 import { ModifiableValue, ValueMaxPair } from "../template/Base";
 import { Tracks } from "../template/ConditionMonitors";
@@ -8,6 +8,7 @@ import { Initiative } from "../template/Initiative";
 import { MatrixData } from '../template/Matrix';
 import { VisibilityChecks } from "../template/Visibility";
 import { ModifiableField } from "../fields/ModifiableField";
+import { ActorBase } from "./ActorBase";
 const { SchemaField, NumberField, BooleanField, StringField } = foundry.data.fields;
 
 const CharacterAttributes = () => ({

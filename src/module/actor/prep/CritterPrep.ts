@@ -1,6 +1,5 @@
 import { CharacterPrep } from './CharacterPrep';
 import {InitiativePrep} from './functions/InitiativePrep';
-import {ModifierFieldPrep} from './functions/ModifierFieldPrep';
 import {MatrixPrep} from './functions/MatrixPrep';
 import {ItemPrep} from './functions/ItemPrep';
 import {SkillsPrep} from './functions/SkillsPrep';
@@ -14,7 +13,6 @@ import { SR5Item } from 'src/module/item/SR5Item';
 
 export class CritterPrep {
     static prepareBaseData(system: Actor.SystemOfType<'critter'>) {
-        ModifierFieldPrep.resetAllModifiers(system);
     }
 
     static prepareDerivedData(system: Actor.SystemOfType<'critter'>, items: SR5Item[]) {
@@ -45,7 +43,5 @@ export class CritterPrep {
 
         CharacterPrep.prepareRecoil(system);
         CharacterPrep.prepareRecoilCompensation(system);
-
-        ModifierFieldPrep.setAllModifiers(system);
     }
 }

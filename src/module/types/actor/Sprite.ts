@@ -3,7 +3,8 @@ import { Attributes, MatrixActorAttributes } from '../template/Attributes';
 import { Initiative } from "../template/Initiative";
 import { VisibilityChecks } from "../template/Visibility";
 import { Limits, MatrixLimits } from "../template/Limits";
-import { ActorBase, CommonData, CreateModifiers } from "./Common";
+import { CommonData, CreateModifiers } from "./Common";
+import { ActorBase } from "./ActorBase";
 const { SchemaField, NumberField, BooleanField, StringField } = foundry.data.fields;
 
 const SpriteData = () => ({

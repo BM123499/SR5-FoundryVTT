@@ -1,7 +1,8 @@
+import { ItemBase } from "../item/ItemBase";
+import { ActorBase } from "../actor/ActorBase";
 import { ModifiableValueType } from "@/module/types/template/Base";
 import { ModifiableField } from "@/module/types/fields/ModifiableField";
-import { ActorBase } from "@/module/types/actor/Common";
-const { SchemaField, TypedObjectField, ArrayField } = foundry.data.fields;
+const { ArrayField, TypedObjectField, SchemaField } = foundry.data.fields;
 
 export class ModifierFieldPrep {
 
@@ -72,16 +73,16 @@ export class ModifierFieldPrep {
         }
     }
 
-    static resetAllModifiers(system: Actor.Implementation['system'] | Item.Implementation['system']) {
+    static resetAllModifiers(system: ActorBase<any> | ItemBase<any>) {
         const resolveField = (key: string) => system.schema.fields[key] as foundry.data.fields.DataField.Any;
         const resetFunc = (mod: ModifiableValueType) => {
-            mod.changes = mod.temp ? [{ name: "Temp", value: mod.temp, mode: 2, unused: false, priority: 20 }] : [];
+            mod.changes = mod.temp ? [{ name: "SR5.Temporary", value: mod.temp, mode: 2, unused: false, priority: 20 }] : [];
         };
 
         return this.traverseFields(system, resolveField, resetFunc);
     }
 
-    static setAllModifiers(system: Actor.Implementation['system'] | Item.Implementation['system']) {
+    static setAllModifiers(system: ActorBase<any> | ItemBase<any>) {
         const resolveField = (key: string) => system.schema.fields[key] as foundry.data.fields.DataField.Any;
 
         return this.traverseFields(system, resolveField, this._applyChanges.bind(this));

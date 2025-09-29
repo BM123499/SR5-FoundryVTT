@@ -7,7 +7,8 @@ import { Initiative } from "../template/Initiative";
 import { MatrixData } from "../template/Matrix";
 import { Movement } from "../template/Movement";
 import { VisibilityChecks } from "../template/Visibility";
-import { CommonData, PhysicalCombatValues, CharacterLimits, CreateModifiers, MagicData, ActorBase } from "./Common";
+import { ActorBase } from "./ActorBase";
+import { CommonData, PhysicalCombatValues, CharacterLimits, CreateModifiers, MagicData } from "./Common";
 const { SchemaField, NumberField, BooleanField, StringField } = foundry.data.fields;
 
 export const CritterData = () => ({

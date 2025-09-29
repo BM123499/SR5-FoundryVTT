@@ -1,7 +1,6 @@
 import { PartsList } from './../../parts/PartsList';
 import { RangedWeaponRules } from './../../rules/RangedWeaponRules';
 import { InitiativePrep } from './functions/InitiativePrep';
-import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { MatrixPrep } from './functions/MatrixPrep';
 import { ItemPrep } from './functions/ItemPrep';
 import { SkillsPrep } from './functions/SkillsPrep';
@@ -17,7 +16,6 @@ import { SR5Item } from 'src/module/item/SR5Item';
 
 export class CharacterPrep {
     static prepareBaseData(system: Actor.SystemOfType<'character'>) {
-        ModifierFieldPrep.resetAllModifiers(system);
         CharacterPrep.addSpecialAttributes(system);
     }
 
@@ -60,7 +58,6 @@ export class CharacterPrep {
 
         CharacterPrep.prepareRecoil(system);
         CharacterPrep.prepareRecoilCompensation(system);
-        ModifierFieldPrep.setAllModifiers(system);
     }
 
     /**

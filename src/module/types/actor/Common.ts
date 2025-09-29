@@ -4,7 +4,6 @@ import { DescriptionData } from "../template/Description";
 import { ModifiableField } from "../fields/ModifiableField";
 import { Limits, AwakendLimits, MatrixLimits } from "../template/Limits";
 import { KnowledgeSkillList, KnowledgeSkills, Skills } from "../template/Skills";
-import { ModifierFieldPrep } from "@/module/actor/prep/functions/ModifierFieldPrep";
 const { SchemaField, NumberField, BooleanField, ObjectField, ArrayField, StringField, TypedObjectField } = foundry.data.fields;
 
 export const CharacterSkills = () => ({
@@ -47,7 +46,7 @@ export const CreateModifiers = <T extends readonly string[]>(...keys: T) => {
     ) as { [K in T[number]]: ReturnType<typeof field> };
 };
 
-const InventoryData = () => ({
+export const InventoryData = () => ({
     name: new StringField({ required: true }),
     type: new StringField({ required: true }),
     itemIds: new ArrayField(new StringField({ required: true })),
@@ -76,9 +75,3 @@ export const CommonData = () => ({
 });
 
 export type InventoryType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof InventoryData>>;
-
-export abstract class ActorBase<DS extends ReturnType<typeof CommonData>> extends foundry.abstract.TypeDataModel<DS, Actor.Implementation> {
-    // override prepareBaseData() {
-    //     ModifiersPrep.resetAllModifiers(this);
-    // }
-}

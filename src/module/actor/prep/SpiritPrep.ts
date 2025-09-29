@@ -3,7 +3,6 @@ import { AttributesPrep } from './functions/AttributesPrep';
 import { LimitsPrep } from './functions/LimitsPrep';
 import { MovementPrep } from './functions/MovementPrep';
 import { WoundsPrep } from './functions/WoundsPrep';
-import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { InitiativePrep } from './functions/InitiativePrep';
 import { Helpers } from '../../helpers';
 import { PartsList } from "../../parts/PartsList";
@@ -20,7 +19,6 @@ import { AttributesType } from 'src/module/types/template/Attributes';
 
 export class SpiritPrep {
     static prepareBaseData(system: Actor.SystemOfType<'spirit'>) {
-        ModifierFieldPrep.resetAllModifiers(system);
     }
 
     static prepareDerivedData(system: Actor.SystemOfType<'spirit'>, items: SR5Item[]) {
@@ -46,8 +44,6 @@ export class SpiritPrep {
 
         CharacterPrep.prepareRecoil(system);
         CharacterPrep.prepareRecoilCompensation(system);
-
-        ModifierFieldPrep.setAllModifiers(system);
     }
 
     static prepareSpiritBaseData(system: Actor.SystemOfType<'spirit'>) {

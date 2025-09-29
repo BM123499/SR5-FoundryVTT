@@ -1,6 +1,5 @@
 import { CharacterPrep } from './CharacterPrep';
 import { SkillsPrep } from './functions/SkillsPrep';
-import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { InitiativePrep } from './functions/InitiativePrep';
 import { AttributesPrep } from './functions/AttributesPrep';
 import { LimitsPrep } from './functions/LimitsPrep';
@@ -16,9 +15,7 @@ import { MatrixRules } from '@/module/rules/MatrixRules';
 
 
 export class VehiclePrep {
-    static prepareBaseData(system: Actor.SystemOfType<'vehicle'>) {
-        ModifierFieldPrep.resetAllModifiers(system);
-    }
+    static prepareBaseData(system: Actor.SystemOfType<'vehicle'>) {}
 
     static prepareDerivedData(system: Actor.SystemOfType<'vehicle'>, items: SR5Item[]) {
         VehiclePrep.prepareVehicleStats(system);
@@ -47,8 +44,6 @@ export class VehiclePrep {
         VehiclePrep.prepareArmor(system);
         CharacterPrep.prepareRecoil(system);
         VehiclePrep.prepareRecoilCompensation(system);
-
-        ModifierFieldPrep.setAllModifiers(system);
     }
 
     static prepareVehicleStats(system: Actor.SystemOfType<'vehicle'>) {

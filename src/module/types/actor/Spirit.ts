@@ -7,7 +7,8 @@ import { Initiative } from "../template/Initiative";
 import { AwakendLimits, Limits } from "../template/Limits";
 import { Movement } from "../template/Movement";
 import { VisibilityChecks } from "../template/Visibility";
-import { CommonData, PhysicalCombatValues, CreateModifiers, MagicData, ActorBase } from "./Common";
+import { ActorBase } from "./ActorBase";
+import { CommonData, PhysicalCombatValues, CreateModifiers, MagicData } from "./Common";
 const { SchemaField, NumberField, BooleanField, StringField } = foundry.data.fields;
 
 const SpiritData = () => ({

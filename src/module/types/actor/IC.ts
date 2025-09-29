@@ -1,10 +1,11 @@
 import { Tracks } from "../template/ConditionMonitors";
 import { Attributes, MatrixActorAttributes } from '../template/Attributes';
-import { ActorBase, CommonData, CreateModifiers } from "./Common";
+import { CommonData, CreateModifiers } from "./Common";
 import { MatrixAttributes, MatrixData } from "../template/Matrix";
 import { Initiative } from "../template/Initiative";
 import { VisibilityChecks } from "../template/Visibility";
 import { MatrixLimits } from "../template/Limits";
+import { ActorBase } from "./ActorBase";
 const { SchemaField, NumberField, StringField } = foundry.data.fields;
 
 // === Main Schema ===

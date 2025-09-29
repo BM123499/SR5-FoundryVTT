@@ -1,5 +1,4 @@
 import { SkillsPrep } from './functions/SkillsPrep';
-import { ModifierFieldPrep } from './functions/ModifierFieldPrep';
 import { InitiativePrep } from './functions/InitiativePrep';
 import { AttributesPrep } from './functions/AttributesPrep';
 import { LimitsPrep } from './functions/LimitsPrep';
@@ -12,11 +11,7 @@ import { SR5Item } from 'src/module/item/SR5Item';
  * Prepare a Sprite Type of Actor
  */
 export class SpritePrep {
-    static prepareBaseData(system: Actor.SystemOfType<'sprite'>) {
-        ModifierFieldPrep.resetAllModifiers(system);
-
-        SpritePrep.prepareSpriteSpecial(system);
-    }
+    static prepareBaseData(system: Actor.SystemOfType<'sprite'>) {}
 
     static prepareDerivedData(system: Actor.SystemOfType<'sprite'>, items: SR5Item[]) {
         SpritePrep.prepareSpriteMatrixAttributes(system);
@@ -35,12 +30,6 @@ export class SpritePrep {
 
         InitiativePrep.prepareCurrentInitiative(system);
 
-        ModifierFieldPrep.setAllModifiers(system);
-    }
-
-    static prepareSpriteSpecial(system: Actor.SystemOfType<'sprite'>) {
-        // Sprites are always awakened
-        // system.special = 'resonance';
     }
 
     static prepareSpriteAttributes(system: Actor.SystemOfType<'sprite'>) {

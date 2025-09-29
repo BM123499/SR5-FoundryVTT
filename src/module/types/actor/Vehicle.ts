@@ -1,4 +1,4 @@
-import { CommonData, PhysicalCombatValues, CreateModifiers, ActorBase } from "./Common";
+import { CommonData, PhysicalCombatValues, CreateModifiers } from "./Common";
 import { Attributes, AttributeField } from "../template/Attributes";
 import { VehicleLimits } from "../template/Limits";
 import { Movement } from "../template/Movement";
@@ -8,6 +8,7 @@ import { Initiative } from "../template/Initiative";
 import { MatrixData } from "../template/Matrix";
 import { VisibilityChecks } from "../template/Visibility";
 import { ModifiableField } from "../fields/ModifiableField";
+import { ActorBase } from "./ActorBase";
 const { SchemaField, NumberField, BooleanField, StringField } = foundry.data.fields;
 
 const VehicleStats = () => ({
