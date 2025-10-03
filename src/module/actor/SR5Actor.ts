@@ -143,8 +143,9 @@ export class SR5Actor<SubType extends Actor.ConfiguredSubType = Actor.Configured
     override prepareBaseData() {
         super.prepareBaseData();
 
+        const items = this.items as unknown as SR5Item[];
         if (this.isType('character'))
-            CharacterPrep.prepareBaseData(this.system);
+            CharacterPrep.prepareBaseData(this.system, items);
         else if (this.isType('critter'))
             CritterPrep.prepareBaseData(this.system);
         else if (this.isType('spirit'))

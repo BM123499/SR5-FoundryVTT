@@ -11,7 +11,7 @@ export class AttributesPrep {
      * Prepare actor data for attributes
      */
     static prepareAttributes(system: SR5Actor['system'], ranges?: Record<string, {min: number, max?: number}>) {
-        const {attributes} = system;
+        const { attributes } = system;
 
         // always have special attributes set to hidden
         attributes.magic.hidden = true;
@@ -30,9 +30,6 @@ export class AttributesPrep {
      * @param attribute The AttributeField to prepare
      */
     static prepareAttribute(name: string, attribute: AttributeFieldType, ranges?: Record<string, {min: number, max?: number}>) {
-        // Check for valid attributes. Active Effects can cause unexpected properties to appear.
-        if (!SR5.attributes.hasOwnProperty(name) || !attribute) return;
-
         // Each attribute can have a unique value range.
         // TODO:  Implement metatype attribute value ranges for character actors.
         AttributesPrep.calculateAttribute(name, attribute, ranges);
@@ -49,7 +46,7 @@ export class AttributesPrep {
      */
     static calculateAttribute(name: string, attribute: AttributeFieldType, ranges?: Record<string, {min: number, max?: number}>) {
         // Check for valid attributes. Active Effects can cause unexpected properties to appear.
-        if (!SR5.attributes.hasOwnProperty(name) || !attribute) return;
+        if (!Object.hasOwn(SR5.attributes, name) || !attribute) return;
 
         // Each attribute can have a unique value range.
         // TODO:  Implement metatype attribute value ranges for character actors.
@@ -68,7 +65,7 @@ export class AttributesPrep {
         system.attributes.essence.base = SR.attributes.defaults.essence;
 
         const value = system.modifiers['essence'];
-        if (value)
+        if (value) {
             system.attributes.essence.changes.push({
                 value,
                 priority: 20,
@@ -76,9 +73,18 @@ export class AttributesPrep {
                 name: "SR5.Temporary",
                 mode: CONST.ACTIVE_EFFECT_MODES.ADD,
             });
+        }
 
-        ItemPrep.prepareWareEssenceLoss(system, items);
-
-        system.attributes.essence.value = Helpers.calcTotal(system.attributes.essence);
+        for (const item of items) {
+            if (item.isEquipped() && item.isType('bioware', 'cyberware')) {
+                system.attributes.essence.changes.push({
+                    priority: 20,
+                    unused: false,
+                    name: item.name,
+                    value: -item.getEssenceLoss(),
+                    mode: CONST.ACTIVE_EFFECT_MODES.ADD,
+                });
+            }
+        }
     }
 }

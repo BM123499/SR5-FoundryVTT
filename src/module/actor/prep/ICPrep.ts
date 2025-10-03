@@ -7,6 +7,7 @@ import {DataDefaults} from "../../data/DataDefaults";
 import {MatrixRules} from "../../rules/MatrixRules";
 import {SkillsPrep} from "./functions/SkillsPrep";
 import { SR5Item } from "src/module/item/SR5Item";
+import { AttributeFieldType } from "@/module/types/template/Attributes";
 
 
 export class ICPrep {
@@ -102,11 +103,11 @@ export class ICPrep {
         const { attributes, host } = system;
 
         for (const id of Object.keys(SR5.attributes)) {
-            if (!attributes.hasOwnProperty(id)) continue;
+            if (!Object.hasOwn(attributes, id)) continue;
             // Exclude invalid attributes for IC
-            if (['magic', 'edge', 'essence', 'resonance'].includes(id)) continue
+            if (['magic', 'edge', 'essence', 'resonance'].includes(id)) continue;
 
-            const attribute = attributes[id];
+            const attribute = attributes[id] as AttributeFieldType;
 
             // Overwrite the base as it's missing on new actors and IC should only derive it's meat attributes
             // from it's host attributes.
@@ -127,7 +128,7 @@ export class ICPrep {
         const { matrix } = system;
 
         for (const id of Object.keys(SR5.matrixAttributes)) {
-            if (!matrix.hasOwnProperty(id)) continue;
+            if (!Object.hasOwn(matrix, id)) continue;
 
             const attribute = matrix[id];
             AttributesPrep.prepareAttribute(id, attribute);

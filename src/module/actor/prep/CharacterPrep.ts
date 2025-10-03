@@ -15,8 +15,14 @@ import { DataDefaults } from '../../data/DataDefaults';
 import { SR5Item } from 'src/module/item/SR5Item';
 
 export class CharacterPrep {
-    static prepareBaseData(system: Actor.SystemOfType<'character'>) {
+    static prepareBaseData(system: Actor.SystemOfType<'character'>, items: SR5Item[]) {
         CharacterPrep.addSpecialAttributes(system);
+        AttributesPrep.prepareEssence(system, items);
+        SkillsPrep.prepareSkills(system);
+        NPCPrep.applyMetatypeModifiers(system);
+
+        ItemPrep.prepareArmor(system, items);
+
     }
 
     /**
@@ -29,22 +35,12 @@ export class CharacterPrep {
      */
     static prepareDerivedData(system: Actor.SystemOfType<'character'>, items: SR5Item[]) {
         AttributesPrep.prepareAttributes(system);
-        AttributesPrep.prepareEssence(system, items);
-
-        // NPCPrep is reliant to be called after AttributesPrep.
-        NPCPrep.prepareNPCData(system);
-
-        SkillsPrep.prepareSkills(system);
-
-        ItemPrep.prepareArmor(system, items);
 
         MatrixPrep.prepareMatrix(system, items);
         MatrixPrep.prepareMatrixToLimitsAndAttributes(system);
 
         // Limits depend on attributes and active effects.
-        LimitsPrep.prepareLimitBaseFromAttributes(system);
         LimitsPrep.prepareLimits(system);
-        LimitsPrep.prepareDerivedLimits(system);
 
         GruntPrep.prepareConditionMonitors(system);
 

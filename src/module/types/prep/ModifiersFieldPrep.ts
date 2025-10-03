@@ -31,7 +31,7 @@ export class ModifierFieldPrep {
         }
     }
 
-    private static _applyChanges(mod: ModifiableValueType): void {
+    static applyChanges(mod: ModifiableValueType): void {
         mod.value = mod.base;
 
         mod.changes.sort((a, b) => a.priority - b.priority);
@@ -85,6 +85,6 @@ export class ModifierFieldPrep {
     static setAllModifiers(system: ActorBase<any> | ItemBase<any>) {
         const resolveField = (key: string) => system.schema.fields[key] as foundry.data.fields.DataField.Any;
 
-        return this.traverseFields(system, resolveField, this._applyChanges.bind(this));
+        return this.traverseFields(system, resolveField, this.applyChanges.bind(this));
     }
 }

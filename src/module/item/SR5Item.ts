@@ -932,18 +932,8 @@ export class SR5Item<SubType extends Item.ConfiguredSubType = Item.ConfiguredSub
      */
     getEssenceLoss(this: SR5Item<'bioware' | 'cyberware'>): number {
         const tech = this.system.technology;
-        const quantity = Number(tech?.quantity) || 1;
-
-        // Prefer adjusted essence if present, otherwise use base essence
-        let essenceLoss = 0;
-        if (tech?.calculated?.essence?.adjusted) {
-            essenceLoss = Number(tech.calculated.essence.value);
-        } else if (this.system.essence) {
-            essenceLoss = Number(this.system.essence);
-        }
-
-        if (isNaN(essenceLoss)) essenceLoss = 0;
-        return essenceLoss * quantity;
+        const essence = tech.calculated.essence.adjusted ? tech.calculated.essence.value : this.system.essence || 0;
+        return essence * tech.quantity;
     }
 
     getASDF(this: SR5Item<'device'>) {
@@ -969,15 +959,12 @@ export class SR5Item<SubType extends Item.ConfiguredSubType = Item.ConfiguredSub
 
         // This if statement should cover all types of devices, meaning the "getRating" calls above are always overwritten
         if (['cyberdeck', 'rcc', 'commlink'].includes(this.system.category)) {
-            const atts = this.system.atts;
-            if (atts) {
-                for (const [key, att] of Object.entries(atts)) {
-                    // only apply the atts if the value is over zero
-                    // this was causing the previous values to always be overwritten
-                    if (att.value <= 0) continue;
-                    matrix[att.att].value = att.value;
-                    matrix[att.att].device_att = key;
-                }
+            for (const [key, att] of Object.entries(this.system.atts)) {
+                // only apply the atts if the value is over zero
+                // this was causing the previous values to always be overwritten
+                if (att.value <= 0) continue;
+                matrix[att.att].value = att.value;
+                matrix[att.att].device_att = key;
             }
         }
 
