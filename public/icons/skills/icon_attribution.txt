@@ -1,0 +1,33 @@
+Icons in this folder are sourced from game-icons.net
+The icons and their authors are listed below as required by CC by Attribution 3.0, which can be found here https://creativecommons.org/licenses/by/3.0/.
+
+Icon - Author - Source
+
+Combat Active Skills
+archery - delapouite - https://game-icons.net/1x1/delapouite/archer.html
+blades - skoll - https://game-icons.net/1x1/skoll/gladius.html
+throwing-weapons - lorc - https://game-icons.net/1x1/lorc/thrown-knife.html
+
+Physical Active Skills
+disguise - caro-asercion - https://game-icons.net/1x1/caro-asercion/prank-glasses.html
+diving - delapouite - https://game-icons.net/1x1/delapouite/scuba-mask.html
+escape-artist - delapouite - https://game-icons.net/1x1/delapouite/contortionist.html
+free-fall - skoll - https://game-icons.net/1x1/skoll/hang-glider.html
+gymnastics - delapouite - https://game-icons.net/1x1/delapouite/body-balance.html
+palming - Eucalyp - https://thenounproject.com/icon/sleight-of-hand-4888630/
+perception - Dwi ridwanto - https://thenounproject.com/icon/eyes-7787013/
+running - lorc - https://game-icons.net/1x1/lorc/sprint.html
+sneaking - Cuputo - https://thenounproject.com/icon/sneaking-4303087/
+survival - Yosua Bungaran - https://thenounproject.com/icon/tent-8159307/
+swimming - Cak Badrun Arshakam - https://thenounproject.com/icon/swimming-8158743/
+tracking - skoll - https://game-icons.net/1x1/skoll/footsteps.html
+
+Social Skills
+con - delapouite - https://game-icons.net/1x1/delapouite/convince.html
+etiquette - stephanie wauters - https://thenounproject.com/icon/bowing-155047/
+impersonation - lorc - https://game-icons.net/1x1/lorc/drama-masks.html
+intimidation - Andre Buand - https://thenounproject.com/icon/intimidate-5708887/
+instruction - Idwar - https://thenounproject.com/icon/teacher-7934383/
+leadership - delapouite - https://game-icons.net/1x1/delapouite/public-speaker.html
+negotiation - delapouite - https://game-icons.net/1x1/delapouite/shaking-hands.html
+performance - Adrien Coquet - https://thenounproject.com/icon/dancing-7683388/
