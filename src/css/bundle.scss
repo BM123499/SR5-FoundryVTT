@@ -23,7 +23,7 @@
 @use "config/variables";
 
 // This explicitly loads the CSS content into this location
-@include meta.load-css('node_modules/@yaireo/tagify/dist/tagify');
+@include meta.load-css('../../node_modules/@yaireo/tagify/dist/tagify');
 
 /**
  * These are default FoundryVTT classes that have been used within Shadowrun5 CSS while not behaving as default.
