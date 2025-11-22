@@ -6,8 +6,9 @@ const path = require('path');
 const gulpsass = require('gulp-sass')(require('sass'));
 
 // Gulp
-var cp = require('child_process');
+const util = require('util');
 const gulp = require('gulp');
+var cp = require('child_process');
 const esbuild = require('esbuild');
 const {typecheckPlugin} = require("@jgoz/esbuild-plugin-typecheck");
 
@@ -101,7 +102,14 @@ async function buildSass() {
  * keep future changes on their side easier to merge.
  */
 async function buildPacks() {
-    cp.exec('npm run build:db');
+    try {
+        const { stderr } = await util.promisify(cp.exec)('npm run build:db');
+        if (stderr) console.error(stderr);
+        return Promise.resolve();
+    } catch (err) {
+        console.error('Error building packs:', err);
+        throw err;
+    }
 }
 
 /**
