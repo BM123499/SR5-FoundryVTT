@@ -1,17 +1,13 @@
 'use strict';
 const fs = require('fs-extra');
 const path = require('path');
-const del = import('del'); //es6m
-const chalk = import('chalk'); //es6m
 
 // Sass
 const gulpsass = require('gulp-sass')(require('sass'));
-gulpsass.compiler = require('sass');
 
 // Gulp
 var cp = require('child_process');
 const gulp = require('gulp');
-// const sourcemaps = require('gulp-sourcemaps');
 const esbuild = require('esbuild');
 const {typecheckPlugin} = require("@jgoz/esbuild-plugin-typecheck");
 
@@ -26,19 +22,14 @@ const entryPoint = "./src/module/main.ts";
  * Removes all files from the dist folder
  */
 async function cleanDist() {
-    const files = fs.readdirSync(destFolder);
-    for (const file of files) {
-        await del(path.resolve(destFolder, file));
-    }
+    if (await fs.pathExists(destFolder))
+        await fs.emptyDir(destFolder);
 }
 
-
 /**
- * .\node_modules\.bin\esbuild .\src\module\main.ts --bundle --outfile=.\dist\bundle.js --sourcemap --minify --watch
- * @returns {Promise<*>}
+ * JS BUILD
  */
 async function buildJS() {
-
     esbuild.build({
         entryPoints: [entryPoint],
         bundle: true,
@@ -49,9 +40,7 @@ async function buildJS() {
         outfile: path.resolve(destFolder, jsBundle),
         // Don't typescheck on build. Instead typecheck on PR and push and assume releases to build.
         plugins: [],
-    }).catch((err) => {
-        console.error(err)
-    })
+    }).catch((err) => { console.error(err); });
 }
 
 /**
@@ -67,31 +56,29 @@ async function copyAssets() {
  * WATCH
  */
 async function watch() {
-    // Helper - watch the pattern, copy the output on change
-    function watch(pattern, out) {
+    function watchCopy(pattern, out) {
         gulp.watch(pattern).on('change', () => gulp.src(pattern).pipe(gulp.dest(path.resolve(destFolder, out))));
     }
 
     gulp.watch('public/**/*').on('change', () => gulp.src('public/**/*', {encoding: false}).pipe(gulp.dest(destFolder)));
-    watch('src/templates/**/*', 'templates');
-    watch('src/module/tours/jsons/**/*', 'tours');
+    watchCopy('src/templates/**/*', 'templates');
+    watchCopy('src/module/tours/jsons/**/*', 'tours');
 
     gulp.watch('src/**/*.scss').on('change', async () => await buildSass());
-    gulp.watch('packs/_source/**/*.scss').on('change', async () => await compil());
+    gulp.watch('packs/_source/**/*.scss').on('change', async () => await buildPacks());
 
     const context = await esbuild.context({
-            entryPoints: [entryPoint],
-            bundle: true,
-            keepNames: true, // esbuild doesn't guarantee names of classes, so we need to inject .name with the original cls name
-            minify: false, // BEWARE: minify: true will break the system as class names are used as string references
-            sourcemap: true,
-            format: 'esm',
-            outfile: path.resolve(destFolder, jsBundle),
-            plugins: [typecheckPlugin({watch: true})],
-      })
+        entryPoints: [entryPoint],
+        bundle: true,
+        keepNames: true, // esbuild doesn't guarantee names of classes, so we need to inject .name with the original cls name
+        minify: false, // BEWARE: minify: true will break the system as class names are used as string references
+        sourcemap: true,
+        format: 'esm',
+        outfile: path.resolve(destFolder, jsBundle),
+        plugins: [typecheckPlugin({watch: true})],
+    })
 
-      // Enable watch mode
-      await context.watch();
+    await context.watch();
 }
 
 /**
@@ -101,9 +88,6 @@ async function buildSass() {
     return gulp
         .src('src/css/bundle.scss')
         .pipe(gulpsass().on('error', gulpsass.logError))
-        // NOTE: gulp-sourcemaps caused deprecation warnigns on node v22. As it's not really needed, disable it.
-        // .pipe(sourcemaps.init({loadMaps: true}))
-        // .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(destFolder));
 }
 
@@ -120,12 +104,20 @@ async function buildPacks() {
     cp.exec('npm run build:db');
 }
 
-
+/**
+ * LINK USER DATA
+ */
 async function linkUserData() {
+    const { default: chalk } = await import('chalk');
+
     const config = fs.readJSONSync('foundryconfig.json');
     const projectConfig = fs.readJSONSync(path.resolve('.', 'system.json'));
 
-    let name = projectConfig.name;
+    const name = projectConfig.id || projectConfig.name;
+
+    if (!name)
+        throw Error("Could not find 'id' or 'name' in system.json");
+
     try {
         let linkDir;
         if (config.dataPath) {
@@ -148,7 +140,8 @@ async function linkUserData() {
         }
         return Promise.resolve();
     } catch (err) {
-        Promise.reject(err);
+        console.error(chalk.red("Link Error:"), err.message);
+        throw err; 
     }
 }
 
