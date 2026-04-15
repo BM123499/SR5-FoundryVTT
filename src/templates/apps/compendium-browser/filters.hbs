@@ -1,15 +1,17 @@
 <div class="compendium-filters">
     <div class="search-bar">
-        <i class="search-icon fa-solid fa-magnifying-glass"></i>
+        <label class="sr-only" for="compendium-browser-search">{{localize "SR5.CompendiumBrowser.Filters.SearchPlaceholder"}}</label>
+        <i class="search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         <input 
             type="text" 
             name="search" 
             id="compendium-browser-search"
             value="{{searchQuery}}" 
-            placeholder={{localize "SR5.CompendiumBrowser.Filters.SearchPlaceholder"}}>
-        <a class="clear-filter" data-action="clearSearch" title={{localize "SR5.CompendiumBrowser.Filters.ClearSearch"}}>
+            placeholder="{{localize "SR5.CompendiumBrowser.Filters.SearchPlaceholder"}}"
+            aria-label="{{localize "SR5.CompendiumBrowser.Filters.SearchPlaceholder"}}">
+        <button type="button" class="clear-filter" data-action="clearSearch" title="{{localize "SR5.CompendiumBrowser.Filters.ClearSearch"}}" aria-label="{{localize "SR5.CompendiumBrowser.Filters.ClearSearch"}}">
             <i class="fa-solid fa-xmark"></i>
-        </a>
+        </button>
     </div>
     <div class="types">
         {{#each types as |type|}}

@@ -38,6 +38,18 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
         grid-template-columns: 200px 1fr;
         grid-template-rows: auto 1fr;
 
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+            white-space: nowrap;
+        }
+
         /* --- Tabs --- */
         nav.tabs {
             grid-row: 1;
@@ -96,6 +108,10 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                     color: $text-meta;
                     font-weight: bold;
                     font-size: 18px;
+                    border: none;
+                    background: transparent;
+                    padding: 0;
+                    line-height: 1;
                     &:hover {
                         opacity: 1;
                         color: $accent-danger;
@@ -206,11 +222,14 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                 }
                 .header-source {
                     font-size: 0.9em;
+                    min-width: 120px;
+                    text-align: right;
                 }
             }
 
             .compendium-list {
                 overflow-y: auto;
+                scrollbar-gutter: stable;
 
                 &::-webkit-scrollbar { width: 8px; }
                 &::-webkit-scrollbar-track { background: $bg-primary; }
@@ -231,7 +250,7 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                 transition: background 0.15s ease;
                 min-height: 50px;
 
-                &:nth-child(even) {
+                &.is-even {
                     background: $bg-row-even;
                 }
 
@@ -265,7 +284,9 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                             margin: 0;
                             font-size: 1em;
                             color: white;
-                            word-break: break-word;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
                             font-weight: normal;
                         }
 
@@ -292,11 +313,13 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                 .item-meta {
                     display: flex;
                     align-items: center;
+                    justify-content: flex-end;
                     gap: 15px;
                     flex-shrink: 0;
                     cursor: pointer;
                     font-size: 0.9em;
                     padding: 8px 15px 8px 0;
+                    min-width: 120px;
                 }
 
                 .item-source {
@@ -357,6 +380,7 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
             .pack-list {
                 padding-left: 0;
                 overflow-y: auto;
+                scrollbar-gutter: stable;
             }
 
             .pack-row {
@@ -453,6 +477,13 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                 cursor: pointer;
                 width: 1em;
                 text-align: center;
+                border: none;
+                background: transparent;
+                color: inherit;
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
                 i {
                     transition: transform 0.2s ease-in-out;
                 }
@@ -468,6 +499,15 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                     transform: rotate(-90deg);
                 }
             }
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        .item-main:focus-visible,
+        .item-meta:focus-visible {
+            outline: 2px solid $accent-gold;
+            outline-offset: 2px;
         }
     }
 }

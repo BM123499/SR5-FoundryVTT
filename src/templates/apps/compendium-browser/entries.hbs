@@ -1,15 +1,15 @@
-<div class="compendium-entry" data-uuid="{{entry.uuid}}" draggable="true">
-    <div class="item-main" data-action="openDoc">
+<div class="compendium-entry {{rowClass}}" data-uuid="{{entry.uuid}}" draggable="true" role="listitem">
+    <div class="item-main" data-action="openDoc" role="button" tabindex="0" aria-label="{{entry.name}}">
         <div class="item-image">
             <img src="{{entry.img}}" alt="{{entry.name}}" loading="lazy"/>
         </div>
         <div class="item-details">
-            <h3>{{entry.name}}</h3>
+            <h3 title="{{entry.name}}">{{entry.name}}</h3>
             <div class="item-type">{{entry.type}}</div>
             <div class="item-pack">{{entry.sourcePack}}</div>
         </div>
     </div>
-    <div class="item-meta" data-action="openSource">
+    <div class="item-meta item-source" data-action="openSource" role="button" tabindex="0" title="{{entry.system.description.source}}" aria-label="{{entry.system.description.source}}">
         {{entry.system.description.source}}
     </div>
 </div>

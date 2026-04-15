@@ -2,17 +2,22 @@
     <div 
         class="pack-row {{#if (eq node.type "Folder")}}folder collapsible{{/if}} {{#if node.collapsed}}collapsed{{/if}}" 
         style="--depth: {{../depth}};"
+        role="treeitem"
+        aria-level="{{sum ../depth 1}}"
     >
         <label>
             <input 
                 type="checkbox" 
                 data-id="{{node.id}}"
                 data-type="{{#if (eq node.type "Folder")}}folder{{else}}pack{{/if}}"
+                data-selection-state="{{#if (eq node.type "Folder")}}{{node.selectionState}}{{else}}none{{/if}}"
                 {{#if (eq node.selectionState "some")}}class="indeterminate"{{/if}}
-                {{#if (or node.selected (eq node.selectionState "all") (eq node.selectionState "some"))}}checked{{/if}}>
+                {{#if (or node.selected (eq node.selectionState "all") (eq node.selectionState "some"))}}checked{{/if}}
+                aria-label="{{node.name}}"
+                aria-checked="{{#if (eq node.selectionState "some")}}mixed{{else}}{{#if (or node.selected (eq node.selectionState "all"))}}true{{else}}false{{/if}}{{/if}}">
 
             {{#if (eq node.type "Folder")}}
-                <a class="collapse-toggle" data-action="toggleCollapse"><i class="fa-solid fa-caret-down"></i></a>
+                <button type="button" class="collapse-toggle" data-action="toggleCollapse" aria-expanded="{{#if node.collapsed}}false{{else}}true{{/if}}" aria-label="Toggle {{node.name}}"><i class="fa-solid fa-caret-down"></i></button>
             {{/if}}
 
             {{#if (eq node.type "Folder")}}<i class="fa-solid fa-folder"></i>{{/if}}

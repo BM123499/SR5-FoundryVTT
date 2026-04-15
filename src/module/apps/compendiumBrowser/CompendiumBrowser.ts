@@ -40,11 +40,11 @@ export namespace CompendiumBrowserTypes {
         parts: ("tabs" | "filters" | "results" | "settings")[];
     }
 
-    export interface SearchFilters<DocType extends CompendiumCollection.DocumentName> {
+    export interface SearchFilters<DocType extends foundry.documents.collections.CompendiumCollection.DocumentName> {
         /** An optional string to filter by name. */
         queryName?: string;
         /** An optional array of document subtypes (e.g., ["weapon", "spell"]). */
-        types?: (typeof foundry.documents)[DocType]["TYPES"][];
+        types?: (typeof foundry.documents)[DocType]["TYPES"];
         /** An optional array of pack collections (e.g., ["shadowrun5e.core-items"]) to explicitly include. */
         packs?: string[];
     }
@@ -52,8 +52,8 @@ export namespace CompendiumBrowserTypes {
     /**
      * Represents a single search result entry, enriched with the source pack name.
      */
-    export type SearchResult<DocType extends CompendiumCollection.DocumentName> = 
-        CompendiumCollection.IndexEntry<DocType> & {
+    export type SearchResult<DocType extends foundry.documents.collections.CompendiumCollection.DocumentName> = 
+        foundry.documents.collections.CompendiumCollection.IndexEntry<DocType> & {
             sourcePack: string;
         };
 }
@@ -130,7 +130,7 @@ export class CompendiumBrowser extends BaseClass {
      * @param filter The search parameters.
      * @returns A promise that resolves to an array of enriched compendium index entries.
      */
-    public static async search<DocType extends CompendiumCollection.DocumentName>(
+    public static async search<DocType extends foundry.documents.collections.CompendiumCollection.DocumentName>(
         docType: DocType,
         filter: CompendiumBrowserTypes.SearchFilters<DocType>,
     ): Promise<CompendiumBrowserTypes.SearchResult<DocType>[]> {
@@ -153,8 +153,13 @@ export class CompendiumBrowser extends BaseClass {
             entries = entries.filter((i) => !("name" in i) || i.name?.toLowerCase().includes(query));
         }
 
-        if (types && types.length > 0)
-            entries = entries.filter((e) => !("type" in e && typeof e.type === "string") || types.includes(e.type as any));
+        if (types && types.length > 0) {
+            const allowedTypes = types as unknown as string[];
+            entries = entries.filter((entry) => {
+                if (!("type" in entry) || typeof entry.type !== "string") return true;
+                return allowedTypes.some((allowedType) => allowedType === entry.type);
+            });
+        }
 
         return entries;
     }
@@ -166,8 +171,8 @@ export class CompendiumBrowser extends BaseClass {
 	 * @returns An object with structured search options.
 	 */
     public static getSearchFilters(): {
-        [K in CompendiumCollection.DocumentName]?: {
-            types: (typeof foundry.documents)[K]["TYPES"][]; packs: string[]
+        [K in foundry.documents.collections.CompendiumCollection.DocumentName]?: {
+            types: (typeof foundry.documents)[K]["TYPES"]; packs: string[]
         };
     } {
         const groupedPacks = Object.groupBy(game.packs, pack => pack.metadata.type);
@@ -191,10 +196,15 @@ export class CompendiumBrowser extends BaseClass {
     private allFilters: CompendiumBrowserTypes.FilterEntry[] = [];
     private packBlackList: string[] = [];
     private _searchQuery = "";
+    private refreshVersion = 0;
 
     /** State for virtual scrolling */
     private readonly scrollState = {
-        throttle: false,
+        isRefreshing: false,
+        isRendering: false,
+        pendingRange: null as { indexStart: number; indexEnd: number } | null,
+        scrollFrame: null as number | null,
+        pendingScrollTop: null as number | null,
         height: 50, // Estimated height of a single result row
         entries: [] as CompendiumBrowserTypes.SearchResult<CompendiumBrowserTypes.DocType>[],
     };
@@ -239,11 +249,21 @@ export class CompendiumBrowser extends BaseClass {
         await super._onRender(context, options);
 
         if (this.activeTab === "Settings") {
-            void this._renderSettings().then(() => this.settingsListeners(this.element));
-        } else {
-            // Fetch results and then render the initial visible set
-            void this._refreshEntries().then(async () => this._renderResultSlice(0, 50));
+            this._clearScrollSchedule();
+            await this._renderSettings();
+            this.settingsListeners(this.element);
+            return;
         }
+
+        const refreshed = await this._refreshEntries();
+        if (!refreshed) return;
+
+        if (this.scrollState.entries.length === 0) {
+            this._renderEmptyState();
+            return;
+        }
+
+        await this._scrollResults(0);
     }
 
     // =========================================================================
@@ -255,8 +275,11 @@ export class CompendiumBrowser extends BaseClass {
         super._attachFrameListeners();
         this.element.addEventListener("dragstart", this._onDrag.bind(this));
         this.element.addEventListener("scroll", (event) => {
-            void this._scrollResults(event);
+            const target = event.target as HTMLElement | null;
+            if (!target?.matches(".compendium-list")) return;
+            this._queueScrollResults(target.scrollTop);
         }, { capture: true, passive: true });
+        this.element.addEventListener("keydown", (event) => this._onActionKeyDown(event), { capture: true });
     }
 
     /** Delegates listener attachment to specific methods based on which part of the template is rendered. */
@@ -276,7 +299,7 @@ export class CompendiumBrowser extends BaseClass {
     private filterListeners(htmlElement: HTMLElement) {
         const searchInput = htmlElement.querySelector<HTMLInputElement>("#compendium-browser-search");
         if (searchInput) {
-            searchInput.addEventListener("input", (event) => this._onSearch(event, searchInput));
+            searchInput.addEventListener("input", () => this._onSearch(searchInput));
         }
 
         const typeCheckboxes = htmlElement.querySelectorAll<HTMLInputElement>(".types .type input[type='checkbox']");
@@ -310,7 +333,7 @@ export class CompendiumBrowser extends BaseClass {
     }
 
     /** Handles the `input` event on the search field to update the query and re-render results. */
-    private _onSearch(event: Event, target: HTMLInputElement) {
+    private _onSearch(target: HTMLInputElement) {
         this._searchQuery = target.value;
         void this.render({ parts: [this.activeTab === "Settings" ? "settings" : "results"] });
     }
@@ -342,25 +365,31 @@ export class CompendiumBrowser extends BaseClass {
     private _onPackCheckboxChange(event: Event) {
         const target = event.target as HTMLInputElement;
         const id = target.dataset.id;
+        if (!id) return;
+
         const type = target.dataset.type as "folder" | "pack";
+        const selectionState = target.dataset.selectionState as "none" | "some" | "all" | undefined;
+        const blackList = new Set(this.packBlackList);
 
         if (type === "pack") {
-            if (target.checked) this.packBlackList = this.packBlackList.filter((p) => p !== id!);
-            else this.packBlackList.push(id!);
+            if (target.checked) blackList.delete(id);
+            else blackList.add(id);
         } else {
-            const toRemove = !target.checked && !target.classList.contains("indeterminate");
+            const shouldIncludeFolder = selectionState === "some" ? true : target.checked;
 
             for (const pack of game.packs) {
-                if (pack.folder == null) continue;
+                if (pack.folder === null) continue;
                 if ([pack.folder, ...pack.folder.ancestors].some((f) => f.id === id)) {
-                    if (toRemove) {
-                        this.packBlackList.push(pack.collection);
+                    if (shouldIncludeFolder) {
+                        blackList.delete(pack.collection);
                     } else {
-                        this.packBlackList = this.packBlackList.filter((p) => p !== pack.collection);
+                        blackList.add(pack.collection);
                     }
                 }
             }
         }
+
+        this.packBlackList = [...blackList];
         void game.settings.set(SYSTEM_NAME, FLAGS.CompendiumBrowserBlacklist, this.packBlackList);
         void this.render({ parts: ["settings"] });
     }
@@ -369,7 +398,13 @@ export class CompendiumBrowser extends BaseClass {
     private static onToggleCollapse(event: MouseEvent, target: HTMLElement) {
         event.preventDefault();
         event.stopPropagation();
-        target.closest<HTMLElement>(".collapsible")?.classList.toggle("collapsed");
+
+        const collapsible = target.closest<HTMLElement>(".collapsible");
+        if (!collapsible) return;
+
+        collapsible.classList.toggle("collapsed");
+        const expanded = !collapsible.classList.contains("collapsed");
+        target.setAttribute("aria-expanded", String(expanded));
     }
 
     /** Handles a click on a result row to open the corresponding document sheet. */
@@ -378,7 +413,25 @@ export class CompendiumBrowser extends BaseClass {
         const uuid = el?.dataset.uuid;
         if (!uuid) return;
 
-        void fromUuid<Actor|Item>(uuid).then(doc => { void doc?.sheet?.render(true); });
+        void fromUuid<Actor|Item>(uuid)
+            .then(doc => { void doc?.sheet?.render(); })
+            .catch(error => {
+                console.error("Shadowrun 5e | Failed to open compendium document.", error);
+                ui.notifications?.error("Failed to open compendium document.");
+            });
+    }
+
+    /** Activates click-like actions for keyboard users on non-native button elements. */
+    private _onActionKeyDown(event: KeyboardEvent) {
+        if (event.key !== "Enter" && event.key !== " ") return;
+
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+
+        if (target.matches("[data-action='openDoc'], [data-action='openSource']")) {
+            event.preventDefault();
+            target.click();
+        }
     }
 
     /** Handles a click on the source element within a result row to open the sourcebook reference. */
@@ -398,97 +451,216 @@ export class CompendiumBrowser extends BaseClass {
      * Asynchronously refreshes the compendium entries for the browser instance
      * by calling the static search API with the current state.
      */
-    private async _refreshEntries() {
-        if (this.scrollState.throttle) return;
-        this.scrollState.throttle = true;
+    private async _refreshEntries(): Promise<boolean> {
+        const refreshVersion = ++this.refreshVersion;
+        this.scrollState.isRefreshing = true;
+        this._renderLoadingState();
 
         const selectedTypes = this.allFilters.filter((f) => f.selected).map((f) => f.id);
         const selectedPacks = game.packs.filter(p => !this.packBlackList.includes(p.collection)).map(p => p.collection);
 
-        let entries = await CompendiumBrowser.search(
-            this.activeTab as 'Actor' | 'Item',
-            {
-                queryName: this._searchQuery,
-                types: selectedTypes.length ? selectedTypes as any[] : undefined,
-                packs: selectedPacks.length ? selectedPacks : undefined,
+        try {
+            let entries: CompendiumBrowserTypes.SearchResult<CompendiumBrowserTypes.DocType>[] = [];
+            if (this.activeTab === "Actor") {
+                entries = await CompendiumBrowser.search(
+                    "Actor",
+                    {
+                        queryName: this._searchQuery,
+                        types: selectedTypes.length
+                            ? selectedTypes as unknown as (typeof foundry.documents)["Actor"]["TYPES"]
+                            : undefined,
+                        packs: selectedPacks.length ? selectedPacks : undefined,
+                    },
+                );
+            } else if (this.activeTab === "Item") {
+                entries = await CompendiumBrowser.search(
+                    "Item",
+                    {
+                        queryName: this._searchQuery,
+                        types: selectedTypes.length
+                            ? selectedTypes as unknown as (typeof foundry.documents)["Item"]["TYPES"]
+                            : undefined,
+                        packs: selectedPacks.length ? selectedPacks : undefined,
+                    },
+                );
+            } else {
+                return false;
             }
-        );
 
-        entries = entries.map(entry => ({
-            ...entry, sourcePack: game.packs.get(entry.sourcePack)!.title,
-            type: game.i18n.localize(`TYPES.${this.activeTab}.${entry.type}`),
-        })).sort((a, b) => a.name!.localeCompare(b.name!, game.i18n.lang));
+            if (refreshVersion !== this.refreshVersion) return false;
 
-        this.scrollState.entries = entries;
-        this.scrollState.throttle = false;
+            this.scrollState.entries = entries
+                .map(entry => ({
+                    ...entry,
+                    sourcePack: game.packs.get(entry.sourcePack)?.title ?? entry.sourcePack,
+                    type: game.i18n.localize(`TYPES.${this.activeTab}.${entry.type}`),
+                }))
+                .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", game.i18n.lang));
 
-        if (entries.length === 0) {
-            const loading = this.element.querySelector<HTMLElement>(".compendium-list .loading");
-            const noResults = this.element.querySelector<HTMLElement>(".compendium-list .no-results");
-            if (loading) loading.hidden = true;
-            if (noResults) noResults.hidden = false;
+            return true;
+        } catch (error) {
+            if (refreshVersion === this.refreshVersion) {
+                this.scrollState.entries = [];
+            }
+
+            console.error("Shadowrun 5e | Failed to refresh compendium browser entries.", error);
+            ui.notifications?.error("Failed to refresh compendium entries.");
+            return false;
+        } finally {
+            if (refreshVersion === this.refreshVersion) {
+                this.scrollState.isRefreshing = false;
+            }
         }
     }
 
     /** Renders a slice of the results for virtual scrolling. */
     private async _renderResultSlice(indexStart: number, indexEnd: number) {
-        if (this.scrollState.throttle) return;
-        this.scrollState.throttle = true;
-
-        const container = this.element.querySelector<HTMLElement>(".compendium-list");
-        if (!container) return;
-
-        const toRender: Element[] = [];
-
-        // Create a top padding div to simulate the height of all items before the rendered slice
-        const topPadDiv = document.createElement("div");
-        topPadDiv.className = "top-pad";
-        topPadDiv.style.height = `${indexStart * this.scrollState.height}px`;
-        toRender.push(topPadDiv);
-
-        // Ensure that we always start rendering from an odd index to maintain consistent row styling
-        if (indexStart % 2 === 0) {
-            const topOddPadDiv = document.createElement("div");
-            topOddPadDiv.className = "top-pad";
-            topOddPadDiv.style.height = `0px`;
-            toRender.push(topOddPadDiv);
+        if (this.scrollState.isRendering) {
+            this.scrollState.pendingRange = { indexStart, indexEnd };
+            return;
         }
 
-        indexStart = Math.max(0, indexStart);
-        indexEnd = Math.min(this.scrollState.entries.length, indexEnd);
-        for (let idx = indexStart; idx < indexEnd; idx++) {
-            const entry = this.scrollState.entries[idx];
-            const html = await foundry.applications.handlebars.renderTemplate(
-                "systems/shadowrun5e/dist/templates/apps/compendium-browser/entries.hbs",
-                { entry },
+        this.scrollState.isRendering = true;
+        try {
+            const container = this.element.querySelector<HTMLElement>(".compendium-list");
+            if (!container) return;
+
+            if (this.scrollState.entries.length === 0) {
+                this._renderEmptyState(container);
+                return;
+            }
+
+            const safeStart = Math.max(0, indexStart);
+            const safeEnd = Math.min(this.scrollState.entries.length, indexEnd);
+            const toRender: Element[] = [];
+
+            // Create a top padding div to simulate the height of all items before the rendered slice
+            const topPadDiv = document.createElement("div");
+            topPadDiv.className = "top-pad";
+            topPadDiv.style.height = `${safeStart * this.scrollState.height}px`;
+            topPadDiv.setAttribute("aria-hidden", "true");
+            toRender.push(topPadDiv);
+
+            const renderedEntries = await Promise.all(
+                this.scrollState.entries.slice(safeStart, safeEnd).map(async (entry, offset) => {
+                    const rowClass = (safeStart + offset) % 2 === 0 ? "is-even" : "is-odd";
+                    const html = await foundry.applications.handlebars.renderTemplate(
+                        "systems/shadowrun5e/dist/templates/apps/compendium-browser/entries.hbs",
+                        { entry, rowClass },
+                    );
+                    const template = document.createElement("template");
+                    template.innerHTML = html.trim();
+                    return template.content.firstElementChild;
+                }),
             );
-            const template = document.createElement("template");
-            template.innerHTML = html;
-            toRender.push(template.content.firstElementChild!);
+
+            for (const renderedEntry of renderedEntries) {
+                if (renderedEntry) toRender.push(renderedEntry);
+            }
+
+            // Create a bottom padding div to simulate the height of all items after the rendered slice
+            const bottomPadDiv = document.createElement("div");
+            bottomPadDiv.className = "bottom-pad";
+            bottomPadDiv.style.height = `${(this.scrollState.entries.length - safeEnd) * this.scrollState.height}px`;
+            bottomPadDiv.setAttribute("aria-hidden", "true");
+            toRender.push(bottomPadDiv);
+
+            container.replaceChildren(...toRender);
+            this._updateMeasuredRowHeight(container);
+        } finally {
+            this.scrollState.isRendering = false;
         }
 
-        // Create a bottom padding div to simulate the height of all items after the rendered slice
-        const bottomPadDiv = document.createElement("div");
-        bottomPadDiv.className = "bottom-pad";
-        bottomPadDiv.style.height = `${(this.scrollState.entries.length - indexEnd) * this.scrollState.height}px`;
-        toRender.push(bottomPadDiv);
+        const pendingRange = this.scrollState.pendingRange;
+        if (!pendingRange) return;
 
-        container.replaceChildren(...toRender);
-        this.scrollState.throttle = false;
+        this.scrollState.pendingRange = null;
+        await this._renderResultSlice(pendingRange.indexStart, pendingRange.indexEnd);
     }
 
     /** Handles scroll events to implement virtual scrolling for the results list. */
-    private async _scrollResults(event: Event) {
-        const target = event.target as HTMLElement | null;
-        if (this.scrollState.throttle || !target?.matches(".compendium-list")) return;
-        const { scrollTop, clientHeight } = target;
+    private async _scrollResults(scrollTop: number) {
+        const container = this.element.querySelector<HTMLElement>(".compendium-list");
+        if (!container || this.scrollState.isRefreshing || this.scrollState.entries.length === 0) return;
+
+        const { clientHeight } = container;
         const entriesPerScreen = Math.ceil(clientHeight / this.scrollState.height);
 
         // Calculate the range of entries to render, including a buffer above and below the visible area
-        const startIndex = Math.max(0, Math.floor(scrollTop / this.scrollState.height) - 2 * entriesPerScreen);
-        const endIndex = Math.min(this.scrollState.entries.length, startIndex + 5 * entriesPerScreen);
+        const startIndex = Math.max(0, Math.floor(scrollTop / this.scrollState.height) - (2 * entriesPerScreen));
+        const endIndex = Math.min(this.scrollState.entries.length, startIndex + (5 * entriesPerScreen));
 
         await this._renderResultSlice(startIndex, endIndex);
+    }
+
+    /** Queues scroll work to the next animation frame and always keeps the latest scroll offset. */
+    private _queueScrollResults(scrollTop: number) {
+        this.scrollState.pendingScrollTop = scrollTop;
+
+        if (this.scrollState.scrollFrame !== null) return;
+
+        this.scrollState.scrollFrame = requestAnimationFrame(() => {
+            this.scrollState.scrollFrame = null;
+
+            const pendingScrollTop = this.scrollState.pendingScrollTop;
+            this.scrollState.pendingScrollTop = null;
+            if (pendingScrollTop === null) return;
+
+            void this._scrollResults(pendingScrollTop);
+        });
+    }
+
+    /** Clears any queued scroll render callback. */
+    private _clearScrollSchedule() {
+        if (this.scrollState.scrollFrame !== null) {
+            cancelAnimationFrame(this.scrollState.scrollFrame);
+            this.scrollState.scrollFrame = null;
+        }
+
+        this.scrollState.pendingScrollTop = null;
+        this.scrollState.pendingRange = null;
+    }
+
+    /** Renders the loading state for the results list. */
+    private _renderLoadingState(container?: HTMLElement) {
+        const list = container ?? this.element.querySelector<HTMLElement>(".compendium-list");
+        if (!list) return;
+
+        const loading = document.createElement("div");
+        loading.className = "loading";
+        loading.setAttribute("role", "status");
+        loading.setAttribute("aria-live", "polite");
+
+        const icon = document.createElement("i");
+        icon.className = "fa-solid fa-spinner fa-spin-pulse";
+        loading.append(icon, document.createTextNode(" Loading..."));
+
+        list.replaceChildren(loading);
+    }
+
+    /** Renders the empty results state for the results list. */
+    private _renderEmptyState(container?: HTMLElement) {
+        const list = container ?? this.element.querySelector<HTMLElement>(".compendium-list");
+        if (!list) return;
+
+        const noResults = document.createElement("div");
+        noResults.className = "no-results";
+        noResults.setAttribute("role", "status");
+        noResults.setAttribute("aria-live", "polite");
+        noResults.textContent = "No documents found.";
+
+        list.replaceChildren(noResults);
+    }
+
+    /** Updates virtual row height estimation based on current rendered content. */
+    private _updateMeasuredRowHeight(container: HTMLElement) {
+        const row = container.querySelector<HTMLElement>(".compendium-entry");
+        if (!row) return;
+
+        const measuredHeight = Math.round(row.getBoundingClientRect().height);
+        if (!Number.isFinite(measuredHeight) || measuredHeight <= 0) return;
+
+        this.scrollState.height = measuredHeight;
     }
 
     // =========================================================================
@@ -509,7 +681,11 @@ export class CompendiumBrowser extends BaseClass {
 
         const content = document.createElement("div");
         content.innerHTML = html;
-        container.replaceChildren(...content.firstElementChild!.children);
+
+        const firstElement = content.firstElementChild;
+        if (!firstElement) return;
+
+        container.replaceChildren(...firstElement.children);
 
         this._updateIndeterminateStates(container, tree);
     }
@@ -627,7 +803,13 @@ export class CompendiumBrowser extends BaseClass {
     /** Updates the visual indeterminate state of checkboxes in the DOM. */
     private _updateIndeterminateStates(container: HTMLElement, node: CompendiumBrowserTypes.FolderNode) {
         const checkbox = container.querySelector<HTMLInputElement>(`input[data-id="${node.id}"]`);
-        if (checkbox && node.selectionState === "some") checkbox.classList.add("indeterminate");
+        if (checkbox) {
+            const isMixed = node.selectionState === "some";
+            checkbox.indeterminate = isMixed;
+            checkbox.classList.toggle("indeterminate", isMixed);
+            checkbox.dataset.selectionState = node.selectionState;
+            checkbox.setAttribute("aria-checked", isMixed ? "mixed" : String(checkbox.checked));
+        }
 
         for (const child of node.children.filter((n): n is CompendiumBrowserTypes.FolderNode => n.type === "Folder")) {
             this._updateIndeterminateStates(container, child);
