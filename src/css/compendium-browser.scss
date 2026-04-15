@@ -24,7 +24,8 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
 
 /* --- Compendium Browser --- */
 #compendium-browser {
-    min-width: 600px;
+    min-width: 480px;
+    max-width: 100%;
 
     .window-content {
         height: 100%;
@@ -61,6 +62,8 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
 
         /* --- Filters Sidebar --- */
         .compendium-filters {
+            grid-column: 1;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
             min-height: 0;
@@ -193,16 +196,20 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
 
         /* --- Results Panel --- */
         .compendium-results {
+            grid-column: 2;
+            grid-row: 2;
             background: $bg-secondary;
             border-radius: 4px;
             border: 1px solid $border-medium;
             display: flex;
             flex-direction: column;
             min-height: 0;
+            min-width: 0;
 
             .results-header {
-                display: flex;
-                justify-content: space-between;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 120px;
+                column-gap: 15px;
                 align-items: center;
                 padding: 8px 15px;
                 background: $bg-tertiary;
@@ -224,6 +231,7 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                     font-size: 0.9em;
                     min-width: 120px;
                     text-align: right;
+                    justify-self: end;
                 }
             }
 
@@ -243,12 +251,15 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
             }
 
             .compendium-entry {
-                display: flex;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 120px;
+                column-gap: 15px;
                 align-items: center;
                 border-bottom: 1px solid $border-subtle;
                 background: $bg-primary;
                 transition: background 0.15s ease;
                 min-height: 50px;
+                padding: 0 15px;
 
                 &.is-even {
                     background: $bg-row-even;
@@ -260,10 +271,9 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                 .item-main {
                     display: flex;
                     align-items: center;
-                    flex-grow: 1;
                     min-width: 0;
                     cursor: pointer;
-                    padding: 0 15px;
+                    padding: 0;
 
                     .item-image {
                         width: 30px;
@@ -315,16 +325,17 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
                     align-items: center;
                     justify-content: flex-end;
                     gap: 15px;
-                    flex-shrink: 0;
                     cursor: pointer;
                     font-size: 0.9em;
-                    padding: 8px 15px 8px 0;
+                    padding: 8px 0;
                     min-width: 120px;
                 }
 
                 .item-source {
                     color: $text-meta;
                     white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             }
 
@@ -346,9 +357,12 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
         }
 
         .compendium-settings {
+            grid-column: 2;
+            grid-row: 2;
             display: grid;
             gap: 25px;
             overflow-y: hidden;
+            min-width: 0;
 
             /* Hide the settings panel by default unless managed by a listener */
             &.hidden {
@@ -497,6 +511,66 @@ $font-primary: "Signika", system-ui, -apple-system, sans-serif;
 
                 > label .collapse-toggle i {
                     transform: rotate(-90deg);
+                }
+            }
+        }
+
+        @media (max-width: 980px) {
+            grid-template-columns: minmax(170px, 30%) 1fr;
+        }
+
+        @media (max-width: 760px) {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto minmax(0, 1fr);
+
+            .compendium-filters,
+            .compendium-results,
+            .compendium-settings {
+                grid-column: 1;
+            }
+
+            .compendium-filters {
+                grid-row: 2;
+                max-height: 220px;
+
+                .types {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                    column-gap: 10px;
+                }
+            }
+
+            .compendium-results,
+            .compendium-settings {
+                grid-row: 3;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .compendium-results {
+                .results-header,
+                .compendium-entry {
+                    grid-template-columns: minmax(0, 1fr) 96px;
+                }
+
+                .results-header {
+                    .header-source {
+                        min-width: 96px;
+                    }
+                }
+
+                .compendium-entry {
+                    .item-meta {
+                        min-width: 96px;
+                    }
+                }
+            }
+
+            .compendium-settings {
+                .pack-row {
+                    > label {
+                        padding-left: calc(var(--depth, 0) * 18px);
+                    }
                 }
             }
         }
