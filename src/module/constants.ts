@@ -60,6 +60,11 @@ export const FLAGS = {
     TokenRulerColorSprinting: "TokenRulerColorSprinting",
     TokenRulerOpacity: 'TokenRulerOpacity',
     TokenUseRoutingLib: 'TokenUseRoutingLib',
+    TokenPerceptionModeOverride: 'tokenPerceptionModeOverride',
+    TokenPerceptionAROverride: 'tokenPerceptionAROverride',
+    TokenPreviousVisionMode: 'tokenPreviousVisionMode',
+    VisibilityType: 'visibilityType',
+    WallPreset: 'wallPreset',
     GeneralActionsPack: 'GeneralActionsPack',
     MatrixActionsPack: 'MatrixActionsPack',
     ICActionsPack: 'ICActionsPack',
@@ -286,4 +291,3 @@ export const SRStatus = [
         ],
     },
 ] as const satisfies CONFIG.StatusEffect[];
-

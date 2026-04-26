@@ -27,6 +27,7 @@ import { SkillSetSourceFlow } from '@/module/flows/SkillSetSourceFlow';
 import { SkillItemFlow } from '@/module/item/flows/SkillItemFlow';
 import { PackItemFlow } from '@/module/item/flows/PackItemFlow';
 import type { InitiativeModeOptions } from '@/module/combat/SR5Combatant';
+import { type PerceptionMode } from '@/module/perception/types';
 import { parseDropData } from '@/module/utils/sheets';
 import MatrixAttribute = Shadowrun.MatrixAttribute;
 import ActorSheetV2 = foundry.applications.sheets.ActorSheetV2;
@@ -144,6 +145,11 @@ export interface SR5ActorSheetData extends ActorSheetV2.RenderContext, SR5Applic
     initiativePerception: {
         value: string;
         options: { label: string; value: string }[];
+    };
+    perception: {
+        mode: PerceptionMode;
+        modeLabel: string;
+        arEnabled: boolean;
     };
 
     // Situation Modifiers
@@ -337,6 +343,8 @@ export class SR5BaseActorSheet<T extends SR5ActorSheetData = SR5ActorSheetData> 
 
             toggleInitiativeBlitz: SR5BaseActorSheet.#toggleInitiativeBlitz,
             rollInitiative: SR5BaseActorSheet.#rollInitiative,
+            cyclePerceptionMode: SR5BaseActorSheet.#cyclePerceptionMode,
+            toggleARPerception: SR5BaseActorSheet.#toggleARPerception,
 
             modifyConditionMonitor: SR5BaseActorSheet.#modifyConditionMonitor,
             clearConditionMonitor: SR5BaseActorSheet.#clearConditionMonitor,
@@ -431,6 +439,7 @@ export class SR5BaseActorSheet<T extends SR5ActorSheetData = SR5ActorSheetData> 
         data.bindings = this._prepareKeybindings();
 
         data.initiativePerception = this._prepareInitiativePresence();
+        data.perception = this._preparePerceptionControls();
 
         data.primaryTabs = this._prepareTabs('primary');
 
@@ -774,6 +783,21 @@ export class SR5BaseActorSheet<T extends SR5ActorSheetData = SR5ActorSheetData> 
         if (!supportedModes.includes(newValue)) return;
 
         await this.actor.setInitiativeMode(newValue);
+    }
+
+    _preparePerceptionControls() {
+        const mode = this.actor.perceptionMode;
+        const labels: Record<PerceptionMode, string> = {
+            physical: 'SR5.Perception.Mode.Physical',
+            astral_perception: 'SR5.Perception.Mode.AstralPerception',
+            astral_projection: 'SR5.Perception.Mode.AstralProjection'
+        };
+
+        return {
+            mode,
+            modeLabel: labels[mode],
+            arEnabled: this.actor.arPerceptionEnabled
+        };
     }
 
     /**
@@ -2223,6 +2247,18 @@ export class SR5BaseActorSheet<T extends SR5ActorSheetData = SR5ActorSheetData> 
         event.preventDefault();
         event.stopPropagation();
         await this.actor.rollInitiative();
+    }
+
+    static async #cyclePerceptionMode(this: SR5BaseActorSheet, event: Event) {
+        event.preventDefault();
+        event.stopPropagation();
+        await this.actor.cyclePerceptionMode();
+    }
+
+    static async #toggleARPerception(this: SR5BaseActorSheet, event: Event) {
+        event.preventDefault();
+        event.stopPropagation();
+        await this.actor.toggleARPerception();
     }
 
     static async #renameInventory(this: SR5BaseActorSheet, event: Event) {

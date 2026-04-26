@@ -9,6 +9,8 @@ import { SR5ActiveEffect } from "../effect/SR5ActiveEffect";
 import { SR5Roll } from "../rolls/SR5Roll";
 import { SR5Token } from "../token/SR5Token";
 import { SR5TokenDocument } from "../token/SR5TokenDocument";
+import { SR5Tile } from "../canvas/SR5Tile";
+import { SR5Drawing } from "../canvas/SR5Drawing";
 
 import { Translation } from '../utils/strings';
 
@@ -53,10 +55,13 @@ import { RoutingLib } from "../integrations/routingLibIntegration";
 import SR5CompendiaSettings from "../settings/SR5CompendiaSettings";
 import AstralPerceptionDetectionMode from "../vision/astralPerception/astralPerceptionDetectionMode";
 import AugmentedRealityVisionDetectionMode from "../vision/augmentedReality/arDetectionMode";
+import InfraredVisionDetectionMode from "../vision/infraredVision/infraredDetectionMode";
 import LowlightVisionDetectionMode from "../vision/lowlightVision/lowlightDetectionMode";
 import ThermographicVisionDetectionMode from "../vision/thermographicVision/thermographicDetectionMode";
+import UltrasoundDetectionMode from "../vision/ultrasoundVision/ultrasoundDetectionMode";
 import { DiceSoNice } from "../rolls/DiceSoNice";
 import { Skill } from "./item/Skill";
+import { TokenAROverride, TokenPerceptionModeOverride, VisibilityType, WallPreset } from "@/module/perception/types";
 
 declare module "fvtt-types/configuration" {
     interface DocumentClassConfig {
@@ -100,6 +105,8 @@ declare module "fvtt-types/configuration" {
 
     interface ObjectClassConfig {
         token: typeof SR5Token;
+        tile: typeof SR5Tile;
+        drawing: typeof SR5Drawing;
     }
 
     interface AssumeHookRan {
@@ -116,6 +123,8 @@ declare module "fvtt-types/configuration" {
             thermographic: ThermographicVisionDetectionMode;
             lowlight: LowlightVisionDetectionMode;
             augmentedReality: AugmentedRealityVisionDetectionMode;
+            infrared: InfraredVisionDetectionMode;
+            ultrasound: UltrasoundDetectionMode;
         }
 
         interface VisionModes {
@@ -217,8 +226,26 @@ declare module "fvtt-types/configuration" {
         Token: {
             shadowrun5e: {
                 TokenUseRoutingLib?: boolean;
+                tokenPerceptionModeOverride?: TokenPerceptionModeOverride;
+                tokenPerceptionAROverride?: TokenAROverride;
+                tokenPreviousVisionMode?: string;
             };
-        }
+        };
+        Tile: {
+            shadowrun5e: {
+                visibilityType?: VisibilityType;
+            };
+        };
+        Drawing: {
+            shadowrun5e: {
+                visibilityType?: VisibilityType;
+            };
+        };
+        Wall: {
+            shadowrun5e: {
+                wallPreset?: WallPreset;
+            };
+        };
         User: {
             shadowrun5e: {
                 showApplication?: boolean;

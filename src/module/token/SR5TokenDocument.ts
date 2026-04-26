@@ -1,6 +1,7 @@
 import { DeepReadonly } from "fvtt-types/utils";
 import { SYSTEM_NAME, FLAGS } from "../constants";
 import { StorageFlow } from "@/module/flows/StorageFlow";
+import { resolveTokenPerceptionState } from "@/module/perception/perceptionState";
 
 /**
  * A custom TokenDocument class for the SR5 system.
@@ -28,6 +29,25 @@ export class SR5TokenDocument extends TokenDocument {
         }
 
         return result;
+    }
+
+    protected override async _preUpdateMovement(
+        movement: TokenDocument.PreMovementOptions,
+        operation: TokenDocument.Database.UpdateOperation
+    ): Promise<boolean | void> {
+        const perceptionState = resolveTokenPerceptionState(this);
+        if (perceptionState.isProjecting) {
+            const movementOperation = operation as TokenDocument.MoveOptions;
+            const constrainOptions = movementOperation.constrainOptions ?? {
+                preview: false,
+                ignoreWalls: false,
+                ignoreCost: false,
+                history: false
+            };
+            movementOperation.constrainOptions = { ...constrainOptions, ignoreWalls: true };
+        }
+
+        return await super._preUpdateMovement(movement, operation);
     }
 
     /**

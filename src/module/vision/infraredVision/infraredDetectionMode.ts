@@ -1,19 +1,19 @@
-import ThermographicVisionFilter from './thermographicFilter';
-import { physicalBarrierLineOfSightClear, sourcePerceptionState, targetActor } from '../detectionModeHelpers';
+import LowLightVisionFilter from '../lowlightVision/lowlightFilter';
+import { physicalBarrierLineOfSightClear, sourcePerceptionState, targetIsInvisible } from '../detectionModeHelpers';
 
-export default class ThermographicVisionDetectionMode extends foundry.canvas.perception.DetectionMode {
+export default class InfraredVisionDetectionMode extends foundry.canvas.perception.DetectionMode {
     static override getDetectionFilter() {
-        return (this._detectionFilter ??= ThermographicVisionFilter.create());
+        return this._detectionFilter ??= LowLightVisionFilter.create();
     }
-  
+
     override _canDetect(
         ...[visionSource, target]: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
-    ) {
+    ): boolean {
         const sourceState = sourcePerceptionState(visionSource);
         if (sourceState.isAstral) return false;
 
-        const actor = targetActor(target);
-        return !!actor?.system.visibilityChecks.meat.hasHeat;
+        // Infrared improves darkness visibility but does not reveal hidden targets.
+        return !targetIsInvisible(target);
     }
 
     override _testLOS(
@@ -24,4 +24,3 @@ export default class ThermographicVisionDetectionMode extends foundry.canvas.per
         return physicalBarrierLineOfSightClear(visionSource, test);
     }
 }
-  

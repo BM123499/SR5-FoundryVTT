@@ -1,5 +1,6 @@
 
 import AstralVisionFilter from './astralPerceptionFilter';
+import { sourcePerceptionState, targetActor } from '../detectionModeHelpers';
 
 export default class AstralPerceptionDetectionMode extends foundry.canvas.perception.DetectionMode {
     static override getDetectionFilter() {
@@ -9,16 +10,17 @@ export default class AstralPerceptionDetectionMode extends foundry.canvas.percep
     override _canDetect(
         ...[visionSource, target]: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
     ) {
-        const tgt = target?.document instanceof TokenDocument ? target.document : null;
-        const targetAstralActive = !!tgt?.actor?.system.visibilityChecks.astral.astralActive;
+        const sourceState = sourcePerceptionState(visionSource);
+        if (!sourceState.isAstral) return false;
 
-        const targetHasAura = !!tgt?.actor?.system.visibilityChecks.astral.hasAura;
+        const actor = targetActor(target);
+        if (!actor) return false;
 
-        const targetAffectedBySpell = !!tgt?.actor?.system.visibilityChecks.astral.affectedBySpell;
+        // Astral perception/projection should continue to see normal physical content.
+        if (actor.hasPhysicalBody) return true;
 
-        const isAstralPerceiving = visionSource?.visionMode?.id === "astralPerception";
-
-        return (targetHasAura || targetAstralActive || targetAffectedBySpell) && isAstralPerceiving;
+        const targetAstralChecks = actor.system.visibilityChecks.astral;
+        return !!(targetAstralChecks?.hasAura || targetAstralChecks?.astralActive || targetAstralChecks?.affectedBySpell);
     }
 }
   

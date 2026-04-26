@@ -2996,11 +2996,47 @@
         "VehicleImport": {
             "MissingPermission": "You are missing the permission to create actors"
         },
+        "Perception": {
+            "Mode": {
+                "Physical": "Physical",
+                "AstralPerception": "Astral Perception",
+                "AstralProjection": "Astral Projection"
+            },
+            "Tooltip": {
+                "CycleMode": "Cycle physical/astral perception mode",
+                "ToggleAR": "Toggle AR overlay visibility"
+            },
+            "TokenOverride": {
+                "ModeLabel": "Perception Mode Override",
+                "ModeHint": "Override this token's perception mode or inherit from the actor.",
+                "ARLabel": "AR Override",
+                "ARHint": "Override this token's AR state or inherit from the actor.",
+                "Inherit": "Inherit",
+                "Enabled": "Enabled",
+                "Disabled": "Disabled"
+            },
+            "VisibilityType": {
+                "Label": "Visibility Channel",
+                "Hint": "Default is visible to everyone. Astral requires astral perception/projection. AR requires AR enabled.",
+                "Default": "Default",
+                "Astral": "Astral Only",
+                "AR": "AR Only"
+            },
+            "WallPreset": {
+                "Label": "Wall Preset",
+                "Hint": "Apply a Shadowrun barrier preset to configure movement and vision behavior.",
+                "None": "None",
+                "PhysicalBarrier": "Physical Barrier",
+                "ManaBarrier": "Mana Barrier"
+            }
+        },
         "Vision": {
             "AstralPerception": "Astral Perception",
             "AugmentedReality": "Augmented Reality",
+            "InfraredVision": "Infrared Vision",
             "LowLight": "Low-Light Vision",
-            "ThermographicVision": "Thermographic Vision"
+            "ThermographicVision": "Thermographic Vision",
+            "Ultrasound": "Ultrasound"
         },
         "Walk": "Walk",
         "WalkingSpeed": "Walking",

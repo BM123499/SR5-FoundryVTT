@@ -2,6 +2,7 @@
 //todo: v10 foundry-vtt-types 
 
 import AugmentedRealityVisionFilter from "./arFilter";
+import { sourcePerceptionState } from '../detectionModeHelpers';
 
 export default class AugmentedRealityVisionDetectionMode extends foundry.canvas.perception.DetectionMode {
 
@@ -15,11 +16,11 @@ export default class AugmentedRealityVisionDetectionMode extends foundry.canvas.
         const tgt = target?.document instanceof TokenDocument ? target.document : null;
         const targetHasIcon = !!tgt?.actor?.system.visibilityChecks.matrix.hasIcon;
 
-        const targetIsNotRunningSilent = !tgt?.actor?.system.visibilityChecks.matrix.runningSilent
+        const targetIsNotRunningSilent = !tgt?.actor?.system.visibilityChecks.matrix.runningSilent;
+        const sourceState = sourcePerceptionState(visionSource);
+        if (!sourceState.arEnabled) return false;
 
-        const isAstralPerceiving = visionSource?.visionMode?.id === "astralPerception";
-
-        return targetHasIcon && targetIsNotRunningSilent && !isAstralPerceiving;
+        return targetHasIcon && targetIsNotRunningSilent;
     }
 }
   

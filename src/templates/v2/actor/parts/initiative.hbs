@@ -12,6 +12,21 @@
                         {{selectOptions initiativePerception.options selected=initiativePerception.value localize=true}}
                     </select>
                 </div>
+                <div class="initiative-col">
+                    <a data-action="cyclePerceptionMode" data-tooltip="SR5.Perception.Tooltip.CycleMode">
+                        {{localize perception.modeLabel}}
+                    </a>
+                </div>
+                <div class="initiative-col">
+                    <a data-action="toggleARPerception" data-tooltip="SR5.Perception.Tooltip.ToggleAR">
+                        {{localize "SR5.Vision.AugmentedReality"}}&nbsp;
+                        {{#if perception.arEnabled}}
+                            <i class="fas fa-toggle-on"></i>
+                        {{else}}
+                            <i class="fas fa-toggle-off"></i>
+                        {{/if}}
+                    </a>
+                </div>
             {{/if}}
         </div>
         <div class="initiative-col">

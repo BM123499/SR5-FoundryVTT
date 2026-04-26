@@ -5,6 +5,7 @@ import { DescriptionData } from "../template/Description";
 import { ModifiableField } from "../fields/ModifiableField";
 import { Limits, AwakendLimits, MatrixLimits } from "../template/Limits";
 import { KnowledgeSkills, Skills } from "../template/Skills";
+import { PERCEPTION_MODES } from "@/module/perception/types";
 const { SchemaField, NumberField, BooleanField, ObjectField, ArrayField, StringField, TypedObjectField, DocumentUUIDField } = foundry.data.fields;
 /**
  * Derived Data structure build from an actors skill items.
@@ -86,6 +87,15 @@ export const CommonData = () => ({
     category_visibility: new SchemaField(
         { default: new BooleanField({ initial: true }) }
     ),
+    perception: new SchemaField({
+        mode: new StringField({
+            required: true,
+            nullable: false,
+            initial: 'physical',
+            choices: [...PERCEPTION_MODES]
+        }),
+        arEnabled: new BooleanField({ initial: false })
+    })
 });
 
 export type InventoryType = foundry.data.fields.SchemaField.InitializedData<ReturnType<typeof InventoryData>>;

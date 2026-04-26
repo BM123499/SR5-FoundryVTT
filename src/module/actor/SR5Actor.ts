@@ -51,6 +51,7 @@ import type { InitiativeModeOptions } from '../combat/SR5Combatant';
 import { CreateActorFlow } from './flows/CreateActorFlow';
 import { SkillNamingFlow } from '@/module/flows/SkillNamingFlow';
 import { SkillFieldType } from '../types/template/Skills';
+import { PERCEPTION_MODES, type PerceptionMode } from '@/module/perception/types';
 
 interface TypedItemMap extends Omit<Map<Item.ConfiguredSubType, SR5Item[]>, 'get' | 'set'> {
     get: <K extends Item.ConfiguredSubType>(key: K) => SR5Item<K>[] | undefined;
@@ -1547,6 +1548,38 @@ export class SR5Actor<SubType extends Actor.ConfiguredSubType = Actor.Configured
         await Promise.all(
             this.combatants.map(async combatant => await combatant.applyModeChange(fromMode, mode))
         );
+    }
+
+    get perceptionMode(): PerceptionMode {
+        const mode = this.system.perception?.mode;
+        return (PERCEPTION_MODES as readonly string[]).includes(mode) ? mode as PerceptionMode : 'physical';
+    }
+
+    get arPerceptionEnabled(): boolean {
+        return !!this.system.perception?.arEnabled;
+    }
+
+    async setPerceptionMode(mode: PerceptionMode): Promise<void> {
+        if (!(PERCEPTION_MODES as readonly string[]).includes(mode)) return;
+        if (this.perceptionMode === mode) return;
+
+        await this.update({ system: { perception: { mode } } });
+    }
+
+    async cyclePerceptionMode(): Promise<void> {
+        const modes = [...PERCEPTION_MODES];
+        const currentModeIndex = Math.max(modes.indexOf(this.perceptionMode), 0);
+        const nextMode = modes[(currentModeIndex + 1) % modes.length];
+        await this.setPerceptionMode(nextMode);
+    }
+
+    async setARPerceptionEnabled(arEnabled: boolean): Promise<void> {
+        if (this.arPerceptionEnabled === arEnabled) return;
+        await this.update({ system: { perception: { arEnabled } } });
+    }
+
+    async toggleARPerception(): Promise<void> {
+        await this.setARPerceptionEnabled(!this.arPerceptionEnabled);
     }
 
     /**

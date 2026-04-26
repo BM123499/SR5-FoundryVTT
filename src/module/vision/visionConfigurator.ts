@@ -3,6 +3,9 @@ import AstralPerceptionBackgroundVisionShader  from './astralPerception/astralPe
 import ThermographicVisionDetectionMode from './thermographicVision/thermographicDetectionMode';
 import LowlightVisionDetectionMode from './lowlightVision/lowlightDetectionMode';
 import AugmentedRealityVisionDetectionMode from './augmentedReality/arDetectionMode';
+import InfraredVisionDetectionMode from './infraredVision/infraredDetectionMode';
+import UltrasoundDetectionMode from './ultrasoundVision/ultrasoundDetectionMode';
+import { astralLineOfSightClear, sourcePerceptionState } from './detectionModeHelpers';
 
 export default class VisionConfigurator {
     static configureAstralPerception() {
@@ -56,6 +59,41 @@ export default class VisionConfigurator {
             label: 'SR5.Vision.AugmentedReality',
             type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
         });
+    }
+
+    static configureInfraredVision() {
+        CONFIG.Canvas.detectionModes.infrared = new InfraredVisionDetectionMode({
+            id: 'infrared',
+            label: 'SR5.Vision.InfraredVision',
+            type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
+        });
+    }
+
+    static configureUltrasoundVision() {
+        CONFIG.Canvas.detectionModes.ultrasound = new UltrasoundDetectionMode({
+            id: 'ultrasound',
+            label: 'SR5.Vision.Ultrasound',
+            type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
+        });
+    }
+
+    static patchDetectionModeLOSForAstral() {
+        const detectionModePrototype = foundry.canvas.perception.DetectionMode.prototype as any & {
+            _sr5AstralWallPatchApplied?: boolean;
+        };
+        if (detectionModePrototype._sr5AstralWallPatchApplied) return;
+
+        const originalTestLOS = detectionModePrototype._testLOS as (...args: any[]) => boolean;
+        detectionModePrototype._testLOS = function (...args: any[]) {
+            const [visionSource, mode, target, test] = args;
+            if (!originalTestLOS.call(this, visionSource, mode, target, test)) return false;
+
+            const sourceState = sourcePerceptionState(visionSource);
+            if (!sourceState.isAstral) return true;
+
+            return astralLineOfSightClear(visionSource, test);
+        };
+        detectionModePrototype._sr5AstralWallPatchApplied = true;
     }
 }
   

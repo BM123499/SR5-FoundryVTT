@@ -86,6 +86,8 @@ import { RoutingLibIntegration } from './integrations/routingLibIntegration';
 import { initDiceSoNice } from './rolls/DiceSoNice';
 import { SR5TokenDocument } from './token/SR5TokenDocument';
 import { SR5TokenRuler } from './token/SR5TokenRuler';
+import { SR5Tile } from './canvas/SR5Tile';
+import { SR5Drawing } from './canvas/SR5Drawing';
 
 import { CombatDM } from './types/combat/Combat';
 import { CombatantDM } from './types/combat/Combatant';
@@ -134,6 +136,7 @@ import { CompendiumBrowser } from './apps/compendiumBrowser/CompendiumBrowser';
 import { Skill } from './types/item/Skill';
 import { SR5SkillSheet } from './item/sheets/SR5SkillSheet';
 import { SkillGroupFlow } from './actor/flows/SkillGroupFlow';
+import { PerceptionHooks } from './perception/perceptionHooks';
 
 // Redeclare SR5config as a global as foundry-vtt-types CONFIG with SR5 property causes issues.
 export const SR5CONFIG = SR5;
@@ -168,6 +171,18 @@ export class HooksManager {
         Hooks.on('moveToken', SR5TokenDocument.moveToken.bind(SR5Token));
         Hooks.on('renderTokenConfig', SR5Token.tokenConfig.bind(HooksManager));
         Hooks.on('renderPrototypeTokenConfig', SR5Token.tokenConfig.bind(HooksManager));
+        Hooks.on('canvasReady', () => { void PerceptionHooks.canvasReady(); });
+        Hooks.on('createToken', (token) => { void PerceptionHooks.createToken(token); });
+        Hooks.on('updateToken', (token, changed, options) => { void PerceptionHooks.updateToken(token, changed, options); });
+        Hooks.on('updateActor', (actor, changed, options) => { void PerceptionHooks.updateActor(actor, changed, options); });
+        Hooks.on('updateTile', PerceptionHooks.updateTile.bind(PerceptionHooks));
+        Hooks.on('updateDrawing', PerceptionHooks.updateDrawing.bind(PerceptionHooks));
+        Hooks.on('renderTileConfig', PerceptionHooks.renderTileConfig.bind(PerceptionHooks));
+        Hooks.on('renderDrawingConfig', PerceptionHooks.renderDrawingConfig.bind(PerceptionHooks));
+        Hooks.on('renderWallConfig', PerceptionHooks.renderWallConfig.bind(PerceptionHooks));
+        Hooks.on('preCreateWall', PerceptionHooks.preCreateWall.bind(PerceptionHooks));
+        Hooks.on('preUpdateWall', PerceptionHooks.preUpdateWall.bind(PerceptionHooks));
+        Hooks.on('updateWall', PerceptionHooks.updateWall.bind(PerceptionHooks));
         Hooks.on('createItem', (item) => { void HooksManager.syncSkillGroupMembership(item); });
         Hooks.on('updateItem', (item, data, options, userId) => { void HooksManager.updateIcConnectedToHostItem(item, data, options, userId); });
         Hooks.on('updateItem', (item) => { void HooksManager.syncSkillGroupMembership(item); });
@@ -378,6 +393,8 @@ ___________________
         CONFIG.Token.objectClass = SR5Token;
         CONFIG.Token.documentClass = SR5TokenDocument;
         CONFIG.Token.rulerClass = SR5TokenRuler;
+        CONFIG.Tile.objectClass = SR5Tile;
+        CONFIG.Drawing.objectClass = SR5Drawing;
         CONFIG.Token.movement.actions['run'] = {
             label: 'SR5.MovementTypes.Run',
             icon: 'fa-solid fa-person-running',
@@ -691,6 +708,9 @@ ___________________
         VisionConfigurator.configureThermographicVision()
         VisionConfigurator.configureLowlight()
         VisionConfigurator.configureAR()
+        VisionConfigurator.configureInfraredVision()
+        VisionConfigurator.configureUltrasoundVision()
+        VisionConfigurator.patchDetectionModeLOSForAstral()
     }
 
     static configureTextEnrichers() {
