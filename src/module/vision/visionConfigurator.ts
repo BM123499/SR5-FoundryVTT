@@ -89,7 +89,7 @@ export default class VisionConfigurator {
             if (!originalTestLOS.call(this, visionSource, mode, target, test)) return false;
 
             const sourceState = sourcePerceptionState(visionSource);
-            if (!sourceState.isAstral) return true;
+            if (!sourceState.isProjecting) return true;
 
             return astralLineOfSightClear(visionSource, test);
         };

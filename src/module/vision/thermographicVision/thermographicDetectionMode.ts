@@ -10,7 +10,7 @@ export default class ThermographicVisionDetectionMode extends foundry.canvas.per
         ...[visionSource, target]: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
     ) {
         const sourceState = sourcePerceptionState(visionSource);
-        if (sourceState.isAstral) return false;
+        if (sourceState.isProjecting) return false;
 
         const actor = targetActor(target);
         return !!actor?.system.visibilityChecks.meat.hasHeat;

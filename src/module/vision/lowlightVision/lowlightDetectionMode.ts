@@ -14,7 +14,7 @@ export default class LowlightVisionDetectionMode extends foundry.canvas.percepti
         ...[visionSource, target]: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
     ) {
         const sourceState = sourcePerceptionState(visionSource);
-        if (sourceState.isAstral) return false;
+        if (sourceState.isProjecting) return false;
 
         return !targetIsInvisible(target);
     }

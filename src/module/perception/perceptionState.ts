@@ -2,9 +2,11 @@ import { FLAGS, SYSTEM_NAME } from '@/module/constants';
 import type { SR5Actor } from '@/module/actor/SR5Actor';
 import {
     PERCEPTION_MODES,
+    TOKEN_ASTRAL_VISIBILITY_TYPES,
     TOKEN_AR_OVERRIDES,
     TOKEN_PERCEPTION_MODE_OVERRIDES,
     type PerceptionMode,
+    type TokenAstralVisibilityType,
     type TokenAROverride,
     type TokenPerceptionModeOverride,
     type TokenPerceptionState,
@@ -58,6 +60,7 @@ export const resolveTokenPerceptionState = (
         mode,
         arEnabled,
         isAstral: isAstralMode(mode),
+        isAstralPerceiving: mode === 'astral_perception',
         isProjecting: mode === 'astral_projection',
     };
 };
@@ -67,6 +70,36 @@ export const resolveVisionSourcePerceptionState = (
 ): TokenPerceptionState => {
     const token = visionSource?.object instanceof Token ? visionSource.object : null;
     return resolveTokenPerceptionState(token?.document);
+};
+
+export const normalizeTokenAstralVisibilityType = (
+    visibilityType: unknown
+): TokenAstralVisibilityType => {
+    return normalizeChoice(visibilityType, TOKEN_ASTRAL_VISIBILITY_TYPES, 'normal');
+};
+
+export const getTokenAstralVisibilityType = (
+    tokenDocument: TokenDocument.Implementation | null | undefined
+): TokenAstralVisibilityType => {
+    const flagValue = tokenDocument?.getFlag(SYSTEM_NAME, FLAGS.TokenAstralVisibilityType);
+    return normalizeTokenAstralVisibilityType(flagValue);
+};
+
+export const isTokenAstralVisibilityTypeVisibleForState = (
+    visibilityType: TokenAstralVisibilityType,
+    state: TokenPerceptionState
+): boolean => {
+    if (visibilityType === 'normal') return !state.isProjecting;
+    if (visibilityType === 'astral_visible') return state.isAstral;
+    return true;
+};
+
+export const isVisionSourceCompatibleWithTokenAstralVisibilityType = (
+    visionSource: foundry.canvas.sources.PointVisionSource.Internal.Any,
+    visibilityType: TokenAstralVisibilityType
+): boolean => {
+    const state = resolveVisionSourcePerceptionState(visionSource);
+    return isTokenAstralVisibilityTypeVisibleForState(visibilityType, state);
 };
 
 export const getOwnedActiveVisionSources = (): foundry.canvas.sources.PointVisionSource.Internal.Any[] => {
@@ -168,7 +201,7 @@ export const syncTokenVisionMode = async (
     const currentVisionMode = tokenDocument.sight.visionMode ?? BASIC_VISION_MODE_ID;
     const previousVisionMode = tokenDocument.getFlag(SYSTEM_NAME, FLAGS.TokenPreviousVisionMode) as string | undefined;
 
-    if (perceptionState.isAstral) {
+    if (perceptionState.isProjecting) {
         if (currentVisionMode === ASTRAL_VISION_MODE_ID) return;
 
         const updates: TokenDocument.UpdateData = {

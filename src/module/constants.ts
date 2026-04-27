@@ -62,6 +62,7 @@ export const FLAGS = {
     TokenUseRoutingLib: 'TokenUseRoutingLib',
     TokenPerceptionModeOverride: 'tokenPerceptionModeOverride',
     TokenPerceptionAROverride: 'tokenPerceptionAROverride',
+    TokenAstralVisibilityType: 'tokenAstralVisibilityType',
     TokenPreviousVisionMode: 'tokenPreviousVisionMode',
     VisibilityType: 'visibilityType',
     WallPreset: 'wallPreset',

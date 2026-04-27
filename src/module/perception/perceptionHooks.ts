@@ -63,6 +63,7 @@ const appendConfigSetting = (html: HTMLElement, group: JQuery<HTMLElement>) => {
 const isTokenPerceptionUpdate = (changed: TokenDocument.UpdateData): boolean => {
     return foundry.utils.hasProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.TokenPerceptionModeOverride}`)
         || foundry.utils.hasProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.TokenPerceptionAROverride}`)
+        || foundry.utils.hasProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.TokenAstralVisibilityType}`)
         || foundry.utils.hasProperty(changed, 'actorId');
 };
 

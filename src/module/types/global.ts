@@ -61,7 +61,7 @@ import ThermographicVisionDetectionMode from "../vision/thermographicVision/ther
 import UltrasoundDetectionMode from "../vision/ultrasoundVision/ultrasoundDetectionMode";
 import { DiceSoNice } from "../rolls/DiceSoNice";
 import { Skill } from "./item/Skill";
-import { TokenAROverride, TokenPerceptionModeOverride, VisibilityType, WallPreset } from "@/module/perception/types";
+import { TokenAROverride, TokenAstralVisibilityType, TokenPerceptionModeOverride, VisibilityType, WallPreset } from "@/module/perception/types";
 
 declare module "fvtt-types/configuration" {
     interface DocumentClassConfig {
@@ -228,6 +228,7 @@ declare module "fvtt-types/configuration" {
                 TokenUseRoutingLib?: boolean;
                 tokenPerceptionModeOverride?: TokenPerceptionModeOverride;
                 tokenPerceptionAROverride?: TokenAROverride;
+                tokenAstralVisibilityType?: TokenAstralVisibilityType;
                 tokenPreviousVisionMode?: string;
             };
         };

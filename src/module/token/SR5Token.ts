@@ -1,6 +1,7 @@
 import { FLAGS, SYSTEM_NAME } from '../constants';
 import { RoutingLibIntegration } from '../integrations/routingLibIntegration';
-import { resolveTokenPerceptionState } from '@/module/perception/perceptionState';
+import { normalizeTokenAstralVisibilityType, resolveTokenPerceptionState } from '@/module/perception/perceptionState';
+import { testTokenVisibilityWithPerception } from '@/module/perception/tokenVisibility';
 import PrototypeTokenConfig = foundry.applications.sheets.PrototypeTokenConfig;
 
 export class SR5Token extends foundry.canvas.placeables.Token {
@@ -15,6 +16,21 @@ export class SR5Token extends foundry.canvas.placeables.Token {
             data.value = data.max - data.value;
         }
         return super._drawBar(number, bar, data);
+    }
+
+    override get isVisible(): boolean {
+        this.detectionFilter = null;
+
+        const isGM = game.user.isGM;
+        if (this.document.hidden && !isGM) return false;
+
+        if (!canvas.visibility.tokenVision) return true;
+        if (this.controlled) return true;
+        if (this.vision?.active) return true;
+
+        const { width, height } = this.document.getSize();
+        const tolerance = Math.min(width, height) / 4;
+        return testTokenVisibilityWithPerception(this, tolerance);
     }
 
     override findMovementPath(
@@ -46,9 +62,11 @@ export class SR5Token extends foundry.canvas.placeables.Token {
         const token = app.token as TokenDocument.Implementation;
         const modeOverride = token.getFlag(SYSTEM_NAME, FLAGS.TokenPerceptionModeOverride) ?? 'inherit';
         const arOverride = token.getFlag(SYSTEM_NAME, FLAGS.TokenPerceptionAROverride) ?? 'inherit';
+        const astralVisibilityType = normalizeTokenAstralVisibilityType(token.getFlag(SYSTEM_NAME, FLAGS.TokenAstralVisibilityType));
 
         const modeId = `${app.id}-${FLAGS.TokenPerceptionModeOverride}`;
         const arId = `${app.id}-${FLAGS.TokenPerceptionAROverride}`;
+        const astralTypeId = `${app.id}-${FLAGS.TokenAstralVisibilityType}`;
 
         const modeSelectDiv = $(`
             <div class="form-group">
@@ -79,7 +97,21 @@ export class SR5Token extends foundry.canvas.placeables.Token {
             </div>
         `);
 
-        anchor.after(modeSelectDiv, arSelectDiv);
+        const astralTypeSelectDiv = $(`
+            <div class="form-group">
+                <label for="${astralTypeId}">${game.i18n.localize("SR5.Perception.TokenAstralVisibilityType.Label")}</label>
+                <div class="form-fields">
+                    <select id="${astralTypeId}" name="flags.${SYSTEM_NAME}.${FLAGS.TokenAstralVisibilityType}">
+                        <option value="normal" ${astralVisibilityType === 'normal' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.TokenAstralVisibilityType.Normal")}</option>
+                        <option value="astral_visible" ${astralVisibilityType === 'astral_visible' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.TokenAstralVisibilityType.AstralVisible")}</option>
+                        <option value="dual_natured" ${astralVisibilityType === 'dual_natured' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.TokenAstralVisibilityType.DualNatured")}</option>
+                    </select>
+                </div>
+                <p class="hint">${game.i18n.localize("SR5.Perception.TokenAstralVisibilityType.Hint")}</p>
+            </div>
+        `);
+
+        anchor.after(modeSelectDiv, arSelectDiv, astralTypeSelectDiv);
 
         if (!RoutingLibIntegration.ready || !actor?.system.movement) return;
 
@@ -98,6 +130,6 @@ export class SR5Token extends foundry.canvas.placeables.Token {
             </div>
         `);
 
-        arSelectDiv.after(routingLibDiv);
+        astralTypeSelectDiv.after(routingLibDiv);
     }
 }

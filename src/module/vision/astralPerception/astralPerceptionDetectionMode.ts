@@ -1,6 +1,5 @@
 
 import AstralVisionFilter from './astralPerceptionFilter';
-import { sourcePerceptionState, targetActor } from '../detectionModeHelpers';
 
 export default class AstralPerceptionDetectionMode extends foundry.canvas.perception.DetectionMode {
     static override getDetectionFilter() {
@@ -8,19 +7,10 @@ export default class AstralPerceptionDetectionMode extends foundry.canvas.percep
     }
 
     override _canDetect(
-        ...[visionSource, target]: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
-    ) {
-        const sourceState = sourcePerceptionState(visionSource);
-        if (!sourceState.isAstral) return false;
-
-        const actor = targetActor(target);
-        if (!actor) return false;
-
-        // Astral perception/projection should continue to see normal physical content.
-        if (actor.hasPhysicalBody) return true;
-
-        const targetAstralChecks = actor.system.visibilityChecks.astral;
-        return !!(targetAstralChecks?.hasAura || targetAstralChecks?.astralActive || targetAstralChecks?.affectedBySpell);
+        ..._args: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
+    ): boolean {
+        // Astral perception is handled as an overlay layer, not as a detection mode.
+        return false;
     }
 }
   

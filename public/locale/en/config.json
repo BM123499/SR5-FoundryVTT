@@ -3015,6 +3015,13 @@
                 "Enabled": "Enabled",
                 "Disabled": "Disabled"
             },
+            "TokenAstralVisibilityType": {
+                "Label": "Astral Visibility",
+                "Hint": "Normal is visible to physical and astral perception. Astral Visible requires astral perception/projection. Dual-Natured is visible in all modes.",
+                "Normal": "Normal",
+                "AstralVisible": "Astral Visible",
+                "DualNatured": "Dual-Natured"
+            },
             "VisibilityType": {
                 "Label": "Visibility Channel",
                 "Hint": "Default is visible to everyone. Astral requires astral perception/projection. AR requires AR enabled.",

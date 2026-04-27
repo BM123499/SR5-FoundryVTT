@@ -7,6 +7,9 @@ export type TokenPerceptionModeOverride = typeof TOKEN_PERCEPTION_MODE_OVERRIDES
 export const TOKEN_AR_OVERRIDES = ['inherit', 'enabled', 'disabled'] as const;
 export type TokenAROverride = typeof TOKEN_AR_OVERRIDES[number];
 
+export const TOKEN_ASTRAL_VISIBILITY_TYPES = ['normal', 'astral_visible', 'dual_natured'] as const;
+export type TokenAstralVisibilityType = typeof TOKEN_ASTRAL_VISIBILITY_TYPES[number];
+
 export const VISIBILITY_TYPES = ['default', 'astral', 'ar'] as const;
 export type VisibilityType = typeof VISIBILITY_TYPES[number];
 
@@ -17,6 +20,7 @@ export type TokenPerceptionState = {
     mode: PerceptionMode;
     arEnabled: boolean;
     isAstral: boolean;
+    isAstralPerceiving: boolean;
     isProjecting: boolean;
 };
 

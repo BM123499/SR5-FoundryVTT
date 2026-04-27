@@ -10,7 +10,7 @@ export default class InfraredVisionDetectionMode extends foundry.canvas.percepti
         ...[visionSource, target]: Parameters<foundry.canvas.perception.DetectionMode['_canDetect']>
     ): boolean {
         const sourceState = sourcePerceptionState(visionSource);
-        if (sourceState.isAstral) return false;
+        if (sourceState.isProjecting) return false;
 
         // Infrared improves darkness visibility but does not reveal hidden targets.
         return !targetIsInvisible(target);
