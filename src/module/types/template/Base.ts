@@ -19,8 +19,8 @@ export const MatrixAttribute = new StringField({
 });
 
 export const BaseValuePair = ({ integer = true } = {}) => ({
-    value: new NumberField({required: true, nullable: false, integer, initial: 0}),
-    base: new NumberField({required: true, nullable: false, integer, initial: 0}),
+    value: new NumberField({ required: true, nullable: false, integer, initial: 0 }),
+    base: new NumberField({ required: true, nullable: false, integer, initial: 0 }),
 });
 
 export const ValueMaxPair = () => ({
