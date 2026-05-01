@@ -10,11 +10,14 @@ export type TokenAROverride = typeof TOKEN_AR_OVERRIDES[number];
 export const TOKEN_ASTRAL_VISIBILITY_TYPES = ['normal', 'astral_visible', 'dual_natured'] as const;
 export type TokenAstralVisibilityType = typeof TOKEN_ASTRAL_VISIBILITY_TYPES[number];
 
-export const VISIBILITY_TYPES = ['default', 'astral', 'ar'] as const;
+export const VISIBILITY_TYPES = ['physical', 'astral', 'ar'] as const;
 export type VisibilityType = typeof VISIBILITY_TYPES[number];
 
 export const WALL_PRESETS = ['none', 'physicalBarrier', 'manaBarrier'] as const;
 export type WallPreset = typeof WALL_PRESETS[number];
+
+export const WALL_MOVEMENT_RESTRICTIONS = ['none', 'physical', 'astral', 'astral_physical'] as const;
+export type WallMovementRestriction = typeof WALL_MOVEMENT_RESTRICTIONS[number];
 
 export type TokenPerceptionState = {
     mode: PerceptionMode;

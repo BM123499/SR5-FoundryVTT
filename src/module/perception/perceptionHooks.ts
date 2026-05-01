@@ -1,7 +1,14 @@
 import { FLAGS, SYSTEM_NAME } from '@/module/constants';
 import { SR5Actor } from '@/module/actor/SR5Actor';
 import { type PerceptionSyncUpdateOperation, refreshPerception, normalizeVisibilityType, syncActorTokenVisionModes, syncTokenVisionMode } from './perceptionState';
-import { getWallPresetUpdate, normalizeWallPreset } from './wallPerception';
+import {
+    getActiveWallPresetTool,
+    getWallMovementRestriction,
+    getWallMovementRestrictionUpdate,
+    getWallPresetUpdate,
+    normalizeWallMovementRestriction,
+    normalizeWallPreset
+} from './wallPerception';
 
 const renderVisibilityTypeConfig = (
     html: HTMLElement,
@@ -15,7 +22,7 @@ const renderVisibilityTypeConfig = (
             <label for="${id}">${game.i18n.localize("SR5.Perception.VisibilityType.Label")}</label>
             <div class="form-fields">
                 <select name="flags.${SYSTEM_NAME}.${FLAGS.VisibilityType}" id="${id}">
-                    <option value="default" ${currentValue === 'default' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.VisibilityType.Default")}</option>
+                    <option value="physical" ${currentValue === 'physical' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.VisibilityType.Physical")}</option>
                     <option value="astral" ${currentValue === 'astral' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.VisibilityType.Astral")}</option>
                     <option value="ar" ${currentValue === 'ar' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.VisibilityType.AR")}</option>
                 </select>
@@ -43,6 +50,29 @@ const renderWallPresetConfig = (
                 </select>
             </div>
             <p class="hint">${game.i18n.localize("SR5.Perception.WallPreset.Hint")}</p>
+        </div>
+    `);
+};
+
+const renderWallMovementRestrictionConfig = (
+    html: HTMLElement,
+    appId: string,
+    currentValue: string
+) => {
+    const id = `${appId}-${FLAGS.WallMovementRestriction}`;
+
+    return $(`
+        <div class="form-group">
+            <label for="${id}">${game.i18n.localize("SR5.Perception.WallMovementRestriction.Label")}</label>
+            <div class="form-fields">
+                <select name="flags.${SYSTEM_NAME}.${FLAGS.WallMovementRestriction}" id="${id}">
+                    <option value="none" ${currentValue === 'none' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.WallMovementRestriction.None")}</option>
+                    <option value="physical" ${currentValue === 'physical' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.WallMovementRestriction.Physical")}</option>
+                    <option value="astral" ${currentValue === 'astral' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.WallMovementRestriction.Astral")}</option>
+                    <option value="astral_physical" ${currentValue === 'astral_physical' ? 'selected' : ''}>${game.i18n.localize("SR5.Perception.WallMovementRestriction.AstralPhysical")}</option>
+                </select>
+            </div>
+            <p class="hint">${game.i18n.localize("SR5.Perception.WallMovementRestriction.Hint")}</p>
         </div>
     `);
 };
@@ -130,6 +160,10 @@ export class PerceptionHooks {
     static updateWall(_wall: WallDocument.Implementation, changed: WallDocument.UpdateData) {
         if (foundry.utils.hasProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.WallPreset}`)) {
             refreshPerception();
+            return;
+        }
+        if (foundry.utils.hasProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.WallMovementRestriction}`)) {
+            refreshPerception();
         }
     }
 
@@ -155,9 +189,30 @@ export class PerceptionHooks {
         app: foundry.applications.sheets.WallConfig,
         html: HTMLElement
     ) {
-        const value = normalizeWallPreset(app.document.getFlag(SYSTEM_NAME, FLAGS.WallPreset));
-        const setting = renderWallPresetConfig(html, app.id, value);
+        const presetValue = normalizeWallPreset(app.document.getFlag(SYSTEM_NAME, FLAGS.WallPreset));
+        const presetSetting = renderWallPresetConfig(html, app.id, presetValue);
+        appendConfigSetting(html, presetSetting);
+
+        const movementValue = getWallMovementRestriction(app.document);
+        const movementSetting = renderWallMovementRestrictionConfig(html, app.id, movementValue);
+        appendConfigSetting(html, movementSetting);
+    }
+
+    static renderAmbientLightConfig(
+        app: foundry.applications.sheets.AmbientLightConfig.Any,
+        html: HTMLElement
+    ) {
+        const value = normalizeVisibilityType(app.document.getFlag(SYSTEM_NAME, FLAGS.VisibilityType));
+        const setting = renderVisibilityTypeConfig(html, app.id, value);
         appendConfigSetting(html, setting);
+    }
+
+    static updateAmbientLight(
+        _light: AmbientLightDocument.Implementation,
+        changed: AmbientLightDocument.UpdateData
+    ) {
+        if (!shouldRefreshForVisibilityFlag(changed as Record<string, unknown>)) return;
+        refreshPerception();
     }
 
     static preUpdateWall(
@@ -165,22 +220,44 @@ export class PerceptionHooks {
         changed: WallDocument.UpdateData
     ) {
         const presetValue = foundry.utils.getProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.WallPreset}`);
-        if (presetValue === undefined) return;
+        if (presetValue !== undefined) {
+            const wallPreset = normalizeWallPreset(presetValue);
+            const presetUpdates = getWallPresetUpdate(wallPreset);
+            foundry.utils.mergeObject(changed, presetUpdates, { inplace: true, overwrite: true });
+        }
 
-        const wallPreset = normalizeWallPreset(presetValue);
-        const presetUpdates = getWallPresetUpdate(wallPreset);
-        foundry.utils.mergeObject(changed, presetUpdates, { inplace: true, overwrite: true });
+        const movementValue = foundry.utils.getProperty(changed, `flags.${SYSTEM_NAME}.${FLAGS.WallMovementRestriction}`);
+        if (movementValue !== undefined) {
+            const movementRestriction = normalizeWallMovementRestriction(movementValue);
+            const restrictionUpdates = getWallMovementRestrictionUpdate(movementRestriction);
+            foundry.utils.mergeObject(changed, restrictionUpdates, { inplace: true, overwrite: true });
+        }
     }
 
     static preCreateWall(
         wall: WallDocument.Implementation,
         data: WallDocument.CreateData
     ) {
-        const presetValue = foundry.utils.getProperty(data, `flags.${SYSTEM_NAME}.${FLAGS.WallPreset}`);
-        if (presetValue === undefined) return;
+        let presetValue = foundry.utils.getProperty(data, `flags.${SYSTEM_NAME}.${FLAGS.WallPreset}`);
+        if (presetValue === undefined) {
+            const activePreset = getActiveWallPresetTool();
+            if (activePreset !== 'none') {
+                foundry.utils.setProperty(data, `flags.${SYSTEM_NAME}.${FLAGS.WallPreset}`, activePreset);
+                presetValue = activePreset;
+            }
+        }
 
-        const wallPreset = normalizeWallPreset(presetValue);
-        const presetUpdates = getWallPresetUpdate(wallPreset);
-        wall.updateSource(presetUpdates as WallDocument.UpdateData);
+        if (presetValue !== undefined) {
+            const wallPreset = normalizeWallPreset(presetValue);
+            const presetUpdates = getWallPresetUpdate(wallPreset);
+            wall.updateSource(presetUpdates as WallDocument.UpdateData);
+        }
+
+        const movementValue = foundry.utils.getProperty(data, `flags.${SYSTEM_NAME}.${FLAGS.WallMovementRestriction}`);
+        if (movementValue !== undefined) {
+            const movementRestriction = normalizeWallMovementRestriction(movementValue);
+            const restrictionUpdates = getWallMovementRestrictionUpdate(movementRestriction);
+            wall.updateSource(restrictionUpdates as WallDocument.UpdateData);
+        }
     }
 }

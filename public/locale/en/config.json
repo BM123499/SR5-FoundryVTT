@@ -3023,18 +3023,29 @@
                 "DualNatured": "Dual-Natured"
             },
             "VisibilityType": {
-                "Label": "Visibility Channel",
-                "Hint": "Default is visible to everyone. Astral requires astral perception/projection. AR requires AR enabled.",
-                "Default": "Default",
-                "Astral": "Astral Only",
-                "AR": "AR Only"
+                "Label": "Plane",
+                "Hint": "Physical is always visible. Astral requires astral perception/projection. AR requires AR enabled.",
+                "Physical": "Physical",
+                "Astral": "Astral",
+                "AR": "AR"
             },
             "WallPreset": {
                 "Label": "Wall Preset",
                 "Hint": "Apply a Shadowrun barrier preset to configure movement and vision behavior.",
                 "None": "None",
                 "PhysicalBarrier": "Physical Barrier",
-                "ManaBarrier": "Mana Barrier"
+                "ManaBarrier": "Mana Barrier",
+                "ToolPhysicalBarrier": "Wall Tool: Physical Barrier",
+                "ToolManaBarrier": "Wall Tool: Mana Barrier"
+            },
+            "WallMovementRestriction": {
+                "Label": "Movement Restriction",
+                "Hint": "Choose which plane(s) this wall blocks for movement.",
+                "None": "None",
+                "Physical": "Physical",
+                "Astral": "Astral",
+                "AstralPhysical": "Astral / Physical",
+                "BlockedAstralMovement": "Astral movement is blocked by a wall movement restriction."
             }
         },
         "Vision": {

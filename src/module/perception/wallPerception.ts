@@ -1,5 +1,10 @@
 import { FLAGS, SYSTEM_NAME } from '@/module/constants';
-import { WALL_PRESETS, type WallPreset } from './types';
+import {
+    WALL_MOVEMENT_RESTRICTIONS,
+    WALL_PRESETS,
+    type WallMovementRestriction,
+    type WallPreset
+} from './types';
 
 const LINE_EPSILON = 0.0001;
 
@@ -16,12 +21,44 @@ export const getWallPreset = (wall: WallLike | null | undefined): WallPreset => 
     return normalizeWallPreset(document.getFlag(SYSTEM_NAME, FLAGS.WallPreset));
 };
 
+export const normalizeWallMovementRestriction = (value: unknown): WallMovementRestriction => {
+    if (typeof value !== 'string') return 'none';
+    return (WALL_MOVEMENT_RESTRICTIONS as readonly string[]).includes(value)
+        ? value as WallMovementRestriction
+        : 'none';
+};
+
+export const getWallMovementRestriction = (wall: WallLike | null | undefined): WallMovementRestriction => {
+    if (!wall) return 'none';
+    const document = wall instanceof WallDocument ? wall : wall.document;
+
+    const flagRestriction = normalizeWallMovementRestriction(document.getFlag(SYSTEM_NAME, FLAGS.WallMovementRestriction));
+    if (flagRestriction !== 'none') return flagRestriction;
+
+    return document.move === CONST.WALL_MOVEMENT_TYPES.NORMAL ? 'physical' : 'none';
+};
+
+export const getWallMovementRestrictionUpdate = (
+    movementRestriction: WallMovementRestriction
+): Partial<WallDocument.UpdateData> => {
+    const blocksPhysicalMovement = movementRestriction === 'physical' || movementRestriction === 'astral_physical';
+
+    return {
+        move: blocksPhysicalMovement ? CONST.WALL_MOVEMENT_TYPES.NORMAL : CONST.WALL_MOVEMENT_TYPES.NONE
+    };
+};
+
 export const getWallPresetUpdate = (wallPreset: WallPreset): Partial<WallDocument.UpdateData> => {
     if (wallPreset === 'physicalBarrier') {
         return {
             move: CONST.WALL_MOVEMENT_TYPES.NORMAL,
             sight: CONST.WALL_SENSE_TYPES.LIMITED,
-            light: CONST.WALL_SENSE_TYPES.LIMITED
+            light: CONST.WALL_SENSE_TYPES.LIMITED,
+            flags: {
+                [SYSTEM_NAME]: {
+                    [FLAGS.WallMovementRestriction]: 'astral_physical'
+                }
+            }
         };
     }
 
@@ -29,7 +66,12 @@ export const getWallPresetUpdate = (wallPreset: WallPreset): Partial<WallDocumen
         return {
             move: CONST.WALL_MOVEMENT_TYPES.NONE,
             sight: CONST.WALL_SENSE_TYPES.NONE,
-            light: CONST.WALL_SENSE_TYPES.NONE
+            light: CONST.WALL_SENSE_TYPES.NONE,
+            flags: {
+                [SYSTEM_NAME]: {
+                    [FLAGS.WallMovementRestriction]: 'astral'
+                }
+            }
         };
     }
 
@@ -64,6 +106,11 @@ const sceneWalls = (): WallDocument.Implementation[] => {
     return (canvas.walls?.placeables ?? []).map(wall => wall.document);
 };
 
+export const getActiveWallPresetTool = (user: User.Implementation | null | undefined = game.user): WallPreset => {
+    if (!user) return 'none';
+    return normalizeWallPreset(user.getFlag(SYSTEM_NAME, FLAGS.ActiveWallPresetTool));
+};
+
 export const isAstralLineBlocked = (origin: Point, destination: Point): boolean => {
     for (const wall of sceneWalls()) {
         if (wallIntersectsLine(wall, origin, destination)) return true;
@@ -74,6 +121,15 @@ export const isAstralLineBlocked = (origin: Point, destination: Point): boolean 
 export const isPhysicalBarrierLineBlocked = (origin: Point, destination: Point): boolean => {
     for (const wall of sceneWalls()) {
         if (getWallPreset(wall) !== 'physicalBarrier') continue;
+        if (wallIntersectsLine(wall, origin, destination)) return true;
+    }
+    return false;
+};
+
+export const isAstralMovementLineBlocked = (origin: Point, destination: Point): boolean => {
+    for (const wall of sceneWalls()) {
+        const movementRestriction = getWallMovementRestriction(wall);
+        if (!['astral', 'astral_physical'].includes(movementRestriction)) continue;
         if (wallIntersectsLine(wall, origin, destination)) return true;
     }
     return false;

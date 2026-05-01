@@ -146,11 +146,12 @@ export const resolveViewerPerceptionContext = (): ViewerPerceptionContext => {
 };
 
 export const normalizeVisibilityType = (visibilityType: unknown): VisibilityType => {
-    return normalizeChoice(visibilityType, VISIBILITY_TYPES, 'default');
+    if (visibilityType === 'default') return 'physical';
+    return normalizeChoice(visibilityType, VISIBILITY_TYPES, 'physical');
 };
 
 export const getDocumentVisibilityType = (
-    document: TileDocument.Implementation | DrawingDocument.Implementation
+    document: TileDocument.Implementation | DrawingDocument.Implementation | AmbientLightDocument.Implementation
 ): VisibilityType => {
     const flagValue = foundry.utils.getProperty(document, `flags.${SYSTEM_NAME}.${FLAGS.VisibilityType}`);
     return normalizeVisibilityType(flagValue);
@@ -160,14 +161,14 @@ export const isVisibilityTypeVisible = (
     visibilityType: VisibilityType,
     context: ViewerPerceptionContext = resolveViewerPerceptionContext()
 ): boolean => {
-    if (visibilityType === 'default') return true;
+    if (visibilityType === 'physical') return true;
     if (visibilityType === 'ar') return context.hasAR;
     if (visibilityType === 'astral') return context.hasAstral;
     return true;
 };
 
 export const isDocumentVisibleForViewer = (
-    document: TileDocument.Implementation | DrawingDocument.Implementation
+    document: TileDocument.Implementation | DrawingDocument.Implementation | AmbientLightDocument.Implementation
 ): boolean => {
     const visibilityType = getDocumentVisibilityType(document);
     return isVisibilityTypeVisible(visibilityType);
@@ -175,6 +176,7 @@ export const isDocumentVisibleForViewer = (
 
 export const refreshPerception = (): void => {
     if (!canvas?.ready) return;
+    if (canvas.loading) return;
 
     canvas.perception.update({
         initializeVision: true,

@@ -11,6 +11,7 @@ import { SR5Token } from "../token/SR5Token";
 import { SR5TokenDocument } from "../token/SR5TokenDocument";
 import { SR5Tile } from "../canvas/SR5Tile";
 import { SR5Drawing } from "../canvas/SR5Drawing";
+import { SR5AmbientLight } from "../canvas/SR5AmbientLight";
 
 import { Translation } from '../utils/strings';
 
@@ -61,7 +62,14 @@ import ThermographicVisionDetectionMode from "../vision/thermographicVision/ther
 import UltrasoundDetectionMode from "../vision/ultrasoundVision/ultrasoundDetectionMode";
 import { DiceSoNice } from "../rolls/DiceSoNice";
 import { Skill } from "./item/Skill";
-import { TokenAROverride, TokenAstralVisibilityType, TokenPerceptionModeOverride, VisibilityType, WallPreset } from "@/module/perception/types";
+import {
+    TokenAROverride,
+    TokenAstralVisibilityType,
+    TokenPerceptionModeOverride,
+    VisibilityType,
+    WallMovementRestriction,
+    WallPreset
+} from "@/module/perception/types";
 
 declare module "fvtt-types/configuration" {
     interface DocumentClassConfig {
@@ -107,6 +115,7 @@ declare module "fvtt-types/configuration" {
         token: typeof SR5Token;
         tile: typeof SR5Tile;
         drawing: typeof SR5Drawing;
+        ambientLight: typeof SR5AmbientLight;
     }
 
     interface AssumeHookRan {
@@ -242,9 +251,15 @@ declare module "fvtt-types/configuration" {
                 visibilityType?: VisibilityType;
             };
         };
+        AmbientLight: {
+            shadowrun5e: {
+                visibilityType?: VisibilityType;
+            };
+        };
         Wall: {
             shadowrun5e: {
                 wallPreset?: WallPreset;
+                wallMovementRestriction?: WallMovementRestriction;
             };
         };
         User: {
@@ -252,6 +267,7 @@ declare module "fvtt-types/configuration" {
                 showApplication?: boolean;
                 changelogShownForVersion?: string;
                 lastRollPromptValue?: number;
+                activeWallPresetTool?: WallPreset;
             }
         };
         Scene: {
