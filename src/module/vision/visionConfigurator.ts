@@ -6,6 +6,15 @@ import AugmentedRealityVisionDetectionMode from './augmentedReality/arDetectionM
 import InfraredVisionDetectionMode from './infraredVision/infraredDetectionMode';
 import UltrasoundDetectionMode from './ultrasoundVision/ultrasoundDetectionMode';
 import { astralLineOfSightClear, sourcePerceptionState } from './detectionModeHelpers';
+import { type WallSenseRestrictionChannel } from '@/module/perception/types';
+
+const astralWallChannelForDetectionMode = (
+    mode: foundry.canvas.perception.DetectionMode.Any
+): WallSenseRestrictionChannel => {
+    if (mode?.id === 'lightPerception') return 'light';
+    if (mode?.type === foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SOUND) return 'sound';
+    return 'sight';
+};
 
 export default class VisionConfigurator {
     static configureAstralPerception() {
@@ -91,7 +100,8 @@ export default class VisionConfigurator {
             const sourceState = sourcePerceptionState(visionSource);
             if (!sourceState.isProjecting) return true;
 
-            return astralLineOfSightClear(visionSource, test);
+            const wallChannel = astralWallChannelForDetectionMode(mode);
+            return astralLineOfSightClear(visionSource, test, wallChannel);
         };
         detectionModePrototype._sr5AstralWallPatchApplied = true;
     }

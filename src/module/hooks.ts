@@ -138,7 +138,6 @@ import { Skill } from './types/item/Skill';
 import { SR5SkillSheet } from './item/sheets/SR5SkillSheet';
 import { SkillGroupFlow } from './actor/flows/SkillGroupFlow';
 import { PerceptionHooks } from './perception/perceptionHooks';
-import { normalizeWallPreset } from './perception/wallPerception';
 
 // Redeclare SR5config as a global as foundry-vtt-types CONFIG with SR5 property causes issues.
 export const SR5CONFIG = SR5;
@@ -181,8 +180,8 @@ export class HooksManager {
         Hooks.on('updateDrawing', PerceptionHooks.updateDrawing.bind(PerceptionHooks));
         Hooks.on('renderTileConfig', PerceptionHooks.renderTileConfig.bind(PerceptionHooks));
         Hooks.on('renderDrawingConfig', PerceptionHooks.renderDrawingConfig.bind(PerceptionHooks));
-        Hooks.on('renderAmbientLightConfig', PerceptionHooks.renderAmbientLightConfig.bind(PerceptionHooks));
         Hooks.on('renderWallConfig', PerceptionHooks.renderWallConfig.bind(PerceptionHooks));
+        Hooks.on('renderAmbientLightConfig', PerceptionHooks.renderAmbientLightConfig.bind(PerceptionHooks));
         Hooks.on('updateAmbientLight', PerceptionHooks.updateAmbientLight.bind(PerceptionHooks));
         Hooks.on('preCreateWall', PerceptionHooks.preCreateWall.bind(PerceptionHooks));
         Hooks.on('preUpdateWall', PerceptionHooks.preUpdateWall.bind(PerceptionHooks));
@@ -586,31 +585,18 @@ ___________________
 
             const wallsControl = controls.walls;
             if (wallsControl?.tools) {
-                const activePreset = normalizeWallPreset(game.user.getFlag(SYSTEM_NAME, FLAGS.ActiveWallPresetTool));
-                const applyPreset = async (preset: 'physicalBarrier' | 'manaBarrier', active: boolean) => {
-                    const currentPreset = normalizeWallPreset(game.user?.getFlag(SYSTEM_NAME, FLAGS.ActiveWallPresetTool));
-                    const nextPreset = active ? preset : (currentPreset === preset ? 'none' : currentPreset);
-                    await game.user?.setFlag(SYSTEM_NAME, FLAGS.ActiveWallPresetTool, nextPreset);
-                };
-
                 wallsControl.tools.sr5PhysicalBarrierPreset = {
                     name: 'sr5PhysicalBarrierPreset',
                     order: 96,
-                    title: 'SR5.Perception.WallPreset.ToolPhysicalBarrier',
-                    icon: 'fa-solid fa-shield-halved',
-                    toggle: true,
-                    active: activePreset === 'physicalBarrier',
-                    onChange: (_event, active) => { void applyPreset('physicalBarrier', active); }
+                    title: 'SR5.Perception.WallPreset.PhysicalBarrier',
+                    icon: 'fa-solid fa-shield-halved'
                 };
 
                 wallsControl.tools.sr5ManaBarrierPreset = {
                     name: 'sr5ManaBarrierPreset',
                     order: 97,
-                    title: 'SR5.Perception.WallPreset.ToolManaBarrier',
-                    icon: 'fa-solid fa-wand-magic-sparkles',
-                    toggle: true,
-                    active: activePreset === 'manaBarrier',
-                    onChange: (_event, active) => { void applyPreset('manaBarrier', active); }
+                    title: 'SR5.Perception.WallPreset.ManaBarrier',
+                    icon: 'fa-solid fa-wand-magic-sparkles'
                 };
             }
         }

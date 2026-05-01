@@ -3034,18 +3034,28 @@
                 "Hint": "Apply a Shadowrun barrier preset to configure movement and vision behavior.",
                 "None": "None",
                 "PhysicalBarrier": "Physical Barrier",
-                "ManaBarrier": "Mana Barrier",
-                "ToolPhysicalBarrier": "Wall Tool: Physical Barrier",
-                "ToolManaBarrier": "Wall Tool: Mana Barrier"
+                "ManaBarrier": "Mana Barrier"
             },
-            "WallMovementRestriction": {
-                "Label": "Movement Restriction",
-                "Hint": "Choose which plane(s) this wall blocks for movement.",
+            "WallRestriction": {
                 "None": "None",
                 "Physical": "Physical",
                 "Astral": "Astral",
-                "AstralPhysical": "Astral / Physical",
-                "BlockedAstralMovement": "Astral movement is blocked by a wall movement restriction."
+                "AstralPhysical": "Astral/Physical",
+                "MoveLabel": "Movement",
+                "MoveHint": "Choose which plane(s) this wall blocks for movement.",
+                "SightLabel": "Sight Restriction",
+                "SightHint": "Choose which plane(s) this wall blocks for sight.",
+                "SightDefaultLabel": "Sight Default Setting",
+                "SightDefaultHint": "Choose the native wall sight setting used when physical blocking is enabled.",
+                "LightLabel": "Light Restriction",
+                "LightHint": "Choose which plane(s) this wall blocks for light.",
+                "LightDefaultLabel": "Light Default Setting",
+                "LightDefaultHint": "Choose the native wall light setting used when physical blocking is enabled.",
+                "SoundLabel": "Sound Restriction",
+                "SoundHint": "Choose which plane(s) this wall blocks for sound.",
+                "SoundDefaultLabel": "Sound Default Setting",
+                "SoundDefaultHint": "Choose the native wall sound setting used when physical blocking is enabled.",
+                "BlockedAstralMovement": "Astral movement is blocked by this wall."
             }
         },
         "Vision": {

@@ -42,7 +42,7 @@ export class SR5TokenDocument extends TokenDocument {
             for (const waypoint of movement.passed.waypoints) {
                 const nextPoint = { x: waypoint.x, y: waypoint.y };
                 if (isAstralMovementLineBlocked(lastPoint, nextPoint)) {
-                    ui.notifications?.warn("SR5.Perception.WallMovementRestriction.BlockedAstralMovement", { localize: true });
+                    ui.notifications?.warn("SR5.Perception.WallRestriction.BlockedAstralMovement", { localize: true });
                     return false;
                 }
                 lastPoint = nextPoint;

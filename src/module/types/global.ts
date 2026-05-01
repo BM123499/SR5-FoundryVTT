@@ -67,8 +67,8 @@ import {
     TokenAstralVisibilityType,
     TokenPerceptionModeOverride,
     VisibilityType,
-    WallMovementRestriction,
-    WallPreset
+    WallPreset,
+    WallRestriction
 } from "@/module/perception/types";
 
 declare module "fvtt-types/configuration" {
@@ -259,7 +259,13 @@ declare module "fvtt-types/configuration" {
         Wall: {
             shadowrun5e: {
                 wallPreset?: WallPreset;
-                wallMovementRestriction?: WallMovementRestriction;
+                wallMoveRestriction?: WallRestriction;
+                wallSightRestriction?: WallRestriction;
+                wallLightRestriction?: WallRestriction;
+                wallSoundRestriction?: WallRestriction;
+                wallSightDefault?: number;
+                wallLightDefault?: number;
+                wallSoundDefault?: number;
             };
         };
         User: {
@@ -267,7 +273,6 @@ declare module "fvtt-types/configuration" {
                 showApplication?: boolean;
                 changelogShownForVersion?: string;
                 lastRollPromptValue?: number;
-                activeWallPresetTool?: WallPreset;
             }
         };
         Scene: {

@@ -1,6 +1,7 @@
 import type { SR5Actor } from '@/module/actor/SR5Actor';
 import { resolveVisionSourcePerceptionState } from '@/module/perception/perceptionState';
-import { isAstralLineBlocked, isPhysicalBarrierLineBlocked } from '@/module/perception/wallPerception';
+import { type WallSenseRestrictionChannel } from '@/module/perception/types';
+import { isAstralLineBlocked } from '@/module/perception/wallPerception';
 
 const targetTokenDocument = (target: CanvasVisibility.TestObject | undefined): TokenDocument.Implementation | null => {
     if (!target) return null;
@@ -31,16 +32,9 @@ const toLine = (
 
 export const astralLineOfSightClear = (
     visionSource: foundry.canvas.sources.PointVisionSource.Internal.Any,
-    test: CanvasVisibility.Test
+    test: CanvasVisibility.Test,
+    channel: WallSenseRestrictionChannel = 'sight'
 ): boolean => {
     const { origin, destination } = toLine(visionSource, test);
-    return !isAstralLineBlocked(origin, destination);
-};
-
-export const physicalBarrierLineOfSightClear = (
-    visionSource: foundry.canvas.sources.PointVisionSource.Internal.Any,
-    test: CanvasVisibility.Test
-): boolean => {
-    const { origin, destination } = toLine(visionSource, test);
-    return !isPhysicalBarrierLineBlocked(origin, destination);
+    return !isAstralLineBlocked(origin, destination, channel);
 };

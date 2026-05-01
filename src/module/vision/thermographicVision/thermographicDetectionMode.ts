@@ -1,5 +1,5 @@
 import ThermographicVisionFilter from './thermographicFilter';
-import { physicalBarrierLineOfSightClear, sourcePerceptionState, targetActor } from '../detectionModeHelpers';
+import { sourcePerceptionState, targetActor } from '../detectionModeHelpers';
 
 export default class ThermographicVisionDetectionMode extends foundry.canvas.perception.DetectionMode {
     static override getDetectionFilter() {
@@ -14,14 +14,6 @@ export default class ThermographicVisionDetectionMode extends foundry.canvas.per
 
         const actor = targetActor(target);
         return !!actor?.system.visibilityChecks.meat.hasHeat;
-    }
-
-    override _testLOS(
-        ...args: Parameters<foundry.canvas.perception.DetectionMode['_testLOS']>
-    ): boolean {
-        const [visionSource, mode, target, test] = args;
-        if (!super._testLOS(visionSource, mode, target, test)) return false;
-        return physicalBarrierLineOfSightClear(visionSource, test);
     }
 }
   

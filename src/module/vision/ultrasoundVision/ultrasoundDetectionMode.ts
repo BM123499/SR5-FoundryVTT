@@ -1,4 +1,4 @@
-import { physicalBarrierLineOfSightClear, sourcePerceptionState, targetActor } from '../detectionModeHelpers';
+import { sourcePerceptionState, targetActor } from '../detectionModeHelpers';
 
 export default class UltrasoundDetectionMode extends foundry.canvas.perception.DetectionMode {
     override _canDetect(
@@ -12,13 +12,5 @@ export default class UltrasoundDetectionMode extends foundry.canvas.perception.D
 
         // Ultrasound detects physical shapes only.
         return actor.hasPhysicalBody;
-    }
-
-    override _testLOS(
-        ...args: Parameters<foundry.canvas.perception.DetectionMode['_testLOS']>
-    ): boolean {
-        const [visionSource, mode, target, test] = args;
-        if (!super._testLOS(visionSource, mode, target, test)) return false;
-        return physicalBarrierLineOfSightClear(visionSource, test);
     }
 }
