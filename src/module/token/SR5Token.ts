@@ -4,6 +4,8 @@ import { normalizeTokenAstralVisibilityType, resolveTokenPerceptionState } from 
 import { testTokenVisibilityWithPerception } from '@/module/perception/tokenVisibility';
 import PrototypeTokenConfig = foundry.applications.sheets.PrototypeTokenConfig;
 
+const flagPath = (flag: string): string => `flags.${SYSTEM_NAME}.${flag}`;
+
 export class SR5Token extends foundry.canvas.placeables.Token {
     override _drawBar(number: number, bar: PIXI.Graphics, data: NonNullable<TokenDocument.GetBarAttributeReturn>) {
         const tokenHealthBars = game.settings.get(SYSTEM_NAME, FLAGS.TokenHealthBars);
@@ -82,6 +84,53 @@ export class SR5Token extends foundry.canvas.placeables.Token {
                 <p class="hint">${game.i18n.localize("SR5.Perception.TokenOverride.ModeHint")}</p>
             </div>
         `);
+        const modeSelect = modeSelectDiv.find('select').first();
+
+        const planeToggleDiv = $(`
+            <div class="form-group">
+                <label>${game.i18n.localize("SR5.Perception.TokenOverride.TestPlaneLabel")}</label>
+                <div class="form-fields">
+                    <button type="button" class="sr5-plane-toggle-button"></button>
+                </div>
+                <p class="hint">${game.i18n.localize("SR5.Perception.TokenOverride.TestPlaneHint")}</p>
+            </div>
+        `);
+        const planeToggleButton = planeToggleDiv.find('button').first();
+
+        const resolveTargetMode = (): 'physical' | 'astral_projection' => {
+            const currentMode = resolveTokenPerceptionState(token).mode;
+            return currentMode === 'astral_projection' ? 'physical' : 'astral_projection';
+        };
+
+        const updatePlaneToggleButton = () => {
+            const targetMode = resolveTargetMode();
+            const label = targetMode === 'physical'
+                ? game.i18n.localize("SR5.Perception.TokenOverride.SwitchToPhysical")
+                : game.i18n.localize("SR5.Perception.TokenOverride.SwitchToAstralProjection");
+            planeToggleButton.text(label);
+            planeToggleButton.attr('data-target-mode', targetMode);
+        };
+
+        planeToggleButton.on('click', async event => {
+            event.preventDefault();
+            const targetMode = (planeToggleButton.attr('data-target-mode') as 'physical' | 'astral_projection' | undefined) ?? resolveTargetMode();
+            modeSelect.val(targetMode);
+
+            const updateData = {
+                [flagPath(FLAGS.TokenPerceptionModeOverride)]: targetMode
+            };
+
+            if (typeof app.submit === 'function') {
+                await app.submit({ preventClose: true, preventRender: true, updateData });
+            } else {
+                await token.update(updateData as TokenDocument.UpdateData);
+            }
+
+            updatePlaneToggleButton();
+        });
+
+        modeSelect.on('change', () => updatePlaneToggleButton());
+        updatePlaneToggleButton();
 
         const arSelectDiv = $(`
             <div class="form-group">
@@ -111,7 +160,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
             </div>
         `);
 
-        anchor.after(modeSelectDiv, arSelectDiv, astralTypeSelectDiv);
+        anchor.after(modeSelectDiv, planeToggleDiv, arSelectDiv, astralTypeSelectDiv);
 
         if (!RoutingLibIntegration.ready || !actor?.system.movement) return;
 

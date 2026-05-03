@@ -259,6 +259,16 @@ declare module "fvtt-types/configuration" {
         Wall: {
             shadowrun5e: {
                 wallPreset?: WallPreset;
+                wallAstralMove?: number;
+                wallAstralSight?: number;
+                wallAstralLight?: number;
+                wallAstralSound?: number;
+                wallAstralDirection?: number;
+                wallAstralThresholdSight?: number;
+                wallAstralThresholdLight?: number;
+                wallAstralThresholdSound?: number;
+                wallAstralAttenuation?: boolean;
+                // Legacy combined restriction flags kept for compatibility fallback reads.
                 wallMoveRestriction?: WallRestriction;
                 wallSightRestriction?: WallRestriction;
                 wallLightRestriction?: WallRestriction;

@@ -3011,6 +3011,10 @@
                 "ModeHint": "Override this token's perception mode or inherit from the actor.",
                 "ARLabel": "AR Override",
                 "ARHint": "Override this token's AR state or inherit from the actor.",
+                "TestPlaneLabel": "Test Plane Toggle",
+                "TestPlaneHint": "Immediately toggle this token between physical and astral projection for testing.",
+                "SwitchToPhysical": "Switch to Physical",
+                "SwitchToAstralProjection": "Switch to Astral Projection",
                 "Inherit": "Inherit",
                 "Enabled": "Enabled",
                 "Disabled": "Disabled"
@@ -3035,6 +3039,21 @@
                 "None": "None",
                 "PhysicalBarrier": "Physical Barrier",
                 "ManaBarrier": "Mana Barrier"
+            },
+            "WallConfigTabs": {
+                "Basic": "Basic Configuration",
+                "Physical": "Physical Restriction",
+                "Astral": "Astral Restriction"
+            },
+            "WallAstral": {
+                "MoveLabel": "Astral Movement",
+                "MoveHint": "Choose how this wall blocks movement on the astral plane.",
+                "SightLabel": "Astral Sight",
+                "SightHint": "Choose how this wall blocks sight on the astral plane.",
+                "LightLabel": "Astral Light",
+                "LightHint": "Choose how this wall blocks light on the astral plane.",
+                "SoundLabel": "Astral Sound",
+                "SoundHint": "Choose how this wall blocks sound on the astral plane."
             },
             "WallRestriction": {
                 "None": "None",

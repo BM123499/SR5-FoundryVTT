@@ -16,6 +16,9 @@ export type VisibilityType = typeof VISIBILITY_TYPES[number];
 export const WALL_PRESETS = ['none', 'physicalBarrier', 'manaBarrier'] as const;
 export type WallPreset = typeof WALL_PRESETS[number];
 
+export const WALL_CHANNELS = ['move', 'sight', 'light', 'sound'] as const;
+export type WallChannel = typeof WALL_CHANNELS[number];
+
 export const WALL_RESTRICTIONS = ['none', 'physical', 'astral', 'astral_physical'] as const;
 export type WallRestriction = typeof WALL_RESTRICTIONS[number];
 
