@@ -89,8 +89,8 @@ export class OverwatchScoreTracker extends HandlebarsApplicationMixin(Applicatio
             if (user.isGM || !user.character) continue;
 
             const actor = user.character;
-            if (OverwatchStorage.isTrackedActor(actor as SR5Actor)) continue;
-            await OverwatchStorage.trackActor(actor as SR5Actor);
+            if (OverwatchStorage.isTrackedActor(actor)) continue;
+            await OverwatchStorage.trackActor(actor);
         }
     }
 
@@ -126,9 +126,9 @@ export class OverwatchScoreTracker extends HandlebarsApplicationMixin(Applicatio
             // Double check that the actor actually lives in the actors collection.
             const actor = game.actors.get(token.document.actorId!);
             if (!actor) continue;
-            if (OverwatchStorage.isTrackedActor(actor as SR5Actor)) continue;
+            if (OverwatchStorage.isTrackedActor(actor)) continue;
 
-            await OverwatchStorage.trackActor(actor as SR5Actor);
+            await OverwatchStorage.trackActor(actor);
         }
 
         await this.render();
