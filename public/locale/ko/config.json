@@ -2855,7 +2855,16 @@
             "AstralPerception": "아스트랄 인식",
             "AugmentedReality": "증강 현실",
             "LowLight": "저광 시야",
-            "ThermographicVision": "열화상 시야"
+            "ThermographicVision": "열화상 시야",
+            "ThermographicTemperatureTier": {
+                "Label": "열화상 온도 단계",
+                "Hint": "열화상 감지 시 이 액터가 어떻게 보이는지 설정합니다.",
+                "Neutral": "중립",
+                "Gelid": "극저온",
+                "Cool": "서늘함",
+                "Warm": "따뜻함",
+                "Boiling": "고열"
+            }
         },
         "Walk": "걷기",
         "WalkingSpeed": "걷기",

@@ -3040,7 +3040,16 @@
             "AstralPerception": "Astrale Wahrnehmung",
             "AugmentedReality": "Augmented Reality",
             "LowLight": "Restlistverstärkung",
-            "ThermographicVision": "Infrarotsicht"
+            "ThermographicVision": "Infrarotsicht",
+            "ThermographicTemperatureTier": {
+                "Label": "Thermografische Temperaturstufe",
+                "Hint": "Steuert, wie dieser Akteur bei thermografischer Erkennung erscheint.",
+                "Neutral": "Neutral",
+                "Gelid": "Eiskalt",
+                "Cool": "Kühl",
+                "Warm": "Warm",
+                "Boiling": "Siedend"
+            }
         },
         "Walk": "Gehen",
         "WalkingSpeed": "Gehen",

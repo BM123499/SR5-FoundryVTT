@@ -928,7 +928,16 @@
             "AstralPerception": "Perception astrale",
             "AugmentedReality": "Réalité Augmentée",
             "LowLight": "Vision dans l'obsucrité",
-            "ThermographicVision": "Vision thermographique"
+            "ThermographicVision": "Vision thermographique",
+            "ThermographicTemperatureTier": {
+                "Label": "Niveau thermique",
+                "Hint": "Contrôle l'apparence de cet acteur en détection thermographique.",
+                "Neutral": "Neutre",
+                "Gelid": "Glacial",
+                "Cool": "Frais",
+                "Warm": "Chaud",
+                "Boiling": "Brûlant"
+            }
         },
         "Walk": "Marcher",
         "Warnings": {

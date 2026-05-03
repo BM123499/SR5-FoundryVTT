@@ -3083,7 +3083,16 @@
             "InfraredVision": "Infrared Vision",
             "LowLight": "Low-Light Vision",
             "ThermographicVision": "Thermographic Vision",
-            "Ultrasound": "Ultrasound"
+            "Ultrasound": "Ultrasound",
+            "ThermographicTemperatureTier": {
+                "Label": "Thermographic Temperature Tier",
+                "Hint": "Controls how this actor appears to thermographic detection.",
+                "Neutral": "Neutral",
+                "Gelid": "Gelid",
+                "Cool": "Cool",
+                "Warm": "Warm",
+                "Boiling": "Boiling"
+            }
         },
         "Walk": "Walk",
         "WalkingSpeed": "Walking",

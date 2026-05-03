@@ -1534,7 +1534,16 @@
             "AstralPerception": "Percepção Astral",
             "AugmentedReality": "Realidade Aumentada",
             "LowLight": "Visão de Pouca Luz",
-            "ThermographicVision": "Visão Termográfica"
+            "ThermographicVision": "Visão Termográfica",
+            "ThermographicTemperatureTier": {
+                "Label": "Faixa de temperatura termográfica",
+                "Hint": "Controla como este ator aparece para detecção termográfica.",
+                "Neutral": "Neutro",
+                "Gelid": "Gélido",
+                "Cool": "Frio",
+                "Warm": "Quente",
+                "Boiling": "Escaldante"
+            }
         },
         "Walk": "Caminhar",
         "WalkingSpeed": "Caminhando",

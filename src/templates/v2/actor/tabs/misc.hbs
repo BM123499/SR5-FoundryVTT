@@ -108,6 +108,20 @@
                             </div>
                         </div>
                     {{/if}}
+                    {{#if systemFields.visibilityChecks.fields.meat.fields.temperatureTier}}
+                        <div class="list-item">
+                            <div class="list-item-start">
+                                <label data-tooltip="{{systemFields.visibilityChecks.fields.meat.fields.temperatureTier.hint}}">
+                                    {{systemFields.visibilityChecks.fields.meat.fields.temperatureTier.label}}
+                                </label>
+                            </div>
+                            <div class="list-item-col">
+                                {{formInput systemFields.visibilityChecks.fields.meat.fields.temperatureTier
+                                            value=source.system.visibilityChecks.meat.temperatureTier
+                                            classes="short" rootId=rootId disabled=@root.isPlayMode localize=true }}
+                            </div>
+                        </div>
+                    {{/if}}
                     <div class="list-item">
                         <div class="list-item-start">
                             <label data-tooltip="{{systemFields.category_visibility.fields.default.hint}}">
