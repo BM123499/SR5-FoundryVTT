@@ -729,7 +729,6 @@ ___________________
         VisionConfigurator.configureThermographicVision()
         VisionConfigurator.configureLowlight()
         VisionConfigurator.configureAR()
-        VisionConfigurator.configureInfraredVision()
         VisionConfigurator.configureUltrasoundVision()
         VisionConfigurator.patchDetectionModeLOSForAstral()
     }

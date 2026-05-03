@@ -56,7 +56,6 @@ import { RoutingLib } from "../integrations/routingLibIntegration";
 import SR5CompendiaSettings from "../settings/SR5CompendiaSettings";
 import AstralPerceptionDetectionMode from "../vision/astralPerception/astralPerceptionDetectionMode";
 import AugmentedRealityVisionDetectionMode from "../vision/augmentedReality/arDetectionMode";
-import InfraredVisionDetectionMode from "../vision/infraredVision/infraredDetectionMode";
 import LowlightVisionDetectionMode from "../vision/lowlightVision/lowlightDetectionMode";
 import ThermographicVisionDetectionMode from "../vision/thermographicVision/thermographicDetectionMode";
 import UltrasoundDetectionMode from "../vision/ultrasoundVision/ultrasoundDetectionMode";
@@ -132,7 +131,6 @@ declare module "fvtt-types/configuration" {
             thermographic: ThermographicVisionDetectionMode;
             lowlight: LowlightVisionDetectionMode;
             augmentedReality: AugmentedRealityVisionDetectionMode;
-            infrared: InfraredVisionDetectionMode;
             ultrasound: UltrasoundDetectionMode;
         }
 

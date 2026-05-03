@@ -3,7 +3,6 @@ import AstralPerceptionBackgroundVisionShader  from './astralPerception/astralPe
 import ThermographicVisionDetectionMode from './thermographicVision/thermographicDetectionMode';
 import LowlightVisionDetectionMode from './lowlightVision/lowlightDetectionMode';
 import AugmentedRealityVisionDetectionMode from './augmentedReality/arDetectionMode';
-import InfraredVisionDetectionMode from './infraredVision/infraredDetectionMode';
 import UltrasoundDetectionMode from './ultrasoundVision/ultrasoundDetectionMode';
 import { astralLineOfSightClear, sourcePerceptionState } from './detectionModeHelpers';
 import { type WallSenseRestrictionChannel } from '@/module/perception/types';
@@ -66,14 +65,6 @@ export default class VisionConfigurator {
         CONFIG.Canvas.detectionModes.augmentedReality = new AugmentedRealityVisionDetectionMode({
             id: 'augmentedReality',
             label: 'SR5.Vision.AugmentedReality',
-            type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
-        });
-    }
-
-    static configureInfraredVision() {
-        CONFIG.Canvas.detectionModes.infrared = new InfraredVisionDetectionMode({
-            id: 'infrared',
-            label: 'SR5.Vision.InfraredVision',
             type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
         });
     }
