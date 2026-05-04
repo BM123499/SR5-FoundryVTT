@@ -589,14 +589,14 @@ ___________________
             if (wallsControl?.tools) {
                 wallsControl.tools.sr5PhysicalBarrierPreset = {
                     name: 'sr5PhysicalBarrierPreset',
-                    order: 96,
+                    order: 8.1,
                     title: 'SR5.Perception.WallPreset.PhysicalBarrier',
                     icon: 'fa-solid fa-shield-halved'
                 };
 
                 wallsControl.tools.sr5ManaBarrierPreset = {
                     name: 'sr5ManaBarrierPreset',
-                    order: 97,
+                    order: 8.2,
                     title: 'SR5.Perception.WallPreset.ManaBarrier',
                     icon: 'fa-solid fa-wand-magic-sparkles'
                 };
