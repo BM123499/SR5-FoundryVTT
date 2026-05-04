@@ -22,15 +22,16 @@ export default class VisionConfigurator {
             label: 'SR5.Vision.AstralProjection',
             type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
         });
-  
-        CONFIG.Canvas.visionModes.astralProjection = new foundry.canvas.perception.VisionMode({
+
+        const astralProjectionVisionMode = new foundry.canvas.perception.VisionMode({
             id: 'astralProjection',
             label: 'SR5.Vision.AstralProjection',
             canvas: {
                 shader: foundry.canvas.rendering.shaders.ColorAdjustmentsSamplerShader,
                 uniforms: {
-                    saturation: 5,
-                    tint: AstralProjectionBackgroundVisionShader.COLOR_TINT,
+                    saturation: -0.35,
+                    contrast: -0.05,
+                    brightness: 0.08,
                 },
             },
             lighting: {
@@ -43,6 +44,14 @@ export default class VisionConfigurator {
                 background: { shader: AstralProjectionBackgroundVisionShader },
             },
         });
+
+        // fvtt-types do not currently model this key, but Foundry supports disabling darkness channel visibility.
+        foundry.utils.setProperty(
+            astralProjectionVisionMode,
+            'lighting.darkness.visibility',
+            foundry.canvas.perception.VisionMode.LIGHTING_VISIBILITY.DISABLED
+        );
+        CONFIG.Canvas.visionModes.astralProjection = astralProjectionVisionMode;
     }
 
     static configureThermographicVision() {

@@ -3,8 +3,33 @@ import {
     getTokenAstralVisibilityType,
     isTokenAstralVisibilityTypeVisibleForState,
     isVisionSourceCompatibleWithTokenAstralVisibilityType,
-    resolveTokenPerceptionState
+    resolveTokenPerceptionState,
+    resolveVisionSourcePerceptionState
 } from './perceptionState';
+import AstralProjectionVisionFilter from '@/module/vision/astralProjection/astralProjectionFilter';
+
+type AstralAuraStyle = 'none' | 'projectionPhysicalAura' | 'astralPerceptionGlow';
+
+let projectionPhysicalAuraFilter: PIXI.Filter | null = null;
+let astralPerceptionGlowFilter: PIXI.Filter | null = null;
+
+const getProjectionPhysicalAuraFilter = (): PIXI.Filter => {
+    projectionPhysicalAuraFilter ??= AstralProjectionVisionFilter.create();
+    const uniforms = projectionPhysicalAuraFilter.uniforms as Record<string, unknown>;
+    uniforms.auraStrength = 0.82;
+    uniforms.auraTintA = [0.95, 0.84, 0.45];
+    uniforms.auraTintB = [1.0, 0.96, 0.78];
+    return projectionPhysicalAuraFilter;
+};
+
+const getAstralPerceptionGlowFilter = (): PIXI.Filter => {
+    astralPerceptionGlowFilter ??= AstralProjectionVisionFilter.create();
+    const uniforms = astralPerceptionGlowFilter.uniforms as Record<string, unknown>;
+    uniforms.auraStrength = 0.58;
+    uniforms.auraTintA = [0.54, 0.58, 1.0];
+    uniforms.auraTintB = [0.82, 0.95, 1.0];
+    return astralPerceptionGlowFilter;
+};
 
 const createVisibilityTestConfig = (
     token: Token,
@@ -65,6 +90,40 @@ const isLightSourceCompatible = (
     return isTokenAstralVisibilityTypeVisibleForState(visibilityType, sourceState);
 };
 
+const resolveAstralAuraStyle = (
+    visibilityType: TokenAstralVisibilityType,
+    compatibleVisionSources: foundry.canvas.sources.PointVisionSource.Internal.Any[]
+): AstralAuraStyle => {
+    const isProjecting = compatibleVisionSources.some(source => resolveVisionSourcePerceptionState(source).isProjecting);
+    const isAstralPerceiving = compatibleVisionSources.some(source => resolveVisionSourcePerceptionState(source).isAstralPerceiving);
+
+    if (visibilityType === 'astral_visible') {
+        if (isProjecting) return 'none';
+        if (isAstralPerceiving) return 'astralPerceptionGlow';
+        return 'none';
+    }
+
+    if ((visibilityType === 'normal' || visibilityType === 'dual_natured') && isProjecting) {
+        return 'projectionPhysicalAura';
+    }
+
+    return 'none';
+};
+
+const applyAuraStyleIfNeeded = (
+    token: Token,
+    auraStyle: AstralAuraStyle
+): void => {
+    if (auraStyle === 'projectionPhysicalAura') {
+        token.detectionFilter = getProjectionPhysicalAuraFilter();
+        return;
+    }
+
+    if (auraStyle === 'astralPerceptionGlow') {
+        token.detectionFilter = getAstralPerceptionGlowFilter();
+    }
+};
+
 export const testTokenVisibilityWithPerception = (token: Token, tolerance: number): boolean => {
     if (!canvas?.ready) return false;
 
@@ -79,6 +138,7 @@ export const testTokenVisibilityWithPerception = (token: Token, tolerance: numbe
 
     const config = createVisibilityTestConfig(token, tolerance);
     const detectionModes = CONFIG.Canvas.detectionModes as unknown as Record<string, foundry.canvas.perception.DetectionMode>;
+    const auraStyle = resolveAstralAuraStyle(visibilityType, compatibleVisionSources);
 
     if (visibilityType !== 'astral_visible') {
         for (const lightSource of (canvas.effects?.lightSources ?? [])) {
@@ -87,7 +147,10 @@ export const testTokenVisibilityWithPerception = (token: Token, tolerance: numbe
             if (!isLightSourceCompatible(source, visibilityType)) continue;
 
             const result = source.testVisibility(config);
-            if (result === true) return true;
+            if (result === true) {
+                applyAuraStyleIfNeeded(token, auraStyle);
+                return true;
+            }
         }
     }
 
@@ -99,13 +162,19 @@ export const testTokenVisibilityWithPerception = (token: Token, tolerance: numbe
         const basicMode = sourceTokenDocument?.detectionModes.find(mode => mode.id === 'basicSight');
         if (basicMode) {
             const result = detectionModes.basicSight?.testVisibility(visionSource, basicMode, config);
-            if (result === true) return true;
+            if (result === true) {
+                applyAuraStyleIfNeeded(token, auraStyle);
+                return true;
+            }
         }
 
         const lightMode = sourceTokenDocument?.detectionModes.find(mode => mode.id === 'lightPerception');
         if (lightMode) {
             const result = detectionModes.lightPerception?.testVisibility(visionSource, lightMode, config);
-            if (result === true) return true;
+            if (result === true) {
+                applyAuraStyleIfNeeded(token, auraStyle);
+                return true;
+            }
         }
     }
 
@@ -121,7 +190,11 @@ export const testTokenVisibilityWithPerception = (token: Token, tolerance: numbe
             const detectionMode = detectionModes[mode.id];
             const result = detectionMode?.testVisibility(visionSource, mode, config);
             if (result === true) {
-                token.detectionFilter = (detectionMode.constructor as any).getDetectionFilter();
+                if (auraStyle === 'none') {
+                    token.detectionFilter = (detectionMode.constructor as any).getDetectionFilter();
+                } else {
+                    applyAuraStyleIfNeeded(token, auraStyle);
+                }
                 return true;
             }
         }

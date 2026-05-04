@@ -89,7 +89,8 @@ export const isTokenAstralVisibilityTypeVisibleForState = (
     visibilityType: TokenAstralVisibilityType,
     state: TokenPerceptionState
 ): boolean => {
-    if (visibilityType === 'normal') return !state.isProjecting;
+    // Mundane/physical entities are always visible in normal vision and remain visible while astral.
+    if (visibilityType === 'normal') return true;
     if (visibilityType === 'astral_visible') return state.isAstral;
     return true;
 };

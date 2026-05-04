@@ -1,34 +1,37 @@
-//todo: v10 foundry-vtt-types 
 export default class AstralProjectionVisionFilter extends foundry.canvas.rendering.filters.AbstractBaseFilter {
   static override defaultUniforms = {
-    luminanceThreshold: 0.5,
     alphaThreshold: 0.1,
+    auraStrength: 0.6,
+    auraTintA: [0.56, 0.45, 0.95],
+    auraTintB: [0.76, 0.98, 1.0],
   };
 
-  /**
-   * fragment shader based on the following snippets:
-   * @link https://gitlab.com/peginc/swade/-/blob/develop/src/module/vision/InfravisionFilter.ts?ref_type=heads
-   */
   static override fragmentShader = `
   varying vec2 vTextureCoord;
   uniform sampler2D uSampler;
-  uniform float luminanceThreshold;
   uniform float alphaThreshold;
-
-  #define RED vec4(0.8, 0.0, 0.0, 1.0)
-  #define YELLOW vec4(0.8, 0.8, 0.0, 1.0)
-  #define BLUE vec4(0.0, 0.0, 1.0, 1.0)
-  #define GREEN vec4(0.0, 1.0, 0.0, 1.0)
+  uniform float auraStrength;
+  uniform vec3 auraTintA;
+  uniform vec3 auraTintB;
 
   void main(void) {
     vec4 texColor = texture2D(uSampler, vTextureCoord);
-    float luminance = dot(vec3(0.30, 0.59, 0.11), texColor.rgb);
-    if ( texColor.a > alphaThreshold ) {
-      gl_FragColor = (luminance < luminanceThreshold) ? mix(RED, mix(YELLOW, vec4(0.2, 0.0, 0.0, 1.0), luminance / 0.5), luminance * 1.0 ) : mix(vec4(0.2, 0.0, 0.0, 1.0), YELLOW, (luminance - 0.5) * 3.0);
-      gl_FragColor.rgb *= 0.1 + 0.25 + 0.75 * pow( 16.0 * vTextureCoord.x * vTextureCoord.y * (1.0 - vTextureCoord.x) * (1.0 - vTextureCoord.y), 0.15 );
-      gl_FragColor.a = texColor.a;
-    } else {
+    if (texColor.a <= alphaThreshold) {
       gl_FragColor = vec4(0.0);
+      return;
     }
+
+    float luminance = dot(vec3(0.30, 0.59, 0.11), texColor.rgb);
+    vec3 auraColor = mix(auraTintA, auraTintB, clamp(luminance * 1.25, 0.0, 1.0));
+
+    vec2 centered = vTextureCoord - vec2(0.5);
+    float distanceFromCenter = length(centered);
+    float outerHalo = smoothstep(0.90, 0.35, distanceFromCenter);
+    float innerCut = smoothstep(0.45, 0.20, distanceFromCenter);
+    float halo = max(outerHalo - innerCut, 0.0);
+
+    vec3 highlighted = mix(texColor.rgb, auraColor, auraStrength);
+    highlighted += auraColor * halo * 0.25;
+    gl_FragColor = vec4(clamp(highlighted, 0.0, 1.0), texColor.a);
   }`;
 }
