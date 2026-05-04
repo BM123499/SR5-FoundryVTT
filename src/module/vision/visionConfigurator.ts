@@ -1,5 +1,5 @@
-import AstralPerceptionDetectionMode from './astralPerception/astralPerceptionDetectionMode';
-import AstralPerceptionBackgroundVisionShader  from './astralPerception/astralPerceptionBackgroundShader';
+import AstralProjectionDetectionMode from './astralProjection/astralProjectionDetectionMode';
+import AstralProjectionBackgroundVisionShader from './astralProjection/astralProjectionBackgroundShader';
 import ThermographicVisionDetectionMode from './thermographicVision/thermographicDetectionMode';
 import LowlightVisionDetectionMode from './lowlightVision/lowlightDetectionMode';
 import AugmentedRealityVisionDetectionMode from './augmentedReality/arDetectionMode';
@@ -16,21 +16,21 @@ const astralWallChannelForDetectionMode = (
 };
 
 export default class VisionConfigurator {
-    static configureAstralPerception() {
-        CONFIG.Canvas.detectionModes.astralPerception = new AstralPerceptionDetectionMode({
-            id: 'astralPerception',
-            label: 'SR5.Vision.AstralPerception',
+    static configureAstralProjection() {
+        CONFIG.Canvas.detectionModes.astralProjection = new AstralProjectionDetectionMode({
+            id: 'astralProjection',
+            label: 'SR5.Vision.AstralProjection',
             type: foundry.canvas.perception.DetectionMode.DETECTION_TYPES.SIGHT,
         });
   
-        CONFIG.Canvas.visionModes.astralPerception = new foundry.canvas.perception.VisionMode({
-            id: 'astralPerception',
-            label: 'SR5.Vision.AstralPerception',
+        CONFIG.Canvas.visionModes.astralProjection = new foundry.canvas.perception.VisionMode({
+            id: 'astralProjection',
+            label: 'SR5.Vision.AstralProjection',
             canvas: {
                 shader: foundry.canvas.rendering.shaders.ColorAdjustmentsSamplerShader,
                 uniforms: {
                     saturation: 5,
-                    tint: AstralPerceptionBackgroundVisionShader.COLOR_TINT,
+                    tint: AstralProjectionBackgroundVisionShader.COLOR_TINT,
                 },
             },
             lighting: {
@@ -40,7 +40,7 @@ export default class VisionConfigurator {
             },
             vision: {
                 darkness: { adaptive: false },
-                background: { shader: AstralPerceptionBackgroundVisionShader },
+                background: { shader: AstralProjectionBackgroundVisionShader },
             },
         });
     }

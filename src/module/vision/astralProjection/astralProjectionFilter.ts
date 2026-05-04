@@ -1,5 +1,5 @@
 //todo: v10 foundry-vtt-types 
-export default class AstralVisionFilter extends foundry.canvas.rendering.filters.AbstractBaseFilter {
+export default class AstralProjectionVisionFilter extends foundry.canvas.rendering.filters.AbstractBaseFilter {
   static override defaultUniforms = {
     luminanceThreshold: 0.5,
     alphaThreshold: 0.1,
@@ -32,4 +32,3 @@ export default class AstralVisionFilter extends foundry.canvas.rendering.filters
     }
   }`;
 }
-

@@ -81,6 +81,7 @@ export class SR5Token extends foundry.canvas.placeables.Token {
                     </select>
                 </div>
                 <p class="hint">${game.i18n.localize("SR5.Perception.TokenOverride.ModeHint")}</p>
+                <p class="hint">${game.i18n.localize("SR5.Perception.TokenOverride.AstralProjectionHint")}</p>
             </div>
         `);
         const modeSelect = modeSelectDiv.find('select').first();

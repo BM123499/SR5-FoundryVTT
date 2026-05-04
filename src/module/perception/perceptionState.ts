@@ -15,7 +15,7 @@ import {
     VISIBILITY_TYPES
 } from './types';
 
-const ASTRAL_VISION_MODE_ID = 'astralPerception';
+const ASTRAL_VISION_MODE_ID = 'astralProjection';
 const BASIC_VISION_MODE_ID = 'basic';
 export type PerceptionSyncUpdateOperation = TokenDocument.Database.UpdateOperation & { sr5PerceptionSync?: boolean };
 

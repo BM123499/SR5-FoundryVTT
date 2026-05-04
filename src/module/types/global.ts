@@ -54,7 +54,7 @@ import { ComplexFormLevelType, FireModeType, FireRangeType, SpellForceType } fro
 
 import { RoutingLib } from "../integrations/routingLibIntegration";
 import SR5CompendiaSettings from "../settings/SR5CompendiaSettings";
-import AstralPerceptionDetectionMode from "../vision/astralPerception/astralPerceptionDetectionMode";
+import AstralProjectionDetectionMode from "../vision/astralProjection/astralProjectionDetectionMode";
 import AugmentedRealityVisionDetectionMode from "../vision/augmentedReality/arDetectionMode";
 import LowlightVisionDetectionMode from "../vision/lowlightVision/lowlightDetectionMode";
 import ThermographicVisionDetectionMode from "../vision/thermographicVision/thermographicDetectionMode";
@@ -127,7 +127,7 @@ declare module "fvtt-types/configuration" {
 
     namespace CONFIG.Canvas {
         interface DetectionModes {
-            astralPerception: AstralPerceptionDetectionMode;
+            astralProjection: AstralProjectionDetectionMode;
             thermographic: ThermographicVisionDetectionMode;
             lowlight: LowlightVisionDetectionMode;
             augmentedReality: AugmentedRealityVisionDetectionMode;
@@ -135,7 +135,7 @@ declare module "fvtt-types/configuration" {
         }
 
         interface VisionModes {
-            astralPerception: foundry.canvas.perception.VisionMode;
+            astralProjection: foundry.canvas.perception.VisionMode;
         }
     }
 

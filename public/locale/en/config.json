@@ -3009,6 +3009,7 @@
             "TokenOverride": {
                 "ModeLabel": "Perception Mode Override",
                 "ModeHint": "Override this token's perception mode or inherit from the actor.",
+                "AstralProjectionHint": "Astral projection reveals auras, spirits, astral forms, and active magic clearly. Mundane structures are dim impressions that show layout and obstacles, but not text, screens, colors, or AR/matrix overlays.",
                 "ARLabel": "AR Override",
                 "ARHint": "Override this token's AR state or inherit from the actor.",
                 "TestPlaneLabel": "Test Plane Toggle",
@@ -3078,7 +3079,7 @@
             }
         },
         "Vision": {
-            "AstralPerception": "Astral Perception",
+            "AstralProjection": "Astral Projection",
             "AugmentedReality": "Augmented Reality",
             "LowLight": "Low-Light Vision",
             "ThermographicVision": "Thermographic Vision",
