@@ -40,15 +40,14 @@ export class SR5Token extends foundry.canvas.placeables.Token {
         options?: Token.FindMovementPathOptions & { skipRoutingLib?: boolean; }
     ) {
         const isProjecting = resolveTokenPerceptionState(this.document).isProjecting;
-        const resolvedOptions = isProjecting ? { ...options, ignoreWalls: true } : options;
 
         const movement = this.actor?.system.movement;
         const useRoutLib = this.document.getFlag(SYSTEM_NAME, FLAGS.TokenUseRoutingLib) ?? true;
-        if (RoutingLibIntegration.ready && movement && useRoutLib && !resolvedOptions?.skipRoutingLib && !resolvedOptions?.ignoreWalls) {
+        if (RoutingLibIntegration.ready && movement && useRoutLib && !isProjecting && !options?.skipRoutingLib && !options?.ignoreWalls) {
             return RoutingLibIntegration.routinglibPathfinding(waypoints, this, movement);
         }
 
-        return super.findMovementPath(waypoints, resolvedOptions);
+        return super.findMovementPath(waypoints, options);
     }
 
     static tokenConfig(

@@ -138,6 +138,7 @@ import { Skill } from './types/item/Skill';
 import { SR5SkillSheet } from './item/sheets/SR5SkillSheet';
 import { SkillGroupFlow } from './actor/flows/SkillGroupFlow';
 import { PerceptionHooks } from './perception/perceptionHooks';
+import { registerSR5AstralMovementPolygonBackend } from './perception/astralMovementPolygonBackend';
 
 // Redeclare SR5config as a global as foundry-vtt-types CONFIG with SR5 property causes issues.
 export const SR5CONFIG = SR5;
@@ -411,6 +412,7 @@ ___________________
             canSelect: () => false,
             getAnimationOptions: () => ({ movementSpeed: CONFIG.Token.movement.defaultSpeed * 3 }),
         };
+        registerSR5AstralMovementPolygonBackend();
 
         // Register initiative directly (outside of system.json) as DnD5e does it.
         CONFIG.Combat.initiative.formula = "@initiative.current.base.value[Base] + @initiative.current.dice.text[Dice] - @wounds.value[Wounds]";

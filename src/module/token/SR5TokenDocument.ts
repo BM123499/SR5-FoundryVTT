@@ -1,8 +1,6 @@
 import { DeepReadonly } from "fvtt-types/utils";
 import { SYSTEM_NAME, FLAGS } from "../constants";
 import { StorageFlow } from "@/module/flows/StorageFlow";
-import { resolveTokenPerceptionState } from "@/module/perception/perceptionState";
-import { isAstralMovementLineBlocked } from "@/module/perception/wallPerception";
 
 /**
  * A custom TokenDocument class for the SR5 system.
@@ -31,28 +29,6 @@ export class SR5TokenDocument extends TokenDocument {
         movement: TokenDocument.PreMovementOptions,
         operation: TokenDocument.Database.UpdateOperation
     ): Promise<boolean | void> {
-        const perceptionState = resolveTokenPerceptionState(this);
-        if (perceptionState.isProjecting) {
-            let lastPoint = { x: movement.origin.x, y: movement.origin.y };
-            for (const waypoint of movement.passed.waypoints) {
-                const nextPoint = { x: waypoint.x, y: waypoint.y };
-                if (isAstralMovementLineBlocked(lastPoint, nextPoint)) {
-                    ui.notifications?.warn("SR5.Perception.WallRestriction.BlockedAstralMovement", { localize: true });
-                    return false;
-                }
-                lastPoint = nextPoint;
-            }
-
-            const movementOperation = operation as TokenDocument.MoveOptions;
-            const constrainOptions = movementOperation.constrainOptions ?? {
-                preview: false,
-                ignoreWalls: false,
-                ignoreCost: false,
-                history: false
-            };
-            movementOperation.constrainOptions = { ...constrainOptions, ignoreWalls: true };
-        }
-
         return await super._preUpdateMovement(movement, operation);
     }
 
