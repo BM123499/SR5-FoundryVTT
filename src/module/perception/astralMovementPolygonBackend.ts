@@ -1,13 +1,15 @@
 import { FLAGS, SYSTEM_NAME } from '@/module/constants';
 import { resolveTokenPerceptionState } from './perceptionState';
-import { normalizeWallDirectionType, normalizeWallMovementType } from './wallPerception';
+import { normalizeWallDirectionType, normalizeWallMovementType, normalizeWallSenseType } from './wallPerception';
 
 type MoveBackendClass = CONFIG.Canvas.PolygonBackends['move'];
+type SightBackendClass = CONFIG.Canvas.PolygonBackends['sight'];
 
 let originalMovePolygonBackend: MoveBackendClass | null = null;
+let originalSightPolygonBackend: SightBackendClass | null = null;
 
 const getSourceToken = (
-    source: foundry.canvas.sources.PointMovementSource.Any | undefined
+    source: { object?: unknown } | undefined
 ): foundry.canvas.placeables.Token | null => {
     const object = source?.object;
     return object instanceof Token ? object : null;
@@ -24,6 +26,11 @@ const getEdgeWallDocument = (
 const getExplicitAstralMoveType = (wallDocument: WallDocument.Implementation) => {
     const explicitAstralMove = wallDocument.getFlag(SYSTEM_NAME, FLAGS.WallAstralMove);
     return normalizeWallMovementType(explicitAstralMove, CONST.WALL_MOVEMENT_TYPES.NONE);
+};
+
+const getExplicitAstralSightType = (wallDocument: WallDocument.Implementation) => {
+    const explicitAstralSight = wallDocument.getFlag(SYSTEM_NAME, FLAGS.WallAstralSight);
+    return normalizeWallSenseType(explicitAstralSight, CONST.WALL_SENSE_TYPES.NONE);
 };
 
 const getEffectiveAstralDirection = (wallDocument: WallDocument.Implementation) => {
@@ -64,15 +71,59 @@ export class SR5AstralMovementPolygonBackend extends foundry.canvas.geometry.Clo
     }
 }
 
+export class SR5AstralSightPolygonBackend extends foundry.canvas.geometry.ClockwiseSweepPolygon {
+    protected override _testEdgeInclusion(
+        edge: foundry.canvas.geometry.edges.Edge,
+        edgeTypes: foundry.canvas.geometry.ClockwiseSweepPolygon.EdgeTypesConfiguration
+    ): boolean {
+        const sourceToken = getSourceToken(this.config.source as { object?: unknown } | undefined);
+        if (!sourceToken) return super._testEdgeInclusion(edge, edgeTypes);
+
+        const perceptionState = resolveTokenPerceptionState(sourceToken.document);
+        if (!perceptionState.isProjecting) return super._testEdgeInclusion(edge, edgeTypes);
+
+        const wallDocument = getEdgeWallDocument(edge);
+        if (!wallDocument) return super._testEdgeInclusion(edge, edgeTypes);
+
+        const astralSight = getExplicitAstralSightType(wallDocument);
+        if (astralSight === CONST.WALL_SENSE_TYPES.NONE) return false;
+
+        const astralDirection = getEffectiveAstralDirection(wallDocument);
+
+        const originalSight = edge.sight;
+        const originalDirection = edge.direction;
+        edge.sight = astralSight as unknown as typeof edge.sight;
+        edge.direction = astralDirection as typeof edge.direction;
+
+        try {
+            return super._testEdgeInclusion(edge, edgeTypes);
+        } finally {
+            edge.sight = originalSight;
+            edge.direction = originalDirection;
+        }
+    }
+}
+
 export const registerSR5AstralMovementPolygonBackend = (): void => {
     const currentMoveBackend = CONFIG.Canvas.polygonBackends.move;
     const sr5MoveBackend = SR5AstralMovementPolygonBackend as unknown as MoveBackendClass;
-    if (currentMoveBackend === sr5MoveBackend) return;
+    if (currentMoveBackend !== sr5MoveBackend) {
+        originalMovePolygonBackend ??= currentMoveBackend;
+        CONFIG.Canvas.polygonBackends.move = sr5MoveBackend;
+    }
 
-    originalMovePolygonBackend ??= currentMoveBackend;
-    CONFIG.Canvas.polygonBackends.move = sr5MoveBackend;
+    const currentSightBackend = CONFIG.Canvas.polygonBackends.sight;
+    const sr5SightBackend = SR5AstralSightPolygonBackend as unknown as SightBackendClass;
+    if (currentSightBackend !== sr5SightBackend) {
+        originalSightPolygonBackend ??= currentSightBackend;
+        CONFIG.Canvas.polygonBackends.sight = sr5SightBackend;
+    }
 };
 
 export const getOriginalMovePolygonBackend = (): MoveBackendClass | null => {
     return originalMovePolygonBackend;
+};
+
+export const getOriginalSightPolygonBackend = (): SightBackendClass | null => {
+    return originalSightPolygonBackend;
 };

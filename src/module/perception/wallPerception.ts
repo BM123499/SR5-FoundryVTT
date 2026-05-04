@@ -138,7 +138,7 @@ export const getWallAstralSenseType = (
     const explicitAstralSense = document.getFlag(SYSTEM_NAME, WALL_ASTRAL_FLAG_BY_CHANNEL[channel]);
     if (explicitAstralSense !== undefined) return normalizeWallSenseType(explicitAstralSense, CONST.WALL_SENSE_TYPES.NONE);
 
-    return normalizeWallSenseType(document[channel], CONST.WALL_SENSE_TYPES.NONE);
+    return CONST.WALL_SENSE_TYPES.NONE;
 };
 
 export const getWallAstralDirection = (wall: WallLike | null | undefined): WallDirectionType => {
@@ -150,7 +150,7 @@ export const getWallAstralDirection = (wall: WallLike | null | undefined): WallD
         return normalizeWallDirectionType(explicitAstralDirection, CONST.WALL_DIRECTIONS.BOTH);
     }
 
-    return normalizeWallDirectionType(document.dir, CONST.WALL_DIRECTIONS.BOTH);
+    return CONST.WALL_DIRECTIONS.BOTH;
 };
 
 const wallEndpoints = (wall: WallDocument.Implementation): [Point, Point] | null => {

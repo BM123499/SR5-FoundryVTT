@@ -95,10 +95,13 @@ export default class VisionConfigurator {
         const originalTestLOS = detectionModePrototype._testLOS as (...args: any[]) => boolean;
         detectionModePrototype._testLOS = function (...args: any[]) {
             const [visionSource, mode, target, test] = args;
-            if (!originalTestLOS.call(this, visionSource, mode, target, test)) return false;
-
             const sourceState = sourcePerceptionState(visionSource);
-            if (!sourceState.isProjecting) return true;
+            if (!sourceState.isProjecting) {
+                return originalTestLOS.call(this, visionSource, mode, target, test);
+            }
+
+            if (!this._testAngle(visionSource, mode, target, test)) return false;
+            if (!this.walls) return true;
 
             const wallChannel = astralWallChannelForDetectionMode(mode);
             return astralLineOfSightClear(visionSource, test, wallChannel);
