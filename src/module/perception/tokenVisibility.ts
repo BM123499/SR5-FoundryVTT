@@ -19,6 +19,9 @@ const getProjectionPhysicalAuraFilter = (): PIXI.Filter => {
     uniforms.auraStrength = 0.82;
     uniforms.auraTintA = [0.95, 0.84, 0.45];
     uniforms.auraTintB = [1.0, 0.96, 0.78];
+    uniforms.pulsarEnabled = 1.0;
+    uniforms.pulseSpeed = 3.4;
+    uniforms.pulseDepth = 0.35;
     return projectionPhysicalAuraFilter;
 };
 
@@ -28,6 +31,9 @@ const getAstralPerceptionGlowFilter = (): PIXI.Filter => {
     uniforms.auraStrength = 0.58;
     uniforms.auraTintA = [0.54, 0.58, 1.0];
     uniforms.auraTintB = [0.82, 0.95, 1.0];
+    uniforms.pulsarEnabled = 0.0;
+    uniforms.pulseSpeed = 0.0;
+    uniforms.pulseDepth = 0.0;
     return astralPerceptionGlowFilter;
 };
 
